@@ -80,6 +80,8 @@ workspace/
 - 轻量 runtime 资产，便于 OpenClaw 调用
 - skills 三件套与 knowledge metadata
 - 最小 routing / retrieval / memory / evolution 执行层
+- 官网/控制台静态原型位于 `site/`
+- 调料包默认内置网关与推荐模型，用户填 key 后即可升级为多模态增强版
 - 本地自测入口 `node runtime/tests/run-selftest.js`
 
 后续你可以继续补充：

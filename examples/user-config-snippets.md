@@ -6,9 +6,10 @@
 - 设置 workspace
 - 注册 life-coach agent
 - 配置技能白名单
-- 注入 `CREATION_AI_*` 环境变量占位名
+- 仅注入 `LIFECOACH_GATEWAY_API_KEY`
 
 建议做法：
-1. 保留仓库模板中的占位值。
-2. 在本地 shell、系统环境变量或你自己的私有配置中注入真实值。
-3. 不要把真实 API key 写入仓库中的 template/example 文件。
+1. 先在官网/控制台创建自己的 API key。
+2. 调料包默认携带网关地址和推荐模型，无需用户手动配置全部模型。
+3. 在本地 shell、系统环境变量或你自己的私有配置中注入 `LIFECOACH_GATEWAY_API_KEY`。
+4. 不要把真实 API key 写入仓库中的 template/example 文件。

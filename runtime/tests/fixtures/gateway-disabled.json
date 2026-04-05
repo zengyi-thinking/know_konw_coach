@@ -1,0 +1,12 @@
+{
+  "env": {
+    "CREATION_AI_BASE_URL": "",
+    "CREATION_AI_API_KEY": "",
+    "CREATION_AI_CHAT_MODEL": "",
+    "CREATION_AI_VISION_MODEL": "",
+    "CREATION_AI_IMAGE_MODEL": "",
+    "CREATION_AI_VIDEO_MODEL": "",
+    "CREATION_AI_TTS_MODEL": "",
+    "CREATION_AI_ASR_MODEL": ""
+  }
+}

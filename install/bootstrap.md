@@ -25,16 +25,20 @@ Windows 建议使用 WSL2。
 
 ## 4. 注入本地环境变量
 
-使用本地 shell、`.env` 或你的私有配置注入：
-- `CREATION_AI_BASE_URL`
-- `CREATION_AI_API_KEY`
-- `CREATION_AI_CHAT_MODEL`
-- `CREATION_AI_VISION_MODEL`
-- `CREATION_AI_IMAGE_MODEL`
-- `CREATION_AI_VIDEO_MODEL`
-- `CREATION_AI_TTS_MODEL`
-- `CREATION_AI_ASR_MODEL`
+默认情况下，调料包已自带网关地址和推荐模型。
+用户只需要在本地 shell、`.env` 或私有配置注入：
+- `LIFECOACH_GATEWAY_API_KEY`
 
+如需特殊情况，也可额外覆盖：
+- `LIFECOACH_GATEWAY_BASE_URL`
+- `LIFECOACH_CHAT_MODEL`
+- `LIFECOACH_VISION_MODEL`
+- `LIFECOACH_IMAGE_MODEL`
+- `LIFECOACH_VIDEO_MODEL`
+- `LIFECOACH_TTS_MODEL`
+- `LIFECOACH_ASR_MODEL`
+
+用户可以先在官网/控制台创建自己的 key，再把 key 配到本地。
 仓库中的 template / example 文件只保留占位值，不写入真实密钥。
 
 ## 5. 运行自测

@@ -1,0 +1,5 @@
+{
+  "env": {
+    "LIFECOACH_GATEWAY_API_KEY": "test-key"
+  }
+}

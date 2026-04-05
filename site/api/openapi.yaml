@@ -1,0 +1,60 @@
+openapi: 3.1.0
+info:
+  title: Life Coach Gateway API
+  version: 0.1.0
+servers:
+  - url: https://your-gateway.example.com
+paths:
+  /api/keys:
+    get:
+      summary: List current user API keys
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create a new API key
+      responses:
+        '201':
+          description: Created
+  /api/keys/{id}/revoke:
+    post:
+      summary: Revoke an API key
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Revoked
+  /api/models:
+    get:
+      summary: List available models for current account
+      responses:
+        '200':
+          description: OK
+  /api/integration/openclaw:
+    get:
+      summary: Get recommended CREATION_AI environment snippet
+      responses:
+        '200':
+          description: OK
+  /api/me/usage:
+    get:
+      summary: Get current account usage
+      responses:
+        '200':
+          description: OK
+  /v1/chat/completions:
+    post:
+      summary: Unified text or vision chat endpoint
+      responses:
+        '200':
+          description: OK
+  /v1/audio/transcriptions:
+    post:
+      summary: Audio transcription endpoint
+      responses:
+        '200':
+          description: OK

@@ -8,6 +8,9 @@ const { analyzeRouteQuality } = require('./evolution/route_quality_analyzer');
 const { buildReviewReport } = require('./evolution/reflection_reviewer_engine');
 const { generatePatchProposal } = require('./evolution/patch_proposal_generator');
 const { buildGatewayRequest } = require('./gateway/multimodal_adapter');
+const { detectCapabilities } = require('./gateway/capability_detector');
+const { executeChat } = require('./gateway/chat_executor');
+const { executeAudioTranscription } = require('./gateway/audio_executor');
 
 function runSession(session, options = {}) {
   const workspaceRoot = options.workspaceRoot || path.join(__dirname, '..', 'workspace');
@@ -19,7 +22,12 @@ function runSession(session, options = {}) {
     ...session.input,
     primarySkill: route.primarySkill,
   }, workspaceRoot, 2);
-  const gateway = buildGatewayRequest(session.input || {}, options.env || process.env);
+  const env = options.env || process.env;
+  const gateway = buildGatewayRequest(session.input || {}, env);
+  const capabilities = detectCapabilities(env);
+  const upstream = (session.input?.modality || 'text') === 'audio'
+    ? executeAudioTranscription(session.input || {}, env, options.gatewayOptions || {})
+    : executeChat(session.input || {}, env, options.gatewayOptions || {});
   const memory = processMemory(session, options.existingMemories || []);
   const event = logSessionEvent({
     sessionId: session.sessionId,
@@ -50,6 +58,8 @@ function runSession(session, options = {}) {
     review,
     proposal,
     gateway,
+    capabilities,
+    upstream,
   };
 }
 

@@ -1,0 +1,11 @@
+{
+  "baseUrl": "https://ai.t8star.cn/v1",
+  "models": {
+    "chat": "gpt-4o",
+    "vision": "gemini-2.5-flash",
+    "image": "doubao-seedream-4-0-250828",
+    "video": "veo3.1-fast",
+    "tts": "tts-1",
+    "asr": "whisper-1"
+  }
+}
