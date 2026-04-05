@@ -232,9 +232,13 @@ function buildCerebellumResponse(body, auth, env) {
 }
 
 function createGatewayServer(options = {}) {
+  return http.createServer(createGatewayHandler(options));
+}
+
+function createGatewayHandler(options = {}) {
   const env = options.env || process.env;
 
-  return http.createServer(async (req, res) => {
+  return async (req, res) => {
     const startedAt = Date.now();
 
     try {
@@ -341,7 +345,7 @@ function createGatewayServer(options = {}) {
         'Access-Control-Allow-Origin': '*',
       });
     }
-  });
+  };
 }
 
 function startGatewayServer(options = {}) {
@@ -359,6 +363,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  createGatewayHandler,
   createGatewayServer,
   startGatewayServer,
 };

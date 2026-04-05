@@ -1,0 +1,17 @@
+.git
+.gitignore
+.claude
+.tmp-openclaw*
+.control-plane-data
+.control-plane-state
+node_modules
+logs
+tmp
+temp
+*.log
+LICENSE
+site
+examples
+*.md
+!README.md
+!docs/multimodal-control-plane-architecture.md

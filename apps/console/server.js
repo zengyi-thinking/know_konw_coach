@@ -86,10 +86,14 @@ function resolvePagePath(pathname) {
 }
 
 function createConsoleServer(options = {}) {
+  return http.createServer(createConsoleHandler(options));
+}
+
+function createConsoleHandler(options = {}) {
   const env = options.env || process.env;
   const gatewayPort = options.gatewayPort;
 
-  return http.createServer(async (req, res) => {
+  return async (req, res) => {
     try {
       const url = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`);
       const pathname = url.pathname;
@@ -191,7 +195,7 @@ function createConsoleServer(options = {}) {
         error: error && error.message ? error.message : 'unexpected_error',
       });
     }
-  });
+  };
 }
 
 function startConsoleServer(options = {}) {
@@ -209,6 +213,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  createConsoleHandler,
   createConsoleServer,
   startConsoleServer,
 };

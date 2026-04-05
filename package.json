@@ -13,7 +13,9 @@
     "validate:package": "node scripts/validate-package.js",
     "console:dev": "node apps/console/server.js",
     "gateway:dev": "node apps/gateway/server.js",
-    "test:control-plane": "node tests/control-plane.e2e.js"
+    "platform:dev": "node apps/platform/server.js",
+    "test:control-plane": "node tests/control-plane.e2e.js",
+    "test:platform": "node tests/platform.e2e.js"
   },
   "engines": {
     "node": ">=18"
