@@ -8,6 +8,14 @@
     "content": { "type": "string" },
     "confidence": { "type": "number" },
     "status": { "type": "string", "enum": ["active", "archived"] },
-    "evidenceCount": { "type": "number" }
+    "evidenceCount": { "type": "number" },
+    "sourceSessionId": { "type": ["string", "null"] },
+    "lastSourceSessionId": { "type": ["string", "null"] },
+    "updatedAt": { "type": ["string", "null"] },
+    "supersededBy": { "type": ["string", "null"] },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
   }
 }

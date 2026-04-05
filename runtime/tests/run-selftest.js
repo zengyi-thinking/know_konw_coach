@@ -28,7 +28,10 @@ async function run() {
   const goalFixture = loadJson('goal-clarify.json');
   const goal = runSession(goalFixture, { workspaceRoot, env: goalFixture.env, gatewayOptions: { mockResponse: { message: 'ok' } } });
   assert(goal.route.primarySkill === 'goal-clarify', 'goal-clarify 路由失败');
+  assert(goal.timeline.activeTimeline.id === 'timeline-1', '默认 timeline 创建失败');
+  assert(typeof goal.adaptivePolicy.rationalWeight === 'number', 'adaptive policy 默认生成失败');
   tests.push('goal-clarify route ok');
+  tests.push('default timeline policy ok');
 
   const emotional = runSession(loadJson('emotional-debrief.json'), { workspaceRoot, gatewayOptions: { mockResponse: { message: 'ok' } } });
   assert(emotional.route.primarySkill === 'emotional-debrief', 'emotional-debrief 路由失败');
@@ -52,6 +55,28 @@ async function run() {
   assert(memoryResult.archives.length === 1, 'memory conflict archive 失败');
   assert(memoryResult.records.some((record) => record.content === '希望回应直接一点' && record.status === 'active'), 'memory new preference merge 失败');
   tests.push('memory conflict merge ok');
+
+  const timelineFeedback = loadJson('timeline-feedback-loop.json');
+  const feedbackSession = runSession(timelineFeedback, {
+    workspaceRoot,
+    existingTimelines: timelineFeedback.existingTimelines,
+    gatewayOptions: { mockResponse: { message: 'ok' } }
+  });
+  assert(feedbackSession.timeline.activeTimeline.id === 'timeline-growth-1', 'timeline feedback 续接失败');
+  assert(feedbackSession.timeline.phase === 'feedback', 'timeline feedback phase 失败');
+  assert(feedbackSession.adaptivePolicy.emotionalWeight > feedbackSession.adaptivePolicy.rationalWeight, '负反馈后情感权重未提高');
+  assert(feedbackSession.review.issues.includes('no_revision_after_failed_attempt'), '失败尝试后 review 信号缺失');
+  tests.push('timeline feedback loop ok');
+
+  const timelineClosure = loadJson('timeline-closure.json');
+  const closureSession = runSession(timelineClosure, {
+    workspaceRoot,
+    existingTimelines: timelineClosure.existingTimelines,
+    gatewayOptions: { mockResponse: { message: 'ok' } }
+  });
+  assert(closureSession.timeline.activeTimeline.status === 'closed', 'timeline closure 失败');
+  assert(closureSession.timeline.phase === 'closed', 'timeline closed phase 失败');
+  tests.push('timeline closure ok');
 
   const blockedProposal = generatePatchProposal({
     title: 'unsafe patch',

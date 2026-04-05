@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["sessionId", "timestamp", "turnType"],
+  "properties": {
+    "sessionId": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "turnType": { "type": "string" },
+    "attemptStatus": { "type": ["string", "null"] },
+    "outcomeSignal": { "type": ["string", "null"] }
+  }
+}

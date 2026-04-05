@@ -10,6 +10,8 @@ function mergeMemoryRecords(existingRecords, candidates) {
         ...merged[existingIndex],
         confidence: Math.max(merged[existingIndex].confidence || 0, candidate.confidence || 0),
         evidenceCount: (merged[existingIndex].evidenceCount || 1) + 1,
+        lastSourceSessionId: candidate.sourceSessionId || merged[existingIndex].lastSourceSessionId || null,
+        updatedAt: candidate.timestamp || merged[existingIndex].updatedAt || null,
       };
       updates.push({ action: 'update', record: merged[existingIndex] });
       continue;
@@ -17,7 +19,11 @@ function mergeMemoryRecords(existingRecords, candidates) {
 
     const conflictingIndex = merged.findIndex((item) => item.type === candidate.type && item.content !== candidate.content && item.status !== 'archived');
     if (conflictingIndex >= 0) {
-      const archived = { ...merged[conflictingIndex], status: 'archived' };
+      const archived = {
+        ...merged[conflictingIndex],
+        status: 'archived',
+        supersededBy: `memory-${candidate.type}-${merged.length + 1}`,
+      };
       merged[conflictingIndex] = archived;
       archives.push(archived);
     }
@@ -29,6 +35,10 @@ function mergeMemoryRecords(existingRecords, candidates) {
       confidence: candidate.confidence,
       status: 'active',
       evidenceCount: 1,
+      sourceSessionId: candidate.sourceSessionId || null,
+      lastSourceSessionId: candidate.sourceSessionId || null,
+      updatedAt: candidate.timestamp || null,
+      tags: candidate.tags || [],
     };
     merged.push(record);
     updates.push({ action: 'insert', record });

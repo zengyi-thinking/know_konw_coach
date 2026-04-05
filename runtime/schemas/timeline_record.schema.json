@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id", "needKey", "status", "phase", "entries"],
+  "properties": {
+    "id": { "type": "string" },
+    "needKey": { "type": "string" },
+    "status": { "type": "string", "enum": ["active", "closed"] },
+    "phase": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "./attempt_record.schema.json" }
+    },
+    "canClose": { "type": "boolean" }
+  }
+}

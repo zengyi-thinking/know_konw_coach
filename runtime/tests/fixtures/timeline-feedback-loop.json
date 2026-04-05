@@ -1,0 +1,49 @@
+{
+  "sessionId": "fixture-timeline-feedback",
+  "timestamp": "2026-04-05T11:00:00.000Z",
+  "input": {
+    "modality": "text",
+    "text": "我试了昨天那个计划，但执行不了，压力有点大。",
+    "timelineId": "timeline-growth-1",
+    "attemptId": "attempt-1",
+    "attempt": true,
+    "attemptStatus": "failed",
+    "feedback": "执行不了",
+    "feedbackSignal": "negative_execution",
+    "outcome": "这次失败了",
+    "outcomeSignal": "failed"
+  },
+  "output": {
+    "reply": "那我们先把动作缩小一点，先处理阻力。",
+    "nextAction": "把今天最小的一步缩成5分钟动作"
+  },
+  "userProfile": {
+    "longTermGoal": "建立稳定的成长节奏"
+  },
+  "existingTimelines": [
+    {
+      "id": "timeline-growth-1",
+      "needKey": "建立稳定的成长节奏",
+      "status": "active",
+      "phase": "attempt",
+      "entries": [
+        {
+          "sessionId": "older-1",
+          "timestamp": "2026-04-04T10:00:00.000Z",
+          "turnType": "need",
+          "textPreview": "我想建立稳定节奏"
+        },
+        {
+          "sessionId": "older-2",
+          "timestamp": "2026-04-04T10:10:00.000Z",
+          "turnType": "suggestion",
+          "textPreview": "先从固定晨间动作开始"
+        }
+      ],
+      "memoryRefs": [],
+      "startedAt": "2026-04-04T10:00:00.000Z",
+      "updatedAt": "2026-04-04T10:10:00.000Z",
+      "canClose": false
+    }
+  ]
+}

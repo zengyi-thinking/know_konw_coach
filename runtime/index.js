@@ -7,6 +7,8 @@ const { logSessionEvent } = require('./logging/session_event_logger');
 const { analyzeRouteQuality } = require('./evolution/route_quality_analyzer');
 const { buildReviewReport } = require('./evolution/reflection_reviewer_engine');
 const { generatePatchProposal } = require('./evolution/patch_proposal_generator');
+const { buildTimeline } = require('./evolution/timeline_manager');
+const { computeAdaptivePolicy } = require('./evolution/adaptive_policy_engine');
 const { buildGatewayRequest } = require('./gateway/multimodal_adapter');
 const { detectCapabilities } = require('./gateway/capability_detector');
 const { executeChat } = require('./gateway/chat_executor');
@@ -33,27 +35,63 @@ function runSession(session, options = {}) {
     sessionId: session.sessionId,
     timestamp: session.timestamp,
     input: session.input,
+    output: session.output,
     route,
     safety,
   });
-  const routeQuality = analyzeRouteQuality({ route, safety, knowledgeHits });
+  const timeline = buildTimeline(session, options.existingTimelines || [], event, memory);
+  const adaptivePolicy = computeAdaptivePolicy({
+    session,
+    event,
+    timeline,
+    memory,
+    safety,
+  });
+  const eventWithPolicy = logSessionEvent({
+    sessionId: session.sessionId,
+    timestamp: session.timestamp,
+    input: session.input,
+    output: session.output,
+    route,
+    safety,
+    timeline,
+    adaptivePolicy,
+  });
+  const memoryWithTimeline = processMemory(session, options.existingMemories || [], {
+    timelineSummary: timeline.activeTimeline
+      ? `${timeline.activeTimeline.needKey}:${timeline.phase}`
+      : '',
+  });
+  const routeQuality = analyzeRouteQuality({
+    route,
+    safety,
+    knowledgeHits,
+    event: eventWithPolicy,
+    timeline,
+    adaptivePolicy,
+  });
   const review = buildReviewReport({
     safety,
     output: session.output || {},
+    event: eventWithPolicy,
+    timeline,
+    adaptivePolicy,
   });
   const proposal = generatePatchProposal({
     title: 'routing refinement suggestion',
     reason: routeQuality.signals.length ? 'route quality signal detected' : 'routine review',
     targets: ['workspace/skills/' + route.primarySkill + '/route.json'],
-    changes: routeQuality.signals,
+    changes: [...routeQuality.signals, ...review.issues.map((issue) => ({ type: issue, severity: 'medium' }))],
   });
 
   return {
     safety,
     route,
     knowledgeHits,
-    memory,
-    event,
+    memory: memoryWithTimeline,
+    event: eventWithPolicy,
+    timeline,
+    adaptivePolicy,
     routeQuality,
     review,
     proposal,

@@ -1,12 +1,27 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["sessionId", "timestamp", "modality"],
+  "required": ["sessionId", "timestamp", "modality", "turnType"],
   "properties": {
     "sessionId": { "type": "string" },
     "timestamp": { "type": "string" },
     "modality": { "type": "string" },
     "textPreview": { "type": "string" },
-    "selectedSkill": { "type": ["string", "null"] }
+    "selectedSkill": { "type": ["string", "null"] },
+    "turnType": { "type": "string" },
+    "attemptId": { "type": ["string", "null"] },
+    "timelineId": { "type": ["string", "null"] },
+    "feedbackSignal": { "type": ["string", "null"] },
+    "outcomeSignal": { "type": ["string", "null"] },
+    "predictionSnapshot": { "$ref": "./prediction_record.schema.json" },
+    "policySnapshot": {
+      "type": ["object", "null"],
+      "properties": {
+        "rationalWeight": { "type": "number" },
+        "emotionalWeight": { "type": "number" },
+        "shortTermFocus": { "type": "number" },
+        "longTermFocus": { "type": "number" }
+      }
+    }
   }
 }

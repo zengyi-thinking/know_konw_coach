@@ -1,0 +1,47 @@
+{
+  "sessionId": "fixture-timeline-closure",
+  "timestamp": "2026-04-05T12:00:00.000Z",
+  "input": {
+    "modality": "text",
+    "text": "这个阶段已经稳定了，可以先收束这条线。",
+    "timelineId": "timeline-growth-2",
+    "closeTimeline": true,
+    "outcome": "已经形成稳定节奏",
+    "outcomeSignal": "progress"
+  },
+  "output": {
+    "reply": "好，我们把这一阶段收束，并保留一个下次复盘点。",
+    "nextAction": "一周后做一次简短复盘",
+    "isClosure": true
+  },
+  "userProfile": {
+    "longTermGoal": "建立稳定的成长节奏"
+  },
+  "existingTimelines": [
+    {
+      "id": "timeline-growth-2",
+      "needKey": "建立稳定的成长节奏",
+      "status": "active",
+      "phase": "outcome",
+      "entries": [
+        {
+          "sessionId": "older-1",
+          "timestamp": "2026-04-01T10:00:00.000Z",
+          "turnType": "need",
+          "textPreview": "我想建立稳定节奏"
+        },
+        {
+          "sessionId": "older-2",
+          "timestamp": "2026-04-03T10:00:00.000Z",
+          "turnType": "outcome",
+          "textPreview": "已经开始稳定执行",
+          "outcomeSignal": "progress"
+        }
+      ],
+      "memoryRefs": [],
+      "startedAt": "2026-04-01T10:00:00.000Z",
+      "updatedAt": "2026-04-03T10:00:00.000Z",
+      "canClose": true
+    }
+  ]
+}
