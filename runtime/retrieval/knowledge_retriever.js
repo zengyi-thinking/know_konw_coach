@@ -32,17 +32,20 @@ function collectKnowledgeFiles(workspaceRoot) {
 
 function scoreKnowledgeHit(item, input) {
   const text = `${input.text || ''} ${(input.sceneTags || []).join(' ')}`.toLowerCase();
-  let score = 0;
-
-  if (Array.isArray(item.metadata.recommendedSkills) && item.metadata.recommendedSkills.includes(input.primarySkill)) {
-    score += 30;
-  }
-
   const scenes = Array.isArray(item.metadata.scenes) ? item.metadata.scenes : [];
-  score += scenes.filter((scene) => text.includes(String(scene).toLowerCase())).length * 8;
-
   const keywords = Array.isArray(item.metadata.keywords) ? item.metadata.keywords : [];
-  score += keywords.filter((keyword) => text.includes(String(keyword).toLowerCase())).length * 10;
+  const sceneHits = scenes.filter((scene) => text.includes(String(scene).toLowerCase())).length;
+  const keywordHits = keywords.filter((keyword) => text.includes(String(keyword).toLowerCase())).length;
+  const hasSemanticMatch = sceneHits > 0 || keywordHits > 0;
+  let score = sceneHits * 8 + keywordHits * 10;
+
+  if (
+    hasSemanticMatch &&
+    Array.isArray(item.metadata.recommendedSkills) &&
+    item.metadata.recommendedSkills.includes(input.primarySkill)
+  ) {
+    score += 12;
+  }
 
   return score;
 }

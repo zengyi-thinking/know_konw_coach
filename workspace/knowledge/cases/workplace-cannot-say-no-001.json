@@ -1,0 +1,12 @@
+{
+  "id": "case-workplace-cannot-say-no-001",
+  "title": "职场中不敢说不的过度负责模式",
+  "type": "case",
+  "topics": ["职场边界", "讨好", "过度负责", "拒绝困难"],
+  "scenes": ["不敢拒绝领导", "下班前突然加活", "明明不想接还是答应"],
+  "riskLevel": "medium",
+  "recommendedSkills": ["emotional-debrief", "goal-clarify"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["领导一说我就答应", "不敢说不", "不敢拒绝", "加活", "收到", "怕被针对"],
+  "summary": "用于处理职场中因害怕冲突或惩罚而无法拒绝任务的模式。"
+}

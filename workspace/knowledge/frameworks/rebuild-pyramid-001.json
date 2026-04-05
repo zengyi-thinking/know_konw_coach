@@ -1,0 +1,12 @@
+{
+  "id": "framework-rebuild-pyramid-001",
+  "title": "重建金字塔行动框架",
+  "type": "framework",
+  "topics": ["行动设计", "情绪稳定", "边界重建", "长期重建"],
+  "scenes": ["需要下一步行动", "情绪太满", "想从混乱回到秩序"],
+  "riskLevel": "low",
+  "recommendedSkills": ["goal-clarify", "emotional-debrief", "habit-reset"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["我现在该怎么办", "先做什么", "脑子很乱", "想恢复秩序"],
+  "summary": "帮助教练从稳定状态开始，逐步收束到情绪代谢、边界调整和长期行动。"
+}

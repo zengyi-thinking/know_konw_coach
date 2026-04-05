@@ -1,0 +1,12 @@
+{
+  "id": "safety-relationship-control-and-cold-violence-001",
+  "title": "关系控制与冷处理场景的安全边界",
+  "type": "safety",
+  "topics": ["关系控制", "冷处理", "沟通风险", "边界"],
+  "scenes": ["关系里被拿捏", "长期冷处理", "害怕冲突不敢表达"],
+  "riskLevel": "high",
+  "recommendedSkills": ["emotional-debrief", "coach-intake"],
+  "recommendedAgents": ["safety-guardian"],
+  "keywords": ["冷暴力", "不理我", "一直冷着", "控制我", "不敢说"],
+  "summary": "用于识别亲密关系中的控制、长期冷处理和高风险沟通失衡。"
+}

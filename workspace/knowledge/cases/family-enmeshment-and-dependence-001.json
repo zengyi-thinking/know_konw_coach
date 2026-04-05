@@ -1,0 +1,12 @@
+{
+  "id": "case-family-enmeshment-and-dependence-001",
+  "title": "家庭中的纠缠依赖与边界失效模式",
+  "type": "case",
+  "topics": ["家庭边界", "纠缠", "依赖", "独立"],
+  "scenes": ["和父母一直吵", "被父母控制又离不开", "经济上还依赖家庭", "想搬走但做不到"],
+  "riskLevel": "high",
+  "recommendedSkills": ["coach-intake"],
+  "recommendedAgents": ["life-coach", "safety-guardian"],
+  "keywords": ["他们控制我", "翻我手机", "我还是得靠他们", "逃不掉", "又吵又离不开", "想搬走但做不到", "还得靠家里"],
+  "summary": "用于处理家庭中既强烈反抗又现实依赖的纠缠关系和边界困境。"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "case-workplace-control-and-overfunctioning-001",
+  "title": "职场中控制过强与过度运转模式",
+  "type": "case",
+  "topics": ["完美主义", "控制", "返工", "精力透支"],
+  "scenes": ["交给别人不放心", "最后总是自己做", "返工到很累"],
+  "riskLevel": "medium",
+  "recommendedSkills": ["emotional-debrief", "habit-reset"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["别人做得太烂", "还得我返工", "不如我自己做", "太累了", "离不开我"],
+  "summary": "用于处理因控制欲和完美主义导致的过度承担与精力透支。"
+}

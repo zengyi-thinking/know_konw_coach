@@ -1,0 +1,12 @@
+{
+  "id": "case-workplace-unfair-workload-001",
+  "title": "职场中对不公平分工的愤怒与卡住",
+  "type": "case",
+  "topics": ["工作不公平", "愤怒", "退出筹码", "内耗"],
+  "scenes": ["活都落在我头上", "别人摸鱼我收拾烂摊子", "很想辞职又走不了"],
+  "riskLevel": "medium",
+  "recommendedSkills": ["emotional-debrief", "goal-clarify"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["凭什么又是我", "活都给我", "别人摸鱼", "真想辞职", "拿得最少干得最多"],
+  "summary": "用于处理工作分配不公引发的愤怒、委屈和行动受限状态。"
+}

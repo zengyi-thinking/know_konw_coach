@@ -494,7 +494,7 @@ V3 明确要求把自动执行分级。
 know_konw_coach/
 ├─ docs/
 │  ├─ architecture.md
-│  ├─ 执行层架构设计.md
+│  ├─ execution-layer-architecture.md
 │  ├─ routing-strategy.md
 │  ├─ knowledge-invocation-strategy.md
 │  ├─ memory-invocation-strategy.md

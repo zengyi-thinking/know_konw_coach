@@ -1,0 +1,12 @@
+{
+  "id": "framework-diagnosis-to-action-transition-001",
+  "title": "从看清问题到设计行动的转向框架",
+  "type": "framework",
+  "topics": ["诊断转行动", "收束", "最小下一步"],
+  "scenes": ["已经聊清楚了但不知道怎么收尾", "说了很多但没有行动", "需要转向执行"],
+  "riskLevel": "low",
+  "recommendedSkills": ["goal-clarify", "coach-intake", "emotional-debrief"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["知道问题了然后呢", "聊明白了但还是动不了", "怎么落地", "下一步是什么"],
+  "summary": "帮助教练把理解阶段收束为一个明确、低阻力、可执行的下一步行动。"
+}
