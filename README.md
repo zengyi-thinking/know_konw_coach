@@ -10,7 +10,7 @@
 
 - `~/.openclaw/app/lifecoach/runtime`：运行核心
 - `~/.openclaw/workspace`：静态 skills / knowledge / prompts / agents
-- `~/.openclaw/state/lifecoach`：动态事件、timeline、review、proposal、memory cache
+- `~/.openclaw/state/lifecoach`：动态事件、timeline、review、proposal、memory cache、system review
 
 ## 结构总览
 
@@ -56,6 +56,8 @@ apps/
 - review
 - proposal
 - memory snapshot
+
+这些都属于后台治理信号，不会改变用户前台只感受到一个 `life-coach` 的体验。
 
 这些动态 artifact 会显式写入对静态资产的引用，例如当前命中的 `skill route` 路径和 workspace manifest 路径，从而把“静态规则”和“动态演化”真正连起来。
 

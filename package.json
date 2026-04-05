@@ -9,7 +9,7 @@
   },
   "scripts": {
     "install:openclaw": "node scripts/install-openclaw.js",
-    "selftest": "node packages/lifecoach-core/tests/run-selftest.js",
+    "selftest": "node scripts/run-local-selftest.js",
     "validate:package": "node scripts/validate-package.js",
     "console:dev": "node apps/console/server.js",
     "gateway:dev": "node apps/gateway/server.js",

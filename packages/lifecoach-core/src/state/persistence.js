@@ -32,6 +32,8 @@ function buildWorkspaceRefs(result, workspaceManifest) {
 
   return {
     manifestPath: '.lifecoach/workspace.manifest.json',
+    governancePath: manifest.governance?.layerManifestPath || '.lifecoach/layer-governance.json',
+    frontstageAgentId: manifest.frontstageAgentId || 'life-coach',
     selectedSkillPath,
     knowledgeIds: (result.knowledgeHits || []).map((item) => item.id),
     protectedTargets: manifest.protectedTargets || [],
@@ -50,6 +52,7 @@ function persistSessionArtifacts(session, result, runtimePaths, workspaceManifes
   ensureDir(state.reviewsDir);
   ensureDir(state.memoryCacheDir);
   ensureDir(state.proposalsDir);
+  ensureDir(state.systemReviewsDir);
 
   files.push(writeJson(path.join(state.eventsDir, `${baseName}.event.json`), {
     sessionId: session.sessionId,
@@ -70,15 +73,27 @@ function persistSessionArtifacts(session, result, runtimePaths, workspaceManifes
     timestamp: session.timestamp,
     review: result.review,
     routeQuality: result.routeQuality,
+    arbitration: result.arbitration || null,
     workspaceRefs,
   }));
 
-  files.push(writeJson(path.join(state.proposalsDir, `${baseName}.proposal.json`), {
-    sessionId: session.sessionId,
-    timestamp: session.timestamp,
-    proposal: result.proposal,
-    workspaceRefs,
-  }));
+  if (result.proposal) {
+    files.push(writeJson(path.join(state.proposalsDir, `${baseName}.proposal.json`), {
+      sessionId: session.sessionId,
+      timestamp: session.timestamp,
+      proposal: result.proposal,
+      workspaceRefs,
+    }));
+  }
+
+  if (result.proposal && result.proposal.systemReview) {
+    files.push(writeJson(path.join(state.systemReviewsDir, `${result.proposal.systemReview.id}.system-review.json`), {
+      sessionId: session.sessionId,
+      timestamp: session.timestamp,
+      systemReview: result.proposal.systemReview,
+      workspaceRefs,
+    }));
+  }
 
   files.push(writeJson(path.join(state.memoryCacheDir, `${baseName}.memory.json`), {
     sessionId: session.sessionId,

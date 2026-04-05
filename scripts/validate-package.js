@@ -5,6 +5,7 @@ const path = require('path');
 const repoRoot = path.resolve(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'packages', 'lifecoach-installer', 'manifest', 'lifecoach.bundle.json'), 'utf8'));
 const workspaceManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'packages', 'lifecoach-workspace', 'content', '.lifecoach', 'workspace.manifest.json'), 'utf8'));
+const governanceManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'packages', 'lifecoach-workspace', 'content', '.lifecoach', 'layer-governance.json'), 'utf8'));
 
 function assert(condition, message) {
   if (!condition) {
@@ -35,6 +36,12 @@ function validateSkillTriples() {
   }
 }
 
+function validateAgents() {
+  for (const agent of workspaceManifest.agents || []) {
+    assertExists(path.join('packages', 'lifecoach-workspace', 'content', agent.path));
+  }
+}
+
 function validateKnowledgePairs() {
   const knowledgeRoot = path.join(repoRoot, 'packages', 'lifecoach-workspace', 'content', 'knowledge');
   const buckets = fs.readdirSync(knowledgeRoot, { withFileTypes: true }).filter((entry) => entry.isDirectory());
@@ -59,11 +66,42 @@ function validatePackageLayout() {
   assertExists(path.join('packages', 'lifecoach-core', 'tests', 'run-selftest.js'));
   assertExists(path.join('packages', 'lifecoach-installer', 'install-openclaw.js'));
   assertExists(path.join('packages', 'lifecoach-workspace', 'content', '.lifecoach', 'workspace.manifest.json'));
+  assertExists(path.join('packages', 'lifecoach-workspace', 'content', '.lifecoach', 'layer-governance.json'));
+}
+
+function validateLayerGovernance() {
+  const layerIds = new Set((governanceManifest.layers || []).map((layer) => layer.id));
+  assert(layerIds.size > 0, 'governance layers missing');
+
+  for (const layer of governanceManifest.layers || []) {
+    assert(Array.isArray(layer.paths) && layer.paths.length > 0, `governance layer has no paths: ${layer.id}`);
+    for (const layerPath of layer.paths) {
+      assertExists(layerPath);
+    }
+  }
+
+  for (const layerId of governanceManifest.evolution?.autoMutableLayers || []) {
+    assert(layerIds.has(layerId), `governance evolution references unknown layer: ${layerId}`);
+  }
+  for (const layerId of governanceManifest.evolution?.systemReviewLayers || []) {
+    assert(layerIds.has(layerId), `governance system review references unknown layer: ${layerId}`);
+  }
+  for (const layerId of governanceManifest.evolution?.blockedLayers || []) {
+    assert(layerIds.has(layerId), `governance blocked references unknown layer: ${layerId}`);
+  }
+
+  const protectedTargets = new Set(workspaceManifest.protectedTargets || []);
+  assert(protectedTargets.has('prompts/core_identity.md'), 'workspace protected targets missing core_identity');
+  assert(protectedTargets.has('knowledge/safety'), 'workspace protected targets missing knowledge/safety');
+  assert(workspaceManifest.frontstageAgentId === 'life-coach', 'workspace frontstageAgentId must remain life-coach');
+  assert((workspaceManifest.agents || []).some((agent) => agent.id === 'persona-guardian'), 'workspace manifest missing persona-guardian');
 }
 
 try {
   validateManifestSources();
   validatePackageLayout();
+  validateLayerGovernance();
+  validateAgents();
   validateSkillTriples();
   validateKnowledgePairs();
   console.log(JSON.stringify({

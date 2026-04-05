@@ -14,4 +14,4 @@
 - memory 清理建议
 - skill 微调 proposal
 
-所有高影响变更都必须先进入 `workspace/evolution/proposals/`，人工批准后再执行。
+所有高影响变更都必须先进入 `workspace/evolution/proposals/`，交给系统后台复核后再决定是否继续。

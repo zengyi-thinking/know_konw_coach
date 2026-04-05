@@ -34,6 +34,7 @@
     "state/lifecoach/reviews",
     "state/lifecoach/memory-cache",
     "state/lifecoach/proposals",
+    "state/lifecoach/system-reviews",
     "workspace/evolution/proposals",
     "workspace/evolution/signals"
   ],
@@ -90,7 +91,8 @@
       "state/lifecoach/timeline",
       "state/lifecoach/reviews",
       "state/lifecoach/memory-cache",
-      "state/lifecoach/proposals"
+      "state/lifecoach/proposals",
+      "state/lifecoach/system-reviews"
     ]
   }
 }

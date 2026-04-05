@@ -129,6 +129,7 @@ function resolveStateDirectories(env = process.env) {
     reviewsDir: path.join(root, 'reviews'),
     memoryCacheDir: path.join(root, 'memory-cache'),
     proposalsDir: path.join(root, 'proposals'),
+    systemReviewsDir: path.join(root, 'system-reviews'),
   };
 }
 

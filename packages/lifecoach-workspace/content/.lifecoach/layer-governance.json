@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "principles": [
+    "single_frontstage_coach",
+    "background_multi_agent_governance",
+    "skill_locality_under_domain_policy",
+    "memory_truth_source_is_structured_records",
+    "controlled_evolution_only_in_low_risk_layers"
+  ],
+  "layers": [
+    {
+      "id": "host_integration",
+      "name": "Host Integration",
+      "description": "OpenClaw 宿主接入与安装分发层，负责容器、路径、配置注入与 surface wiring。",
+      "allowedMutation": "manual_only",
+      "paths": [
+        "packages/lifecoach-installer",
+        "scripts/install-openclaw.js",
+        "package.json"
+      ],
+      "ownedBy": [
+        "installer"
+      ]
+    },
+    {
+      "id": "core_identity_policy",
+      "name": "Core Identity Policy",
+      "description": "人格底色、价值观、边界与高风险约束，决定系统长期不应漂移的部分。",
+      "allowedMutation": "manual_only",
+      "paths": [
+        "packages/lifecoach-workspace/content/prompts/core_identity.md",
+        "packages/lifecoach-workspace/content/prompts/core_values.md",
+        "packages/lifecoach-workspace/content/prompts/core_tone.md",
+        "packages/lifecoach-workspace/content/prompts/core_boundaries.md",
+        "packages/lifecoach-workspace/content/.agents/life-coach.md",
+        "packages/lifecoach-workspace/content/.agents/safety-guardian.md",
+        "packages/lifecoach-workspace/content/knowledge/safety"
+      ],
+      "ownedBy": [
+        "life-coach",
+        "safety-guardian"
+      ]
+    },
+    {
+      "id": "agent_governance",
+      "name": "Agent Governance",
+      "description": "后台治理 agent 的职责与仲裁顺序，决定哪些 agent 可以建议、哪些 agent 可以阻断。",
+      "allowedMutation": "proposal_with_system_review",
+      "paths": [
+        "packages/lifecoach-workspace/content/.agents/memory-curator.md",
+        "packages/lifecoach-workspace/content/.agents/multimodal-router.md",
+        "packages/lifecoach-workspace/content/.agents/reflection-reviewer.md",
+        "packages/lifecoach-workspace/content/evolution/anti-drift-rules.md",
+        "packages/lifecoach-workspace/content/.lifecoach/layer-governance.json"
+      ],
+      "ownedBy": [
+        "memory-curator",
+        "reflection-reviewer",
+        "persona-guardian"
+      ]
+    },
+    {
+      "id": "decision_engine",
+      "name": "Decision Engine",
+      "description": "路由、知识检索、记忆筛选、时间线和 review 等策略层，允许受控自优化。",
+      "allowedMutation": "proposal_allowed",
+      "paths": [
+        "packages/lifecoach-core/src/router",
+        "packages/lifecoach-core/src/retrieval",
+        "packages/lifecoach-core/src/memory",
+        "packages/lifecoach-core/src/evolution",
+        "packages/lifecoach-core/src/logging",
+        "packages/lifecoach-core/src/workspace_bundle.js",
+        "packages/lifecoach-core/src/governance"
+      ],
+      "ownedBy": [
+        "life-coach",
+        "memory-curator",
+        "reflection-reviewer"
+      ]
+    },
+    {
+      "id": "skill_surface",
+      "name": "Skill Surface",
+      "description": "局部 skill 与知识内容层，负责场景化能力，不决定系统的根人格与根边界。",
+      "allowedMutation": "proposal_allowed",
+      "paths": [
+        "packages/lifecoach-workspace/content/skills",
+        "packages/lifecoach-workspace/content/knowledge/frameworks",
+        "packages/lifecoach-workspace/content/knowledge/cases",
+        "packages/lifecoach-workspace/content/knowledge/prompts"
+      ],
+      "ownedBy": [
+        "life-coach"
+      ]
+    },
+    {
+      "id": "user_model_memory",
+      "name": "User Model Memory",
+      "description": "结构化记忆、时间线事件和长期画像层，真相源应来自结构化记录而不是单轮情绪。",
+      "allowedMutation": "runtime_managed",
+      "paths": [
+        "packages/lifecoach-workspace/content/memories",
+        "packages/lifecoach-core/src/state",
+        "packages/lifecoach-core/schemas/memory_record.schema.json",
+        "packages/lifecoach-core/schemas/timeline_record.schema.json",
+        "packages/lifecoach-core/schemas/session_event.schema.json"
+      ],
+      "ownedBy": [
+        "memory-curator"
+      ]
+    },
+    {
+      "id": "surface_adapter",
+      "name": "Surface Adapter",
+      "description": "控制台、增强网关与平台接入页面，负责不同产品触达面，但不改变核心教练脑。",
+      "allowedMutation": "proposal_with_system_review",
+      "paths": [
+        "apps/console",
+        "apps/gateway",
+        "apps/platform",
+        "packages/lifecoach-control-plane",
+        "deploy"
+      ],
+      "ownedBy": [
+        "multimodal-router"
+      ]
+    }
+  ],
+  "arbitration": {
+    "priority": [
+      "core_identity_policy",
+      "agent_governance",
+      "user_model_memory",
+      "decision_engine",
+      "skill_surface",
+      "surface_adapter",
+      "host_integration"
+    ],
+    "agentOrder": [
+      "safety-guardian",
+      "persona-guardian",
+      "memory-curator",
+      "reflection-reviewer",
+      "life-coach"
+    ]
+  },
+  "evolution": {
+    "autoMutableLayers": [
+      "decision_engine",
+      "skill_surface"
+    ],
+    "systemReviewLayers": [
+      "agent_governance",
+      "surface_adapter"
+    ],
+    "blockedLayers": [
+      "core_identity_policy",
+      "host_integration"
+    ]
+  }
+}

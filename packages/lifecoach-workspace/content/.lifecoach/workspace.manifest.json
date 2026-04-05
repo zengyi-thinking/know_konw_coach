@@ -5,9 +5,11 @@
     { "id": "life-coach", "path": ".agents/life-coach.md" },
     { "id": "memory-curator", "path": ".agents/memory-curator.md" },
     { "id": "multimodal-router", "path": ".agents/multimodal-router.md" },
+    { "id": "persona-guardian", "path": ".agents/persona-guardian.md" },
     { "id": "reflection-reviewer", "path": ".agents/reflection-reviewer.md" },
     { "id": "safety-guardian", "path": ".agents/safety-guardian.md" }
   ],
+  "frontstageAgentId": "life-coach",
   "skills": [
     {
       "id": "coach-intake",
@@ -66,11 +68,15 @@
     ".agents/safety-guardian.md",
     "knowledge/safety"
   ],
+  "governance": {
+    "layerManifestPath": ".lifecoach/layer-governance.json"
+  },
   "dynamicStateLinks": {
     "events": "state/lifecoach/events",
     "timeline": "state/lifecoach/timeline",
     "reviews": "state/lifecoach/reviews",
     "memoryCache": "state/lifecoach/memory-cache",
-    "proposals": "state/lifecoach/proposals"
+    "proposals": "state/lifecoach/proposals",
+    "systemReviews": "state/lifecoach/system-reviews"
   }
 }

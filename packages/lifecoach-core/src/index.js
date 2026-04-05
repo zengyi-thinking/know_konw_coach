@@ -21,6 +21,8 @@ const {
 } = require('./paths');
 const { loadWorkspaceBundle } = require('./workspace_bundle');
 const { persistSessionArtifacts } = require('./state/persistence');
+const { readLayerGovernance } = require('./governance/layer_governance');
+const { buildBackstageArbitration } = require('./governance/arbitration');
 
 function buildRuntimePaths(env, workspaceOverride) {
   const workspaceRoot = resolveWorkspaceRoot(env, workspaceOverride);
@@ -45,6 +47,10 @@ function buildTimelineSummary(timeline) {
 
 function buildProposalChanges(routeQuality, review) {
   return [...routeQuality.signals, ...review.issues.map((issue) => ({ type: issue, severity: 'medium' }))];
+}
+
+function shouldGenerateGovernanceProposal(options = {}) {
+  return options.enableGovernanceProposals === true;
 }
 
 function runSession(session, options = {}) {
@@ -110,12 +116,26 @@ function runSession(session, options = {}) {
     timeline,
     adaptivePolicy,
   });
-  const proposal = generatePatchProposal({
-    title: 'routing refinement suggestion',
-    reason: routeQuality.signals.length ? 'route quality signal detected' : 'routine review',
-    targets: ['workspace/skills/' + route.primarySkill + '/route.json'],
-    changes: buildProposalChanges(routeQuality, review),
-  });
+  const layerGovernance = readLayerGovernance(env, options.workspaceRoot);
+  const arbitration = buildBackstageArbitration(layerGovernance, {
+    safety,
+    route,
+    routeQuality,
+    review,
+    memory: memoryWithTimeline,
+  }, workspaceBundle.manifest);
+  const proposal = shouldGenerateGovernanceProposal(options)
+    ? generatePatchProposal({
+        title: 'routing refinement suggestion',
+        reason: routeQuality.signals.length ? 'route quality signal detected' : 'routine review',
+        targets: ['workspace/skills/' + route.primarySkill + '/route.json'],
+        changes: buildProposalChanges(routeQuality, review),
+        env,
+        workspaceRoot: options.workspaceRoot,
+        requestedBy: 'reflection-reviewer',
+        frontstageAgentId: workspaceBundle.manifest.frontstageAgentId || 'life-coach',
+      })
+    : null;
 
   const result = {
     safety,
@@ -133,6 +153,8 @@ function runSession(session, options = {}) {
     upstream,
     runtimePaths,
     workspaceBundle,
+    layerGovernance,
+    arbitration,
   };
 
   if (options.persistArtifacts) {

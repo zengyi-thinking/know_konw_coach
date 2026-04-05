@@ -29,6 +29,7 @@ function inferWorkspaceManifest(workspaceRoot) {
     bundleId: 'openclaw-lifecoach',
     version: 1,
     generated: true,
+    frontstageAgentId: 'life-coach',
     agents: listMarkdownFiles(agentsDir).map((id) => ({
       id,
       path: `.agents/${id}.md`,
@@ -51,6 +52,9 @@ function inferWorkspaceManifest(workspaceRoot) {
       '.agents/safety-guardian.md',
       'knowledge/safety',
     ],
+    governance: {
+      layerManifestPath: '.lifecoach/layer-governance.json',
+    },
     dynamicStateLinks: {
       events: 'state/lifecoach/events',
       timeline: 'state/lifecoach/timeline',

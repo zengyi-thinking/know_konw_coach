@@ -27,7 +27,7 @@ node scripts/install-openclaw.js
 - `app/lifecoach/config`：默认配置
 - `app/lifecoach/schemas`：契约
 - `workspace`：静态 skills / knowledge / prompts / agents
-- `state/lifecoach`：动态事件、timeline、review、proposal、memory cache
+- `state/lifecoach`：动态事件、timeline、review、proposal、memory cache、system review
 
 ## 4. 验证
 
