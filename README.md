@@ -40,9 +40,6 @@ packages/
 根目录还保留了少量兼容入口：
 
 - `scripts/install-openclaw.js`
-- `runtime/tests/run-selftest.js`
-- `install/install.sh`
-- `install/install.ps1`
 
 ## 静态与动态如何协作
 
@@ -71,10 +68,6 @@ openclaw onboard --install-daemon
 ```bash
 node scripts/install-openclaw.js
 ```
-
-兼容入口：
-- `install/install.sh`
-- `install/install.ps1`
 
 安装前校验包结构：
 

@@ -15,9 +15,8 @@ openclaw onboard --install-daemon
 node scripts/install-openclaw.js
 ```
 
-兼容方式：
-- `install/install.sh`
-- `install/install.ps1`
+直接调用 package 安装器也可以：
+- `node packages/lifecoach-installer/install-openclaw.js`
 - `packages/lifecoach-installer/install/install.sh`
 - `packages/lifecoach-installer/install/install.ps1`
 
