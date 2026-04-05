@@ -1,0 +1,21 @@
+# Local env
+.env
+.env.*
+
+# OpenClaw local secrets / state
+secrets.json
+credentials/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Temp
+tmp/
+temp/

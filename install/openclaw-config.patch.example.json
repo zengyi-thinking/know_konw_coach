@@ -1,0 +1,25 @@
+{
+  "agents": {
+    "list": [
+      {
+        "id": "life-coach",
+        "workspace": "~/.openclaw/workspace",
+        "skills": [
+          "coach-intake",
+          "goal-clarify",
+          "weekly-review",
+          "emotional-debrief",
+          "habit-reset",
+          "voice-checkin",
+          "vision-reflection"
+        ]
+      }
+    ]
+  },
+  "env": {
+    "vars": {
+      "LIFECOACH_GATEWAY_BASE_URL": "https://your-gateway.example.com",
+      "LIFECOACH_USER_TOKEN": "replace-with-your-token"
+    }
+  }
+}

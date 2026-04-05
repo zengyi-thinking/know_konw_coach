@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:docs.openclaw.ai)",
+      "Bash(gh repo:*)",
+      "Bash(gh api:*)",
+      "mcp__fetch__fetch"
+    ]
+  }
+}
