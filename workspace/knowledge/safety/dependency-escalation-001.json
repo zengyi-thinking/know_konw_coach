@@ -1,0 +1,12 @@
+{
+  "id": "safety-dependency-escalation-001",
+  "title": "关系依赖升级的安全边界",
+  "type": "safety",
+  "topics": ["依赖风险", "关系边界", "情绪依附"],
+  "scenes": ["离不开对方", "只有对方能让我好", "关系里失去自我"],
+  "riskLevel": "high",
+  "recommendedSkills": ["coach-intake", "emotional-debrief"],
+  "recommendedAgents": ["safety-guardian"],
+  "keywords": ["没有他我不行", "只有她能救我", "我离不开他", "全靠对方", "没有对方就活不下去"],
+  "summary": "用于识别关系中过度依赖升级时的边界风险，并约束回应方式。"
+}

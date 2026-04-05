@@ -1,0 +1,12 @@
+{
+  "id": "safety-family-emotional-blackmail-boundary-001",
+  "title": "家庭情感勒索场景的回应边界",
+  "type": "safety",
+  "topics": ["家庭边界", "情感勒索", "控制", "亏欠感"],
+  "scenes": ["父母用牺牲压人", "被家庭 guilt control", "不顺从就内疚"],
+  "riskLevel": "high",
+  "recommendedSkills": ["coach-intake", "emotional-debrief"],
+  "recommendedAgents": ["safety-guardian"],
+  "keywords": ["都是为了你", "我为你牺牲这么多", "你怎么这么不懂事", "不听话就内疚", "被亲情绑架"],
+  "summary": "用于识别家庭中以牺牲、亏欠和道德压力实施控制时的回应边界。"
+}

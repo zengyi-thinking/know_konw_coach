@@ -1,0 +1,12 @@
+{
+  "id": "framework-diagnostic-onion-001",
+  "title": "剥洋葱式诊断框架",
+  "type": "framework",
+  "topics": ["问题诊断", "认知层", "关系模式", "系统因素"],
+  "scenes": ["问题看不清", "反复卡住", "情绪背后有更深层原因"],
+  "riskLevel": "low",
+  "recommendedSkills": ["coach-intake", "emotional-debrief"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["为什么总是这样", "我也说不清", "表面问题下面还有什么", "一直重复发生"],
+  "summary": "帮助教练从表层表现逐步下探到认知、关系和系统层原因。"
+}

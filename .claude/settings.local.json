@@ -5,7 +5,20 @@
       "WebFetch(domain:docs.openclaw.ai)",
       "Bash(gh repo:*)",
       "Bash(gh api:*)",
-      "mcp__fetch__fetch"
+      "mcp__fetch__fetch",
+      "Bash(mv \"E:/codes/know_konw_coach/亲密关系3个case.docx\" \"E:/codes/know_konw_coach/workspace/knowledge/cases/\")",
+      "Bash(mv \"E:/codes/know_konw_coach/当代最常见的家庭关系3个case以及解决方法 .docx\" \"E:/codes/know_konw_coach/workspace/knowledge/cases/\")",
+      "Bash(mv \"E:/codes/know_konw_coach/职场大场景+3个小case\\(1\\).docx\" \"E:/codes/know_konw_coach/workspace/knowledge/cases/\")",
+      "Bash(mv \"E:/codes/know_konw_coach/专家知识库及垂直领域微调知识库（3万字）\\(1\\).docx\" \"E:/codes/know_konw_coach/docs/\")",
+      "Bash(printf '%s:*)",
+      "Bash(pandoc:*)",
+      "Bash(python:*)",
+      "Bash(printf '%s\\\\n' '---DOCS---')",
+      "Bash(mv \"E:/codes/know_konw_coach/workspace/knowledge/cases/亲密关系3个case.docx\" \"E:/codes/know_konw_coach/workspace/knowledge/cases/intimate-relationship-cases.docx\")",
+      "Bash(mv \"E:/codes/know_konw_coach/workspace/knowledge/cases/亲密关系3个case.md\" \"E:/codes/know_konw_coach/workspace/knowledge/cases/intimate-relationship-cases.md\")",
+      "Bash(mv \"E:/codes/know_konw_coach/workspace/knowledge/cases/当代最常见的家庭关系3个case以及解决方法 .docx\" \"E:/codes/know_konw_coach/workspace/knowledge/cases/family-relationship-cases-and-solutions.docx\")",
+      "Bash(mv \"E:/codes/know_konw_coach/workspace/knowledge/cases/当代最常见的家庭关系3个case以及解决方法 .md\" \"E:/codes/know_konw_coach/workspace/knowledge/cases/family-relationship-cases-and-solutions.md\")",
+      "Bash(mv \"E:/codes/know_konw_coach/workspace/knowledge/cases/职场大场景+3个小case\\(1\\).docx\" \"E:/codes/know_konw_coach/workspace/knowledge/cases/workplace-scenarios-and-cases.docx\")"
     ]
   }
 }
