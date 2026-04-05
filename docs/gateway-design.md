@@ -14,6 +14,11 @@
 - 无 key：基础文本版
 - 有 key：自动升级为多模态增强版
 
+当前联调结论：
+- text → chat：已真实打通
+- audio → TTS → ASR：已真实打通
+- image → vision：当前网关对测试图片输入仍返回 400/文件下载失败，需按网关实际支持的图片输入格式继续适配
+
 建议后续扩展：
 - chat model
 - vision model
