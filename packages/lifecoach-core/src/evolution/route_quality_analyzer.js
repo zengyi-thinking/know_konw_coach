@@ -3,6 +3,7 @@ function analyzeRouteQuality(session) {
   const event = session.event || {};
   const timeline = session.timeline || {};
   const adaptivePolicy = session.adaptivePolicy || {};
+  const flavorScores = session.flavorScores || {};
 
   if (session.safety?.needsSafetyMode && session.route?.primarySkill !== 'safety') {
     signals.push({ type: 'safety_override_needed', severity: 'high' });
@@ -34,6 +35,14 @@ function analyzeRouteQuality(session) {
 
   if (timeline.canClose && timeline.phase !== 'closed' && timeline.activeTimeline?.status !== 'closed') {
     signals.push({ type: 'closure_overdue', severity: 'medium' });
+  }
+
+  if ((flavorScores.overall || 100) < 75) {
+    signals.push({ type: 'flavor_under_target', severity: 'medium' });
+  }
+
+  if ((flavorScores.dimensions?.actionability?.score || 100) < 70) {
+    signals.push({ type: 'actionability_under_target', severity: 'medium' });
   }
 
   return {

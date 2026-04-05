@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["status", "practiceSignal", "followupMode", "continuityLinked", "actionReady", "evidence"],
+  "properties": {
+    "status": { "type": "string" },
+    "practiceSignal": { "type": "string" },
+    "followupMode": { "type": "string" },
+    "continuityLinked": { "type": "boolean" },
+    "actionReady": { "type": "boolean" },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

@@ -86,6 +86,9 @@ async function run() {
   assert(goal.route.primarySkill === 'goal-clarify', 'goal-clarify 路由失败');
   assert(goal.timeline.activeTimeline.id === 'timeline-1', '默认 timeline 创建失败');
   assert(typeof goal.adaptivePolicy.rationalWeight === 'number', 'adaptive policy 默认生成失败');
+  assert(goal.flavorScores && goal.flavorScores.overall >= 70, 'flavor overall score 未生成或过低');
+  assert(goal.flavorScores.dimensions.actionability.score >= 80, 'actionability score 计算异常');
+  assert(goal.timelineOutcome && goal.timelineOutcome.status === 'active', 'timeline outcome default 状态异常');
   assert(goal.proposal === null, '普通会话不应默认生成治理 proposal');
   assert(goal.persistence && goal.persistence.files.length === 4, 'dynamic state artifacts 持久化失败');
   const persistedEvent = JSON.parse(fs.readFileSync(goal.persistence.files[0], 'utf8'));
@@ -103,6 +106,16 @@ async function run() {
   const weekly = runSession(loadJson('weekly-review.json'), { workspaceRoot, gatewayOptions: { mockResponse: { message: 'ok' } } });
   assert(weekly.route.primarySkill === 'weekly-review', 'weekly-review 路由失败');
   tests.push('weekly-review route ok');
+
+  const lowActionability = runSession(loadJson('flavor-low-actionability.json'), {
+    workspaceRoot,
+    gatewayOptions: { mockResponse: { message: 'ok' } }
+  });
+  assert(lowActionability.flavorScores.dimensions.actionability.score < 70, '低 actionability 场景未被识别');
+  assert(lowActionability.review.flavorOptimization.status === 'needs_tuning', 'flavor optimization 状态错误');
+  assert(lowActionability.review.flavorOptimization.focus.some((item) => item.dimension === 'actionability'), 'flavor optimization 未聚焦 actionability');
+  assert(lowActionability.review.flavorOptimization.focus.every((item) => ['decision_engine', 'skill_surface', 'user_model_memory'].includes(item.recommendation.targetLayer)), 'optimization target layer 越界');
+  tests.push('flavor optimization loop ok');
 
   const habit = runSession(loadJson('habit-reset.json'), { workspaceRoot, gatewayOptions: { mockResponse: { message: 'ok' } } });
   assert(habit.route.primarySkill === 'habit-reset', 'habit-reset 路由失败');
@@ -129,6 +142,8 @@ async function run() {
   assert(feedbackSession.timeline.phase === 'feedback', 'timeline feedback phase 失败');
   assert(feedbackSession.adaptivePolicy.emotionalWeight > feedbackSession.adaptivePolicy.rationalWeight, '负反馈后情感权重未提高');
   assert(feedbackSession.review.issues.includes('no_revision_after_failed_attempt'), '失败尝试后 review 信号缺失');
+  assert(feedbackSession.timelineOutcome.status === 'stalled', 'timeline feedback outcome 应为 stalled');
+  assert(feedbackSession.timelineOutcome.followupMode === 'revise', 'timeline feedback followupMode 应为 revise');
   tests.push('timeline feedback loop ok');
 
   const timelineClosure = loadJson('timeline-closure.json');
@@ -139,6 +154,7 @@ async function run() {
   });
   assert(closureSession.timeline.activeTimeline.status === 'closed', 'timeline closure 失败');
   assert(closureSession.timeline.phase === 'closed', 'timeline closed phase 失败');
+  assert(closureSession.timelineOutcome.status === 'closed', 'timeline closure outcome 应为 closed');
   tests.push('timeline closure ok');
 
   const blockedProposal = generatePatchProposal({
@@ -156,6 +172,7 @@ async function run() {
   assert(skillLayer && skillLayer.id === 'skill_surface', 'layer governance skill mapping 失败');
   tests.push('guardrail block ok');
   tests.push('layer governance mapping ok');
+  tests.push('flavor metrics scoring ok');
 
   const systemReviewProposal = generatePatchProposal({
     title: 'surface adapter tweak',

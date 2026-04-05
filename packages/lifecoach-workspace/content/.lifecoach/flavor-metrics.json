@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "scoreRange": {
+    "min": 0,
+    "max": 100
+  },
+  "bands": [
+    {
+      "id": "underseasoned",
+      "min": 0,
+      "max": 54,
+      "description": "还没有真正对味，用户可能只感受到普通回答。"
+    },
+    {
+      "id": "warming_up",
+      "min": 55,
+      "max": 74,
+      "description": "开始贴近用户，但还没有形成稳定的教练感。"
+    },
+    {
+      "id": "on_flavor",
+      "min": 75,
+      "max": 89,
+      "description": "已经对味，用户能感受到稳定的教练帮助。"
+    },
+    {
+      "id": "deeply_flavored",
+      "min": 90,
+      "max": 100,
+      "description": "高度对味，既理解用户又能推动实践。"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "emotional_attunement",
+      "weight": 0.2,
+      "description": "是否接住用户情绪与当下状态。"
+    },
+    {
+      "id": "clarity_gain",
+      "weight": 0.18,
+      "description": "是否让用户从模糊走向更清楚。"
+    },
+    {
+      "id": "actionability",
+      "weight": 0.18,
+      "description": "是否落到现实可执行的下一步。"
+    },
+    {
+      "id": "boundary_correctness",
+      "weight": 0.16,
+      "description": "是否守住 coaching 边界与风险收缩。"
+    },
+    {
+      "id": "skill_fit",
+      "weight": 0.14,
+      "description": "当前主 skill 是否匹配用户场景。"
+    },
+    {
+      "id": "continuity_strength",
+      "weight": 0.14,
+      "description": "是否把这轮帮助放回长期时间线。"
+    }
+  ],
+  "timelineOutcomes": {
+    "progress": {
+      "status": "progressing",
+      "practiceSignal": "positive",
+      "followupMode": "continue"
+    },
+    "failed": {
+      "status": "stalled",
+      "practiceSignal": "negative",
+      "followupMode": "revise"
+    },
+    "closed": {
+      "status": "closed",
+      "practiceSignal": "positive",
+      "followupMode": "close"
+    },
+    "default": {
+      "status": "active",
+      "practiceSignal": "neutral",
+      "followupMode": "clarify"
+    }
+  },
+  "optimizationPolicy": {
+    "minScoreForHealthySession": 75,
+    "focusThreshold": 68,
+    "maxOptimizationTargets": 3,
+    "optimizeOnlyLayers": [
+      "decision_engine",
+      "skill_surface",
+      "user_model_memory"
+    ]
+  }
+}

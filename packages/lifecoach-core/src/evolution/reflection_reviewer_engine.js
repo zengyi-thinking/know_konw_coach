@@ -3,6 +3,8 @@ function buildReviewReport(session) {
   const event = session.event || {};
   const timeline = session.timeline || {};
   const adaptivePolicy = session.adaptivePolicy || {};
+  const flavorScores = session.flavorScores || null;
+  const timelineOutcome = session.timelineOutcome || null;
 
   if ((session.output?.reply || '').length > 280) {
     issues.push('reply_too_long');
@@ -38,6 +40,8 @@ function buildReviewReport(session) {
 
   return {
     issues,
+    flavorScores,
+    timelineOutcome,
     suggestions: issues.map((issue) => ({
       issue,
       suggestion: issue === 'reply_too_long'

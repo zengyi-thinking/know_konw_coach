@@ -6,6 +6,7 @@ const repoRoot = path.resolve(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'packages', 'lifecoach-installer', 'manifest', 'lifecoach.bundle.json'), 'utf8'));
 const workspaceManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'packages', 'lifecoach-workspace', 'content', '.lifecoach', 'workspace.manifest.json'), 'utf8'));
 const governanceManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'packages', 'lifecoach-workspace', 'content', '.lifecoach', 'layer-governance.json'), 'utf8'));
+const flavorMetrics = JSON.parse(fs.readFileSync(path.join(repoRoot, 'packages', 'lifecoach-workspace', 'content', '.lifecoach', 'flavor-metrics.json'), 'utf8'));
 
 function assert(condition, message) {
   if (!condition) {
@@ -67,6 +68,7 @@ function validatePackageLayout() {
   assertExists(path.join('packages', 'lifecoach-installer', 'install-openclaw.js'));
   assertExists(path.join('packages', 'lifecoach-workspace', 'content', '.lifecoach', 'workspace.manifest.json'));
   assertExists(path.join('packages', 'lifecoach-workspace', 'content', '.lifecoach', 'layer-governance.json'));
+  assertExists(path.join('packages', 'lifecoach-workspace', 'content', '.lifecoach', 'flavor-metrics.json'));
 }
 
 function validateLayerGovernance() {
@@ -97,10 +99,19 @@ function validateLayerGovernance() {
   assert((workspaceManifest.agents || []).some((agent) => agent.id === 'persona-guardian'), 'workspace manifest missing persona-guardian');
 }
 
+function validateFlavorMetrics() {
+  const dimensions = flavorMetrics.dimensions || [];
+  assert(dimensions.length >= 5, 'flavor metrics dimensions too few');
+  const totalWeight = dimensions.reduce((sum, item) => sum + Number(item.weight || 0), 0);
+  assert(Math.abs(totalWeight - 1) < 0.001, `flavor metrics weights must sum to 1, got ${totalWeight}`);
+  assert((workspaceManifest.learning || {}).flavorMetricsPath === '.lifecoach/flavor-metrics.json', 'workspace manifest learning.flavorMetricsPath mismatch');
+}
+
 try {
   validateManifestSources();
   validatePackageLayout();
   validateLayerGovernance();
+  validateFlavorMetrics();
   validateAgents();
   validateSkillTriples();
   validateKnowledgePairs();

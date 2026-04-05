@@ -1,0 +1,17 @@
+{
+  "sessionId": "fixture-flavor-low-actionability",
+  "timestamp": "2026-04-05T13:00:00.000Z",
+  "input": {
+    "modality": "text",
+    "text": "我知道自己一直拖着，但现在还是不知道先做哪一步。",
+    "sceneTags": ["goal_clarity", "blocked"]
+  },
+  "userProfile": {
+    "longTermGoal": "建立稳定执行节奏",
+    "preference": "希望回应直接一点"
+  },
+  "output": {
+    "reply": "你需要先想清楚很多事情，之后我们再继续。",
+    "coachMode": true
+  }
+}

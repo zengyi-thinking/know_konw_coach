@@ -4,6 +4,37 @@
   "required": ["issues", "suggestions"],
   "properties": {
     "issues": { "type": "array", "items": { "type": "string" } },
+    "flavorScores": { "$ref": "./flavor_scorecard.schema.json" },
+    "timelineOutcome": { "$ref": "./timeline_outcome.schema.json" },
+    "flavorOptimization": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string" },
+        "focus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimension": { "type": "string" },
+              "score": { "type": "number" },
+              "reasons": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "recommendation": {
+                "type": "object",
+                "properties": {
+                  "dimension": { "type": "string" },
+                  "action": { "type": "string" },
+                  "recommendation": { "type": "string" },
+                  "targetLayer": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "suggestions": {
       "type": "array",
       "items": {

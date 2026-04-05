@@ -23,6 +23,9 @@ const { loadWorkspaceBundle } = require('./workspace_bundle');
 const { persistSessionArtifacts } = require('./state/persistence');
 const { readLayerGovernance } = require('./governance/layer_governance');
 const { buildBackstageArbitration } = require('./governance/arbitration');
+const { readFlavorMetrics, computeFlavorScores } = require('./learning/flavor_scorer');
+const { evaluateTimelineOutcome } = require('./learning/timeline_outcome_evaluator');
+const { buildFlavorOptimizationPlan } = require('./learning/flavor_optimizer');
 
 function buildRuntimePaths(env, workspaceOverride) {
   const workspaceRoot = resolveWorkspaceRoot(env, workspaceOverride);
@@ -116,6 +119,39 @@ function runSession(session, options = {}) {
     timeline,
     adaptivePolicy,
   });
+  const flavorMetrics = readFlavorMetrics(env, options.workspaceRoot);
+  const flavorScores = computeFlavorScores({
+    session,
+    route,
+    safety,
+    knowledgeHits,
+    event: eventWithPolicy,
+    timeline,
+    memory: memoryWithTimeline,
+    adaptivePolicy,
+    routeQuality,
+    review,
+  }, flavorMetrics);
+  const timelineOutcome = evaluateTimelineOutcome({
+    session,
+    event: eventWithPolicy,
+    timeline,
+  }, flavorMetrics);
+  const flavorOptimization = buildFlavorOptimizationPlan(flavorScores, {
+    route,
+    timelineOutcome,
+  });
+  routeQuality.signals.push(...flavorOptimization.focus.map((item) => ({
+    type: `optimize_${item.dimension}`,
+    severity: 'low',
+  })));
+  review.flavorScores = flavorScores;
+  review.timelineOutcome = timelineOutcome;
+  review.flavorOptimization = flavorOptimization;
+  eventWithPolicy.flavorSnapshot = {
+    overall: flavorScores.overall,
+    band: flavorScores.band,
+  };
   const layerGovernance = readLayerGovernance(env, options.workspaceRoot);
   const arbitration = buildBackstageArbitration(layerGovernance, {
     safety,
@@ -148,6 +184,9 @@ function runSession(session, options = {}) {
     routeQuality,
     review,
     proposal,
+    flavorScores,
+    flavorOptimization,
+    timelineOutcome,
     gateway,
     capabilities,
     upstream,

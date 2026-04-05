@@ -55,6 +55,9 @@ function inferWorkspaceManifest(workspaceRoot) {
     governance: {
       layerManifestPath: '.lifecoach/layer-governance.json',
     },
+    learning: {
+      flavorMetricsPath: '.lifecoach/flavor-metrics.json',
+    },
     dynamicStateLinks: {
       events: 'state/lifecoach/events',
       timeline: 'state/lifecoach/timeline',

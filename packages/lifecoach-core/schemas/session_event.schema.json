@@ -14,6 +14,13 @@
     "feedbackSignal": { "type": ["string", "null"] },
     "outcomeSignal": { "type": ["string", "null"] },
     "predictionSnapshot": { "$ref": "./prediction_record.schema.json" },
+    "flavorSnapshot": {
+      "type": ["object", "null"],
+      "properties": {
+        "overall": { "type": "number" },
+        "band": { "type": "string" }
+      }
+    },
     "policySnapshot": {
       "type": ["object", "null"],
       "properties": {

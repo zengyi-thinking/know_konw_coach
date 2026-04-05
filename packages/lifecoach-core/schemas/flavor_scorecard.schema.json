@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["overall", "band", "dimensions", "optimizationTargets"],
+  "properties": {
+    "overall": { "type": "number" },
+    "band": { "type": "string" },
+    "bandDescription": { "type": "string" },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "weight", "score", "reasons"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "weight": { "type": "number" },
+          "score": { "type": "number" },
+          "reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "optimizationTargets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["dimension", "score"],
+        "properties": {
+          "dimension": { "type": "string" },
+          "score": { "type": "number" },
+          "reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

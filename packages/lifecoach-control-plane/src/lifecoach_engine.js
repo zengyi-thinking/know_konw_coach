@@ -2,6 +2,10 @@ const path = require('path');
 const crypto = require('crypto');
 const { runSession } = require('../../lifecoach-core/src');
 
+function resolveWorkspaceRootForControlPlane() {
+  return path.resolve(__dirname, '..', '..', 'lifecoach-workspace', 'content');
+}
+
 function resolveControlPlaneStateRoot(env = process.env) {
   if (env.LIFECOACH_CONTROL_PLANE_STATE_ROOT) {
     return path.resolve(env.LIFECOACH_CONTROL_PLANE_STATE_ROOT);
@@ -123,12 +127,15 @@ function createSessionInput(body) {
 function runLifecoachConversation(body, env, context = {}) {
   const session = createSessionInput(body);
   const stateRoot = context.stateRoot || resolveControlPlaneStateRoot(env);
+  const workspaceRoot = context.workspaceRoot || resolveWorkspaceRootForControlPlane();
   const result = runSession(session, {
     env: {
       ...process.env,
       ...env,
+      LIFECOACH_WORKSPACE_ROOT: workspaceRoot,
       LIFECOACH_STATE_ROOT: stateRoot,
     },
+    workspaceRoot,
     gatewayOptions: {
       mockResponse: { message: 'control-plane-local-mock' },
     },
@@ -149,4 +156,5 @@ function runLifecoachConversation(body, env, context = {}) {
 module.exports = {
   runLifecoachConversation,
   resolveControlPlaneStateRoot,
+  resolveWorkspaceRootForControlPlane,
 };
