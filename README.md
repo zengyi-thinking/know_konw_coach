@@ -4,10 +4,11 @@
 
 它不是 OpenClaw 本体，而是一套可安装到 `~/.openclaw/workspace` 的增强骨架，包含：
 - life coach agents
-- skills 模板
+- skills 三件套（`SKILL.md` + `route.json` + `response_schema.json`）
 - memories 模板
-- prompts / soul 资产
-- knowledge 目录结构
+- 轻量 prompts / core 规则卡片
+- knowledge block + metadata
+- 最小 runtime 执行层与自测入口
 - 安装脚本与配置模板
 
 ## 适用场景
@@ -56,6 +57,7 @@ Windows 建议优先使用 WSL2。
 config/      OpenClaw 配置模板与网关示例
 install/     安装脚本与接入说明
 docs/        架构和安全设计文档
+runtime/     最小执行层、自测脚本与 schema
 workspace/   将被安装到 ~/.openclaw/workspace 的核心内容
 examples/    配置片段与使用示例
 ```
@@ -68,21 +70,23 @@ workspace/
 ├─ skills/
 ├─ memories/
 ├─ knowledge/
-└─ prompts/
+├─ prompts/
+└─ evolution/
 ```
 
 ## 当前状态
 
-当前版本是首版工程骨架，重点是：
-- 结构完整
-- 可继续扩展
-- 便于后续逐步填入更专业的 life coach 内容
+当前版本已包含一个可运行的最小闭环，重点是：
+- 轻量 runtime 资产，便于 OpenClaw 调用
+- skills 三件套与 knowledge metadata
+- 最小 routing / retrieval / memory / evolution 执行层
+- 本地自测入口 `node runtime/tests/run-selftest.js`
 
 后续你可以继续补充：
-- 更完整的 prompts
-- 更专业的教练方法论
-- 更深的记忆与复盘机制
-- 代理网关与多模态接入细节
+- 更强的回复生成层
+- 更细的高风险安全分级
+- 更深的记忆净化与长期冲突处理
+- 代理网关与多模态实际调用适配
 
 ## 后续自定义建议
 

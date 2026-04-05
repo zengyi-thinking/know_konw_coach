@@ -1,0 +1,27 @@
+{
+  "sessionId": "fixture-goal-clarify",
+  "timestamp": "2026-04-05T10:00:00.000Z",
+  "input": {
+    "modality": "text",
+    "text": "我现在方向很多，很乱，不知道从哪开始。",
+    "sceneTags": ["goal_clarity"]
+  },
+  "env": {
+    "CREATION_AI_BASE_URL": "https://ai.t8star.cn/v1",
+    "CREATION_AI_API_KEY": "test-key",
+    "CREATION_AI_CHAT_MODEL": "gpt-4o",
+    "CREATION_AI_VISION_MODEL": "gemini-2.5-flash",
+    "CREATION_AI_IMAGE_MODEL": "doubao-seedream-4-0-250828",
+    "CREATION_AI_VIDEO_MODEL": "veo3.1-fast",
+    "CREATION_AI_TTS_MODEL": "tts-1",
+    "CREATION_AI_ASR_MODEL": "whisper-1"
+  },
+  "userProfile": {
+    "longTermGoal": "建立稳定的个人成长节奏",
+    "preference": "希望回应直接一点"
+  },
+  "output": {
+    "reply": "我们先收束成一个最重要的目标。",
+    "nextAction": "写下当前最重要的一件事"
+  }
+}

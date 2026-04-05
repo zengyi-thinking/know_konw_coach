@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["sessionId", "timestamp", "modality"],
+  "properties": {
+    "sessionId": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "modality": { "type": "string" },
+    "textPreview": { "type": "string" },
+    "selectedSkill": { "type": ["string", "null"] }
+  }
+}

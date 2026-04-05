@@ -1,0 +1,24 @@
+{
+  "sceneTags": [
+    "intake",
+    "new_user",
+    "relationship_start"
+  ],
+  "keywords": [
+    "了解一下我",
+    "认识一下我的情况",
+    "长期教练关系",
+    "先了解我"
+  ],
+  "excludeKeywords": [
+    "吵完",
+    "这周复盘"
+  ],
+  "priority": 80,
+  "modality": [
+    "text",
+    "audio",
+    "image",
+    "file"
+  ]
+}

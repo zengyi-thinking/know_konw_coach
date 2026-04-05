@@ -1,0 +1,24 @@
+{
+  "sceneTags": [
+    "review",
+    "weekly_review",
+    "retrospective"
+  ],
+  "keywords": [
+    "这周",
+    "复盘",
+    "总结一下这周",
+    "重新理清节奏"
+  ],
+  "excludeKeywords": [
+    "刚才和",
+    "刚刚被"
+  ],
+  "priority": 85,
+  "modality": [
+    "text",
+    "audio",
+    "image",
+    "file"
+  ]
+}

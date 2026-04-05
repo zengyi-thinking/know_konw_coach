@@ -1,0 +1,12 @@
+{
+  "id": "framework-emotional-debrief-001",
+  "title": "情绪事件复盘框架",
+  "type": "framework",
+  "topics": ["情绪复盘", "触发点", "自动化想法"],
+  "scenes": ["冲突后复盘", "情绪波动", "关系事件"],
+  "riskLevel": "medium",
+  "recommendedSkills": ["emotional-debrief"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["很乱", "被刺到", "缓不过来", "吵架"],
+  "summary": "帮助用户把情绪事件从混乱体验整理成可理解、可调整的模式。"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "framework-goal-clarity-001",
+  "title": "目标澄清最小框架",
+  "type": "framework",
+  "topics": ["目标澄清", "优先级", "行动设计"],
+  "scenes": ["目标模糊", "方向太多", "无法聚焦"],
+  "riskLevel": "low",
+  "recommendedSkills": ["goal-clarify"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["不知道从哪开始", "很乱", "想做很多事"],
+  "summary": "帮助用户把模糊愿望澄清为可执行目标和下一步行动。"
+}

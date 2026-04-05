@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "required": [
+    "scene_summary",
+    "text_content",
+    "context_clues",
+    "request_type",
+    "handoff_skill"
+  ],
+  "properties": {
+    "scene_summary": {
+      "type": "string"
+    },
+    "text_content": {
+      "type": "array"
+    },
+    "context_clues": {
+      "type": "array"
+    },
+    "request_type": {
+      "type": "string"
+    },
+    "handoff_skill": {
+      "type": "string"
+    }
+  }
+}

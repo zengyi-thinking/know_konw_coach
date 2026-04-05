@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "required": [
+    "goal_definition",
+    "importance",
+    "key_blocker",
+    "available_resources",
+    "priority",
+    "next_action"
+  ],
+  "properties": {
+    "goal_definition": {
+      "type": "string"
+    },
+    "importance": {
+      "type": "string"
+    },
+    "key_blocker": {
+      "type": "string"
+    },
+    "available_resources": {
+      "type": "array"
+    },
+    "priority": {
+      "type": "string"
+    },
+    "next_action": {
+      "type": "string"
+    }
+  }
+}

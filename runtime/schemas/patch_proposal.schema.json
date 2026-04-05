@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["title", "reason", "targets", "mode"],
+  "properties": {
+    "title": { "type": "string" },
+    "reason": { "type": "string" },
+    "targets": { "type": "array", "items": { "type": "string" } },
+    "changes": { "type": "array" },
+    "mode": { "type": "string", "enum": ["proposal_only"] }
+  }
+}

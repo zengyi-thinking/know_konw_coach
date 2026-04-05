@@ -1,0 +1,23 @@
+{
+  "sceneTags": [
+    "habit_reset",
+    "execution_recovery"
+  ],
+  "keywords": [
+    "断掉了",
+    "恢复节奏",
+    "重新开始",
+    "掉线",
+    "中断了"
+  ],
+  "excludeKeywords": [
+    "我不想活了"
+  ],
+  "priority": 88,
+  "modality": [
+    "text",
+    "audio",
+    "image",
+    "file"
+  ]
+}

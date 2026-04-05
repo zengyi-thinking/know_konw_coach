@@ -1,0 +1,12 @@
+{
+  "sceneTags": [
+    "vision",
+    "image_input"
+  ],
+  "keywords": [],
+  "excludeKeywords": [],
+  "priority": 70,
+  "modality": [
+    "image"
+  ]
+}

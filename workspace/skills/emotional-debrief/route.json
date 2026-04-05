@@ -1,0 +1,25 @@
+{
+  "sceneTags": [
+    "emotion",
+    "event_debrief",
+    "trigger"
+  ],
+  "keywords": [
+    "很乱",
+    "被刺到",
+    "缓不过来",
+    "吵完",
+    "很难受",
+    "触发"
+  ],
+  "excludeKeywords": [
+    "这周复盘"
+  ],
+  "priority": 95,
+  "modality": [
+    "text",
+    "audio",
+    "image",
+    "file"
+  ]
+}

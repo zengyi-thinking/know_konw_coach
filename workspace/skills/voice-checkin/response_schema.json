@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "required": [
+    "transcript_summary",
+    "emotion_signal",
+    "request_type",
+    "handoff_skill"
+  ],
+  "properties": {
+    "transcript_summary": {
+      "type": "string"
+    },
+    "emotion_signal": {
+      "type": "string"
+    },
+    "request_type": {
+      "type": "string"
+    },
+    "handoff_skill": {
+      "type": "string"
+    }
+  }
+}

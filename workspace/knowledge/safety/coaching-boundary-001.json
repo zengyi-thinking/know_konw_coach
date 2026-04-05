@@ -1,0 +1,12 @@
+{
+  "id": "safety-coaching-boundary-001",
+  "title": "Coaching 安全边界规则",
+  "type": "safety",
+  "topics": ["边界", "高风险", "依赖风险"],
+  "scenes": ["危机语言", "依赖表达", "伪专业风险"],
+  "riskLevel": "high",
+  "recommendedSkills": [],
+  "recommendedAgents": ["safety-guardian"],
+  "keywords": ["想伤害自己", "只有你能帮我", "帮我诊断", "我不想活了"],
+  "summary": "用于高风险安全场景的边界判断和响应约束。"
+}

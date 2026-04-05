@@ -21,13 +21,14 @@
   },
   "env": {
     "vars": {
-      "LIFECOACH_GATEWAY_BASE_URL": "https://your-gateway.example.com",
-      "LIFECOACH_USER_TOKEN": "replace-with-your-token",
-      "LIFECOACH_CHAT_MODEL": "replace-with-chat-model",
-      "LIFECOACH_VISION_MODEL": "replace-with-vision-model",
-      "LIFECOACH_AUDIO_MODEL": "replace-with-audio-model",
-      "LIFECOACH_IMAGE_MODEL": "replace-with-image-model",
-      "LIFECOACH_DOCUMENT_MODEL": "replace-with-document-model"
+      "CREATION_AI_BASE_URL": "https://your-gateway.example.com/v1",
+      "CREATION_AI_API_KEY": "replace-with-your-api-key",
+      "CREATION_AI_CHAT_MODEL": "replace-with-chat-model",
+      "CREATION_AI_VISION_MODEL": "replace-with-vision-model",
+      "CREATION_AI_IMAGE_MODEL": "replace-with-image-model",
+      "CREATION_AI_VIDEO_MODEL": "replace-with-video-model",
+      "CREATION_AI_TTS_MODEL": "replace-with-tts-model",
+      "CREATION_AI_ASR_MODEL": "replace-with-asr-model"
     }
   }
 }

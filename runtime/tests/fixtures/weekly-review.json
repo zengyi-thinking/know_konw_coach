@@ -1,0 +1,17 @@
+{
+  "sessionId": "fixture-weekly-review",
+  "timestamp": "2026-04-05T10:10:00.000Z",
+  "input": {
+    "modality": "text",
+    "text": "帮我复盘一下这周，我想重新理清节奏。",
+    "sceneTags": ["review", "weekly_review"]
+  },
+  "userProfile": {
+    "longTermGoal": "保持稳定执行",
+    "pattern": "周中容易分心"
+  },
+  "output": {
+    "reply": "我们先看这周真正推进了什么。",
+    "nextAction": "列出这周最有效的一件做法"
+  }
+}

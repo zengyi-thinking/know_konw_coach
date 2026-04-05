@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "required": [
+    "event_breakdown",
+    "emotion",
+    "trigger",
+    "automatic_thought",
+    "alternative_view",
+    "next_response"
+  ],
+  "properties": {
+    "event_breakdown": {
+      "type": "string"
+    },
+    "emotion": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string"
+    },
+    "automatic_thought": {
+      "type": "string"
+    },
+    "alternative_view": {
+      "type": "string"
+    },
+    "next_response": {
+      "type": "string"
+    }
+  }
+}

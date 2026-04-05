@@ -1,0 +1,12 @@
+{
+  "env": {
+    "CREATION_AI_BASE_URL": "https://ai.t8star.cn/v1",
+    "CREATION_AI_API_KEY": "test-key",
+    "CREATION_AI_CHAT_MODEL": "gpt-4o",
+    "CREATION_AI_VISION_MODEL": "gemini-2.5-flash",
+    "CREATION_AI_IMAGE_MODEL": "doubao-seedream-4-0-250828",
+    "CREATION_AI_VIDEO_MODEL": "veo3.1-fast",
+    "CREATION_AI_TTS_MODEL": "tts-1",
+    "CREATION_AI_ASR_MODEL": "whisper-1"
+  }
+}

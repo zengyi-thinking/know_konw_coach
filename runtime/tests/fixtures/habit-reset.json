@@ -1,0 +1,17 @@
+{
+  "sessionId": "fixture-habit-reset",
+  "timestamp": "2026-04-05T10:15:00.000Z",
+  "input": {
+    "modality": "text",
+    "text": "我最近习惯断掉了，想恢复节奏重新开始。",
+    "sceneTags": ["habit_reset"]
+  },
+  "userProfile": {
+    "longTermGoal": "恢复晨间习惯",
+    "boundary": "不要羞耻式推进"
+  },
+  "output": {
+    "reply": "我们先把恢复门槛降到最低。",
+    "nextAction": "明早只做2分钟启动动作"
+  }
+}

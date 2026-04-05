@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "required": [
+    "weekly_summary",
+    "effective_strategies",
+    "blocker_patterns",
+    "emotion_execution_link",
+    "next_week_actions"
+  ],
+  "properties": {
+    "weekly_summary": {
+      "type": "string"
+    },
+    "effective_strategies": {
+      "type": "array"
+    },
+    "blocker_patterns": {
+      "type": "array"
+    },
+    "emotion_execution_link": {
+      "type": "string"
+    },
+    "next_week_actions": {
+      "type": "array"
+    }
+  }
+}

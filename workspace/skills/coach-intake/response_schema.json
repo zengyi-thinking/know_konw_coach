@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "required": [
+    "current_topic",
+    "long_term_goals",
+    "blockers",
+    "communication_preferences",
+    "boundaries",
+    "followup_focus"
+  ],
+  "properties": {
+    "current_topic": {
+      "type": "string"
+    },
+    "long_term_goals": {
+      "type": "array"
+    },
+    "blockers": {
+      "type": "array"
+    },
+    "communication_preferences": {
+      "type": "array"
+    },
+    "boundaries": {
+      "type": "array"
+    },
+    "followup_focus": {
+      "type": "array"
+    }
+  }
+}

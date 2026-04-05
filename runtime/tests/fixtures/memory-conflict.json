@@ -1,0 +1,28 @@
+{
+  "existingMemories": [
+    {
+      "id": "memory-preference-1",
+      "type": "preference",
+      "content": "用户喜欢温和铺垫",
+      "confidence": 0.8,
+      "status": "active",
+      "evidenceCount": 2
+    }
+  ],
+  "session": {
+    "sessionId": "fixture-memory-conflict",
+    "timestamp": "2026-04-05T10:25:00.000Z",
+    "input": {
+      "modality": "text",
+      "text": "你直接一点，不要绕。",
+      "sceneTags": ["intake"]
+    },
+    "userProfile": {
+      "preference": "希望回应直接一点"
+    },
+    "output": {
+      "reply": "后续我会更直接。",
+      "nextAction": "继续用直接风格推进"
+    }
+  }
+}

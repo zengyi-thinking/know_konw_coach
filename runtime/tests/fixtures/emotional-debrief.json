@@ -1,0 +1,17 @@
+{
+  "sessionId": "fixture-emotional-debrief",
+  "timestamp": "2026-04-05T10:05:00.000Z",
+  "input": {
+    "modality": "text",
+    "text": "昨天吵完之后我一直很乱，感觉被刺到了，缓不过来。",
+    "sceneTags": ["emotion", "trigger"]
+  },
+  "userProfile": {
+    "pattern": "冲突后容易反复回想",
+    "preference": "先承接再分析"
+  },
+  "output": {
+    "reply": "我们先把这次事件拆开看。",
+    "nextAction": "写下最触发你的那一句话"
+  }
+}

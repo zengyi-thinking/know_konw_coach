@@ -1,0 +1,12 @@
+{
+  "id": "framework-habit-reset-001",
+  "title": "习惯重启最小框架",
+  "type": "framework",
+  "topics": ["习惯重启", "执行恢复", "最小动作"],
+  "scenes": ["计划中断", "执行掉线", "恢复节奏"],
+  "riskLevel": "low",
+  "recommendedSkills": ["habit-reset"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["断掉了", "恢复节奏", "重新开始"],
+  "summary": "帮助用户在中断后用低阻力方式恢复行动节奏。"
+}

@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "required": [
+    "interruption_reason",
+    "minimum_restart_action",
+    "lowered_barrier",
+    "next_checkpoint"
+  ],
+  "properties": {
+    "interruption_reason": {
+      "type": "string"
+    },
+    "minimum_restart_action": {
+      "type": "string"
+    },
+    "lowered_barrier": {
+      "type": "string"
+    },
+    "next_checkpoint": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "sceneTags": [
+    "goal_clarity",
+    "priority",
+    "focus"
+  ],
+  "keywords": [
+    "不知道从哪开始",
+    "很乱",
+    "想改变",
+    "没有重点",
+    "方向很多"
+  ],
+  "excludeKeywords": [
+    "刚吵完",
+    "这周"
+  ],
+  "priority": 90,
+  "modality": [
+    "text",
+    "audio",
+    "image",
+    "file"
+  ]
+}

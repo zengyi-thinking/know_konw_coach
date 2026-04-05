@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id", "type", "content", "confidence", "status"],
+  "properties": {
+    "id": { "type": "string" },
+    "type": { "type": "string" },
+    "content": { "type": "string" },
+    "confidence": { "type": "number" },
+    "status": { "type": "string", "enum": ["active", "archived"] },
+    "evidenceCount": { "type": "number" }
+  }
+}

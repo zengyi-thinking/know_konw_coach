@@ -1,0 +1,21 @@
+{
+  "auto": [
+    "session_event_logging",
+    "memory_candidate_scoring",
+    "memory_archive_suggestion",
+    "route_quality_analysis",
+    "review_report_generation"
+  ],
+  "proposalOnly": [
+    "routing_rule_adjustment",
+    "knowledge_addition",
+    "memory_rule_adjustment",
+    "skill_response_schema_adjustment"
+  ],
+  "manualOnly": [
+    "core_persona_update",
+    "safety_boundary_update",
+    "safety_knowledge_update",
+    "gateway_security_update"
+  ]
+}

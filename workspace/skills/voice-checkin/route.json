@@ -1,0 +1,12 @@
+{
+  "sceneTags": [
+    "voice",
+    "audio_input"
+  ],
+  "keywords": [],
+  "excludeKeywords": [],
+  "priority": 70,
+  "modality": [
+    "audio"
+  ]
+}

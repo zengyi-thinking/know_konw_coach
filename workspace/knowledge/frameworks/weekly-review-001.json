@@ -1,0 +1,12 @@
+{
+  "id": "framework-weekly-review-001",
+  "title": "周复盘最小框架",
+  "type": "framework",
+  "topics": ["周复盘", "执行复盘", "情绪与执行"],
+  "scenes": ["周复盘", "节奏混乱", "阶段总结"],
+  "riskLevel": "low",
+  "recommendedSkills": ["weekly-review"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["这周", "复盘", "总结", "节奏"],
+  "summary": "帮助用户梳理一周进展、阻碍模式和下周最小行动。"
+}

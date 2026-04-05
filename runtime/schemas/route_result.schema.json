@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["primarySkill", "fallback", "rankedSkills"],
+  "properties": {
+    "primarySkill": { "type": "string" },
+    "fallback": { "type": "string" },
+    "rankedSkills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill", "score"],
+        "properties": {
+          "skill": { "type": "string" },
+          "score": { "type": "number" },
+          "keywordHits": { "type": "number" },
+          "sceneHits": { "type": "number" }
+        }
+      }
+    }
+  }
+}
