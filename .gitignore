@@ -7,6 +7,8 @@ secrets.json
 credentials/
 .tmp-openclaw*/
 .claude/worktrees/
+.control-plane-data/
+.control-plane-state/
 .tmp-openclaw-refactor/
 
 # OS / editors

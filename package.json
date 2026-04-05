@@ -10,7 +10,10 @@
   "scripts": {
     "install:openclaw": "node scripts/install-openclaw.js",
     "selftest": "node packages/lifecoach-core/tests/run-selftest.js",
-    "validate:package": "node scripts/validate-package.js"
+    "validate:package": "node scripts/validate-package.js",
+    "console:dev": "node apps/console/server.js",
+    "gateway:dev": "node apps/gateway/server.js",
+    "test:control-plane": "node tests/control-plane.e2e.js"
   },
   "engines": {
     "node": ">=18"

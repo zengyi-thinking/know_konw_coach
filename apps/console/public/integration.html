@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>接入页 · 对味 Lifecoach</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-page="integration">
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/">
+          <span class="brand-mark">料</span>
+          <span>
+            <strong>对味 Lifecoach</strong>
+            <small>增强配方控制台</small>
+          </span>
+        </a>
+        <nav class="topnav">
+          <a href="/dashboard">配方台</a>
+          <a href="/keys">钥匙库</a>
+          <a href="/integration" class="active">接入页</a>
+          <a href="/models">模型页</a>
+          <button class="nav-button" id="logout-button" type="button">退出</button>
+        </nav>
+      </header>
+
+      <main class="page">
+        <section class="section-heading">
+          <p class="kicker">OpenClaw Integration</p>
+          <h1>把增强调料直接拌进小龙虾。</h1>
+          <p class="lead">这里单独只做一件事：把正确的 gateway 配置片段交给 OpenClaw，不把模型详情和账号管理混进来。</p>
+        </section>
+
+        <section class="grid two">
+          <article class="card">
+            <div class="card-header">
+              <h2>接入步骤</h2>
+            </div>
+            <ol class="step-list">
+              <li>先在钥匙库里创建一把激活状态的增强 key。</li>
+              <li>复制下面这段配置片段。</li>
+              <li>注入到本地 shell、系统环境变量，或 OpenClaw 私有配置。</li>
+              <li>重新唤起小龙虾，它就会从文本底味升级成增强风味。</li>
+            </ol>
+          </article>
+          <article class="card">
+            <div class="card-header">
+              <h2>对味提示</h2>
+            </div>
+            <div id="integration-hint" class="detail-list"></div>
+          </article>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <h2>OpenClaw 配置片段</h2>
+            <button class="button primary" id="load-snippet" type="button">加载片段</button>
+          </div>
+          <pre id="snippet-output">点击按钮后加载。</pre>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

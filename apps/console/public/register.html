@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>注册 · 对味 Lifecoach</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-page="register">
+    <div class="page-shell">
+      <header class="topbar topbar-slim">
+        <a class="brand" href="/">
+          <span class="brand-mark">料</span>
+          <span>
+            <strong>对味 Lifecoach</strong>
+            <small>增强调料控制台</small>
+          </span>
+        </a>
+        <nav class="topnav">
+          <a href="/">首页</a>
+          <a href="/auth">登录</a>
+        </nav>
+      </header>
+
+      <main class="page split-page">
+        <section class="story-panel card">
+          <p class="kicker">Create Flavor License</p>
+          <h1>先注册，再把增强风味交给自己的小龙虾。</h1>
+          <p class="lead">
+            注册后你会获得自己的控制台身份。之后创建的每一把 key，都只属于你自己的 Lifecoach 配方，不会把上游供应商 key 暴露给用户侧。
+          </p>
+          <div class="mini-steps">
+            <div><span>1</span> 创建账号</div>
+            <div><span>2</span> 生成 key</div>
+            <div><span>3</span> 配进 OpenClaw</div>
+            <div><span>4</span> 解锁增强火候</div>
+          </div>
+        </section>
+
+        <section class="card auth-card">
+          <div class="panel-label">注册新配方</div>
+          <form id="sign-up-form" class="stack-form">
+            <label>邮箱<input name="email" type="email" required></label>
+            <label>密码<input name="password" type="password" required></label>
+            <label>昵称<input name="displayName" type="text" placeholder="比如：麻辣系教练官"></label>
+            <button class="button primary wide" type="submit">创建增强账号</button>
+          </form>
+          <div class="helper-note">
+            已有账号？
+            <a href="/auth">直接登录</a>
+          </div>
+          <div class="notice-banner" id="register-notice">注册成功后将自动进入配方台。</div>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

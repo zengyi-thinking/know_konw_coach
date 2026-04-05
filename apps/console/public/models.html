@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>模型页 · 对味 Lifecoach</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-page="models">
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/">
+          <span class="brand-mark">料</span>
+          <span>
+            <strong>对味 Lifecoach</strong>
+            <small>增强配方控制台</small>
+          </span>
+        </a>
+        <nav class="topnav">
+          <a href="/dashboard">配方台</a>
+          <a href="/keys">钥匙库</a>
+          <a href="/integration">接入页</a>
+          <a href="/models" class="active">模型页</a>
+          <button class="nav-button" id="logout-button" type="button">退出</button>
+        </nav>
+      </header>
+
+      <main class="page">
+        <section class="section-heading">
+          <p class="kicker">Capability Shelf</p>
+          <h1>把可用模型像调料柜一样摆清楚。</h1>
+          <p class="lead">这一页只回答一个问题：你的账号现在能用哪些味型、哪些火候、哪些多模态能力。</p>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <h2>当前能力</h2>
+            <button class="button primary" id="load-models" type="button">加载模型列表</button>
+          </div>
+          <div id="models-grid" class="model-grid"></div>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

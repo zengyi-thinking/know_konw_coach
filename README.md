@@ -20,6 +20,8 @@ packages/
 │  ├─ src/
 │  ├─ schemas/
 │  └─ tests/
+├─ lifecoach-control-plane/
+│  └─ src/
 ├─ lifecoach-workspace/
 │  ├─ content/
 │  │  ├─ .lifecoach/workspace.manifest.json
@@ -35,9 +37,12 @@ packages/
    ├─ manifest/
    ├─ config/
    └─ install/
+apps/
+├─ console/
+└─ gateway/
 ```
 
-根目录还保留了少量兼容入口：
+根目录主入口：
 
 - `scripts/install-openclaw.js`
 
@@ -81,6 +86,19 @@ node scripts/validate-package.js
 node ~/.openclaw/app/lifecoach/runtime/tests/run-selftest.js
 ```
 
+本地跑控制台与增强网关：
+
+```bash
+npm run console:dev
+npm run gateway:dev
+```
+
+控制台/授权/增强网关端到端测试：
+
+```bash
+npm run test:control-plane
+```
+
 ## 当前状态
 
 当前版本已经具备：
@@ -90,9 +108,13 @@ node ~/.openclaw/app/lifecoach/runtime/tests/run-selftest.js
 - workspace manifest 驱动的静态资产索引
 - state 持久化对静态 skill/knowledge 的引用
 - routing / retrieval / memory / evolution / gateway 的最小闭环
+- 控制台网站、用户注册登录、API key 发放、增强网关与小脑链路
 
 ## 主要入口
 
 - Core 入口：`packages/lifecoach-core/src/index.js`
+- Control Plane 入口：`packages/lifecoach-control-plane/src/`
 - Workspace 清单：`packages/lifecoach-workspace/content/.lifecoach/workspace.manifest.json`
 - Installer 清单：`packages/lifecoach-installer/manifest/lifecoach.bundle.json`
+- Console 应用：`apps/console/server.js`
+- Gateway 应用：`apps/gateway/server.js`
