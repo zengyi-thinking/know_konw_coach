@@ -31,11 +31,11 @@
 - 知识内容
 
 目录：
-- `workspace/prompts/`
-- `workspace/.agents/`
-- `workspace/skills/`
-- `workspace/knowledge/`
-- `workspace/memories/`
+- `packages/lifecoach-workspace/content/prompts/`
+- `packages/lifecoach-workspace/content/.agents/`
+- `packages/lifecoach-workspace/content/skills/`
+- `packages/lifecoach-workspace/content/knowledge/`
+- `packages/lifecoach-workspace/content/memories/`
 
 这一层定义“应该如何思考与回应”。
 
@@ -51,9 +51,9 @@
 - 部分路由策略配置
 
 目录：
-- `config/openclaw.json.template`
-- `install/openclaw-config.patch.example.json`
-- `config/*.env.example`
+- `packages/lifecoach-installer/config/openclaw.json.template`
+- `packages/lifecoach-installer/install/openclaw-config.patch.example.json`
+- `packages/lifecoach-installer/config/*.env.example`
 
 这一层定义“系统在什么条件下允许调用什么能力”。
 
@@ -70,11 +70,11 @@
 - 结构化输出
 
 未来建议模块：
-- `runtime/router/skill_router`
-- `runtime/router/safety_router`
-- `runtime/retrieval/knowledge_retriever`
-- `runtime/memory/memory_manager`
-- `runtime/gateway/multimodal_adapter`
+- `packages/lifecoach-core/src/router/skill_router`
+- `packages/lifecoach-core/src/router/safety_router`
+- `packages/lifecoach-core/src/retrieval/knowledge_retriever`
+- `packages/lifecoach-core/src/memory/memory_manager`
+- `packages/lifecoach-core/src/gateway/multimodal_adapter`
 
 这一层定义“系统如何稳定执行”。
 

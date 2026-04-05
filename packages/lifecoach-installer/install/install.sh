@@ -3,4 +3,4 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-node "$ROOT_DIR/scripts/install-openclaw.js"
+node "$ROOT_DIR/install-openclaw.js"

@@ -1,0 +1,76 @@
+{
+  "bundleId": "openclaw-lifecoach",
+  "version": 1,
+  "agents": [
+    { "id": "life-coach", "path": ".agents/life-coach.md" },
+    { "id": "memory-curator", "path": ".agents/memory-curator.md" },
+    { "id": "multimodal-router", "path": ".agents/multimodal-router.md" },
+    { "id": "reflection-reviewer", "path": ".agents/reflection-reviewer.md" },
+    { "id": "safety-guardian", "path": ".agents/safety-guardian.md" }
+  ],
+  "skills": [
+    {
+      "id": "coach-intake",
+      "path": "skills/coach-intake",
+      "routePath": "skills/coach-intake/route.json",
+      "schemaPath": "skills/coach-intake/response_schema.json"
+    },
+    {
+      "id": "goal-clarify",
+      "path": "skills/goal-clarify",
+      "routePath": "skills/goal-clarify/route.json",
+      "schemaPath": "skills/goal-clarify/response_schema.json"
+    },
+    {
+      "id": "weekly-review",
+      "path": "skills/weekly-review",
+      "routePath": "skills/weekly-review/route.json",
+      "schemaPath": "skills/weekly-review/response_schema.json"
+    },
+    {
+      "id": "emotional-debrief",
+      "path": "skills/emotional-debrief",
+      "routePath": "skills/emotional-debrief/route.json",
+      "schemaPath": "skills/emotional-debrief/response_schema.json"
+    },
+    {
+      "id": "habit-reset",
+      "path": "skills/habit-reset",
+      "routePath": "skills/habit-reset/route.json",
+      "schemaPath": "skills/habit-reset/response_schema.json"
+    },
+    {
+      "id": "voice-checkin",
+      "path": "skills/voice-checkin",
+      "routePath": "skills/voice-checkin/route.json",
+      "schemaPath": "skills/voice-checkin/response_schema.json"
+    },
+    {
+      "id": "vision-reflection",
+      "path": "skills/vision-reflection",
+      "routePath": "skills/vision-reflection/route.json",
+      "schemaPath": "skills/vision-reflection/response_schema.json"
+    }
+  ],
+  "knowledgeBuckets": [
+    { "id": "frameworks", "path": "knowledge/frameworks" },
+    { "id": "cases", "path": "knowledge/cases" },
+    { "id": "prompts", "path": "knowledge/prompts" },
+    { "id": "safety", "path": "knowledge/safety" }
+  ],
+  "protectedTargets": [
+    "prompts/core_identity.md",
+    "prompts/core_values.md",
+    "prompts/core_tone.md",
+    "prompts/core_boundaries.md",
+    ".agents/safety-guardian.md",
+    "knowledge/safety"
+  ],
+  "dynamicStateLinks": {
+    "events": "state/lifecoach/events",
+    "timeline": "state/lifecoach/timeline",
+    "reviews": "state/lifecoach/reviews",
+    "memoryCache": "state/lifecoach/memory-cache",
+    "proposals": "state/lifecoach/proposals"
+  }
+}

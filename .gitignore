@@ -5,6 +5,9 @@
 # OpenClaw local secrets / state
 secrets.json
 credentials/
+.tmp-openclaw*/
+.claude/worktrees/
+.tmp-openclaw-refactor/
 
 # OS / editors
 .DS_Store

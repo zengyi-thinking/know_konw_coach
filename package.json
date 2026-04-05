@@ -1,0 +1,18 @@
+{
+  "name": "openclaw-lifecoach",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenClaw Life Coach package with manifest-driven installer and runtime self-test.",
+  "type": "commonjs",
+  "bin": {
+    "openclaw-lifecoach": "scripts/install-openclaw.js"
+  },
+  "scripts": {
+    "install:openclaw": "node scripts/install-openclaw.js",
+    "selftest": "node packages/lifecoach-core/tests/run-selftest.js",
+    "validate:package": "node scripts/validate-package.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

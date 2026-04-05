@@ -1,0 +1,96 @@
+{
+  "packageName": "openclaw-lifecoach",
+  "packageVersion": "0.1.0",
+  "appId": "lifecoach",
+  "copy": [
+    {
+      "source": "packages/lifecoach-core/src",
+      "target": "app/lifecoach/runtime"
+    },
+    {
+      "source": "packages/lifecoach-core/tests",
+      "target": "app/lifecoach/runtime/tests"
+    },
+    {
+      "source": "packages/lifecoach-core/schemas",
+      "target": "app/lifecoach/schemas"
+    },
+    {
+      "source": "packages/lifecoach-installer/config/lifecoach.gateway.defaults.json",
+      "target": "app/lifecoach/config/lifecoach.gateway.defaults.json"
+    },
+    {
+      "source": "packages/lifecoach-installer/config/evolution.policy.json",
+      "target": "app/lifecoach/config/evolution.policy.json"
+    },
+    {
+      "source": "packages/lifecoach-workspace/content",
+      "target": "workspace"
+    }
+  ],
+  "directories": [
+    "state/lifecoach/events",
+    "state/lifecoach/timeline",
+    "state/lifecoach/reviews",
+    "state/lifecoach/memory-cache",
+    "state/lifecoach/proposals",
+    "workspace/evolution/proposals",
+    "workspace/evolution/signals"
+  ],
+  "env": {
+    "OPENCLAW_HOME": "{openclawHome}",
+    "LIFECOACH_PACKAGE_ROOT": "{openclawHome}/app/lifecoach",
+    "LIFECOACH_RUNTIME_ROOT": "{openclawHome}/app/lifecoach/runtime",
+    "LIFECOACH_CONFIG_ROOT": "{openclawHome}/app/lifecoach/config",
+    "LIFECOACH_SCHEMA_ROOT": "{openclawHome}/app/lifecoach/schemas",
+    "LIFECOACH_WORKSPACE_ROOT": "{openclawHome}/workspace",
+    "LIFECOACH_STATE_ROOT": "{openclawHome}/state/lifecoach",
+    "LIFECOACH_SELFTEST_FIXTURES_ROOT": "{openclawHome}/app/lifecoach/runtime/tests/fixtures"
+  },
+  "openclawConfig": {
+    "agents": {
+      "defaults": {
+        "workspace": "~/.openclaw/workspace"
+      },
+      "list": [
+        {
+          "id": "life-coach",
+          "workspace": "~/.openclaw/workspace",
+          "skills": [
+            "coach-intake",
+            "goal-clarify",
+            "weekly-review",
+            "emotional-debrief",
+            "habit-reset",
+            "voice-checkin",
+            "vision-reflection"
+          ]
+        }
+      ]
+    },
+    "env": {
+      "vars": {
+        "LIFECOACH_GATEWAY_API_KEY": "replace-with-your-api-key"
+      }
+    }
+  },
+  "validation": {
+    "files": [
+      "workspace/.lifecoach/workspace.manifest.json",
+      "workspace/.agents/life-coach.md",
+      "app/lifecoach/config/lifecoach.gateway.defaults.json",
+      "app/lifecoach/config/evolution.policy.json",
+      "app/lifecoach/runtime/index.js",
+      "app/lifecoach/runtime/tests/run-selftest.js"
+    ],
+    "directories": [
+      "workspace/skills",
+      "workspace/knowledge/safety",
+      "state/lifecoach/events",
+      "state/lifecoach/timeline",
+      "state/lifecoach/reviews",
+      "state/lifecoach/memory-cache",
+      "state/lifecoach/proposals"
+    ]
+  }
+}

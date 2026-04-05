@@ -19,7 +19,7 @@
   "env": {
     "vars": {
       "LIFECOACH_GATEWAY_BASE_URL": "https://your-gateway.example.com",
-      "LIFECOACH_USER_TOKEN": "replace-with-your-token"
+      "LIFECOACH_GATEWAY_API_KEY": "replace-with-your-api-key"
     }
   }
 }
