@@ -47,72 +47,84 @@
       </aside>
 
       <section class="content-shell">
-        <header class="content-topbar">
-          <div class="search-shell">
-            <span id="chat-status-note">对味聊天</span>
-          </div>
-          <div class="topbar-actions">
-            <div class="theme-switcher">
-              <label class="theme-switcher-label" for="theme-select">主题</label>
-              <select class="theme-select" id="theme-select" data-theme-select>
-                <option value="warm-tea">Warm Tea</option>
-                <option value="taisho-nouveau">Taisho Nouveau</option>
-                <option value="zine-handmade">Zine Handmade</option>
-              </select>
-            </div>
-            <button class="ghost-button" id="generate-todo-button" type="button">生成 To-Do</button>
-            <div class="chat-mode-switch" aria-label="聊天模式切换" role="tablist">
-              <button class="chat-mode-toggle active" data-chat-mode="chat" id="chat-mode-chat" type="button">
-                <span>Chat</span>
-                <small>直接聊</small>
-              </button>
-              <button class="chat-mode-toggle" data-chat-mode="plan" id="chat-mode-plan" type="button">
-                <span>Plan</span>
-                <small>拆成多步</small>
-              </button>
-            </div>
-            <button class="ghost-button" id="new-chat-button" type="button">New chat</button>
-          </div>
-        </header>
-
         <main class="page chat-page-claude">
-          <div class="chat-bubble-stage" id="chat-bubble-stage">
-            <button class="hero-orb-button" id="chat-orb-button" type="button" aria-label="进入对味聊天">
-              <span class="hero-orb">
-                <span class="hero-orb-core"></span>
-              </span>
-            </button>
-          </div>
-
-          <div class="chat-window chat-window-minimal chat-window-hidden" id="chat-window">
-            <div class="chat-thread" id="chat-thread">
-              <div class="message-row assistant reveal">
-                <div class="message-badge">教练</div>
-                <article class="message-bubble">
-                  <p>说说你现在最想理清的一层。也可以带图过来。</p>
-                </article>
+          <div class="chat-layout-shell">
+            <section class="chat-stage-shell">
+              <div class="chat-bubble-stage" id="chat-bubble-stage">
+                <button class="hero-orb-button" id="chat-orb-button" type="button" aria-label="进入对味聊天">
+                  <span class="hero-orb">
+                    <span class="hero-orb-core"></span>
+                  </span>
+                </button>
               </div>
-            </div>
 
-            <div class="chat-attachments" id="chat-attachments"></div>
-            <div class="chat-decision-stream" id="chat-decision-stream">
-              <div class="chat-plan-card" id="chat-plan-card"></div>
-              <div class="chat-followups" id="chat-followups"></div>
-            </div>
-
-            <form class="chat-composer chat-composer-minimal" id="chat-form">
-              <div class="chat-input-shell">
-                <textarea id="chat-input" rows="3" placeholder="和 Lifecoach 直接说话…"></textarea>
-                <div class="minimal-toolbar">
-                  <label class="toolbar-button file-button icon-button" aria-label="上传图片">
-                    <input id="chat-image-input" type="file" accept="image/*" hidden>
-                    ＋
-                  </label>
-                  <button class="toolbar-button icon-button" id="chat-voice-button" type="button" aria-label="语音输入">◉</button>
-                  <button class="button primary send-button" type="submit">↗</button>
+              <div class="chat-window chat-window-minimal chat-window-hidden" id="chat-window">
+                <div class="chat-thread" id="chat-thread">
+                  <div class="message-row assistant reveal">
+                    <div class="message-badge">教练</div>
+                    <article class="message-bubble">
+                      <p>说说你现在最想理清的一层。也可以带图过来。</p>
+                    </article>
+                  </div>
                 </div>
+
+                <div class="chat-attachments" id="chat-attachments"></div>
+                <div class="chat-decision-stream" id="chat-decision-stream">
+                  <div class="chat-followups" id="chat-followups"></div>
+                </div>
+
+                <form class="chat-composer chat-composer-minimal" id="chat-form">
+                  <div class="chat-input-shell">
+                    <textarea id="chat-input" rows="3" placeholder="和 Lifecoach 直接说话…"></textarea>
+                    <div class="minimal-toolbar">
+                      <label class="toolbar-button file-button icon-button" aria-label="上传图片">
+                        <input id="chat-image-input" type="file" accept="image/*" hidden>
+                        ＋
+                      </label>
+                      <button class="toolbar-button icon-button" id="chat-voice-button" type="button" aria-label="语音输入">◉</button>
+                      <button class="button primary send-button" type="submit">↗</button>
+                    </div>
+                  </div>
+                </form>
               </div>
-            </form>
+            </section>
+
+            <aside class="chat-right-rail">
+              <div class="chat-controls-card chat-status-card">
+                <div class="chat-controls-label">聊天模式</div>
+                <div class="chat-status-value" id="chat-status-note">对味聊天</div>
+                <p class="chat-status-copy">这里会显示当前模式、处理中状态和最新的对话反馈。</p>
+              </div>
+
+              <div class="chat-controls-card">
+                <div class="chat-controls-label">控制台</div>
+                <div class="theme-switcher chat-rail-theme-switcher">
+                  <label class="theme-switcher-label" for="theme-select">主题</label>
+                  <select class="theme-select" id="theme-select" data-theme-select>
+                    <option value="warm-tea">Warm Tea</option>
+                    <option value="taisho-nouveau">Taisho Nouveau</option>
+                    <option value="zine-handmade">Zine Handmade</option>
+                  </select>
+                </div>
+                <button class="ghost-button chat-rail-button" id="generate-todo-button" type="button">生成 To-Do</button>
+                <div class="chat-mode-switch chat-rail-mode-switch" aria-label="聊天模式切换" role="tablist">
+                  <button class="chat-mode-toggle active" data-chat-mode="chat" id="chat-mode-chat" type="button">
+                    <span>Chat</span>
+                    <small>直接聊</small>
+                  </button>
+                  <button class="chat-mode-toggle" data-chat-mode="plan" id="chat-mode-plan" type="button">
+                    <span>Plan</span>
+                    <small>拆成多步</small>
+                  </button>
+                </div>
+                <button class="ghost-button chat-rail-button" id="new-chat-button" type="button">New chat</button>
+              </div>
+
+              <div class="chat-controls-card chat-controls-note">
+                <div class="chat-controls-label">实时预览</div>
+                <p>右侧保持模式和主题切换，左边专心看对话变化，不再让聊天窗口被顶部操作栏撑高。</p>
+              </div>
+            </aside>
           </div>
         </main>
       </section>

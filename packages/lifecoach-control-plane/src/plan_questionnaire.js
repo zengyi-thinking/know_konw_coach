@@ -1,39 +1,106 @@
 const { executeChat } = require('../../lifecoach-core/src/gateway/chat_executor');
 const { buildUpstreamEnv, isProxyEnabled } = require('./upstream_lifecoach_chat');
 
-function fallbackQuestionnaire(seedText = '') {
+function summarizeSeed(seedText = '') {
+  const compact = String(seedText || '').replace(/\s+/g, ' ').trim();
+  if (!compact) return '当前这个问题';
+  return compact.length > 22 ? `${compact.slice(0, 22)}...` : compact;
+}
+
+function inferSeedLens(seedText = '') {
+  const normalized = String(seedText || '').toLowerCase();
+  if (/(关系|父母|伴侣|同事|朋友|婚|感情|沟通)/.test(normalized)) {
+    return {
+      focus: [
+        { key: 'A', title: '关系边界', subtitle: '先看谁在拉扯你' },
+        { key: 'B', title: '真实诉求', subtitle: '先看你真正想要什么' },
+        { key: 'C', title: '触发场景', subtitle: '先看哪一刻最卡' },
+        { key: 'D', title: '可说出口的话', subtitle: '先准备一句回应' },
+      ],
+      outcome: [
+        { key: 'A', title: '边界更清楚', subtitle: '不再被对方节奏带走' },
+        { key: 'B', title: '表达更稳', subtitle: '能说清你的立场' },
+        { key: 'C', title: '关系降温', subtitle: '先减少对抗和消耗' },
+        { key: 'D', title: '决定更明确', subtitle: '知道该继续还是调整' },
+      ],
+    };
+  }
+
+  if (/(工作|职业|项目|学习|考试|offer|简历|副业|公司)/.test(normalized)) {
+    return {
+      focus: [
+        { key: 'A', title: '目标结果', subtitle: '先明确到底要达成什么' },
+        { key: 'B', title: '推进顺序', subtitle: '先排出轻重缓急' },
+        { key: 'C', title: '卡点诊断', subtitle: '先找到真正阻力' },
+        { key: 'D', title: '第一步动作', subtitle: '先定今天能做什么' },
+      ],
+      outcome: [
+        { key: 'A', title: '方向更清楚', subtitle: '知道先冲哪件事' },
+        { key: 'B', title: '执行更顺', subtitle: '不再反复空转' },
+        { key: 'C', title: '风险更低', subtitle: '先避开明显代价' },
+        { key: 'D', title: '节奏更稳', subtitle: '把推进拆成可持续动作' },
+      ],
+    };
+  }
+
+  if (/(情绪|焦虑|内耗|崩溃|难过|压力|失眠|痛苦|迷茫)/.test(normalized)) {
+    return {
+      focus: [
+        { key: 'A', title: '触发点', subtitle: '先看是哪件事刺到你' },
+        { key: 'B', title: '脑中解释', subtitle: '先看你怎么理解这件事' },
+        { key: 'C', title: '身体状态', subtitle: '先看现在承载够不够' },
+        { key: 'D', title: '外界压力', subtitle: '先看是谁在牵动你' },
+      ],
+      outcome: [
+        { key: 'A', title: '情绪先稳住', subtitle: '不再被当下淹没' },
+        { key: 'B', title: '原因更清楚', subtitle: '知道自己为什么这么卡' },
+        { key: 'C', title: '动作更轻', subtitle: '先恢复一点可行动感' },
+        { key: 'D', title: '边界更稳', subtitle: '减少外界拉扯' },
+      ],
+    };
+  }
+
   return {
-    title: '三问理清',
-    summary: '先用三问收束你的困境。',
+    focus: [
+      { key: 'A', title: '先定目标', subtitle: '先明确你最想解决哪层' },
+      { key: 'B', title: '先找卡点', subtitle: '先找到当前最大阻力' },
+      { key: 'C', title: '先排步骤', subtitle: '先把顺序拆开' },
+      { key: 'D', title: '先做第一步', subtitle: '先落到一个具体动作' },
+    ],
+    outcome: [
+      { key: 'A', title: '更清楚', subtitle: '知道到底该往哪走' },
+      { key: 'B', title: '更能行动', subtitle: '开始动起来而不是空想' },
+      { key: 'C', title: '更稳一点', subtitle: '先减少混乱和消耗' },
+      { key: 'D', title: '更容易坚持', subtitle: '让推进节奏可持续' },
+    ],
+  };
+}
+
+function buildDynamicQuestionnaire(seedText = '', title = '先理清一下', summary = '我先根据你的问题生成三张计划卡片。') {
+  const subject = summarizeSeed(seedText);
+  const lens = inferSeedLens(seedText);
+  return {
+    title,
+    summary,
     questions: [
       {
         id: 'q1',
-        question: '现在最困扰你的，是哪一层？',
-        options: [
-          { key: 'A', title: '方向不清', subtitle: '不知道真正想要什么' },
-          { key: 'B', title: '反复卡住', subtitle: '总在原地打转' },
-          { key: 'C', title: '情绪太满', subtitle: '先想稳定下来' },
-          { key: 'D', title: '关系拉扯', subtitle: '总被别人影响' },
-        ],
+        question: `围绕“${subject}”，你最想先拆开哪一层？`,
+        options: lens.focus,
       },
       {
         id: 'q2',
-        question: '如果这件事有进展，你最希望先看到什么变化？',
-        options: [
-          { key: 'A', title: '心里更清楚', subtitle: '知道自己真正要什么' },
-          { key: 'B', title: '行动更轻一点', subtitle: '能先动起来' },
-          { key: 'C', title: '情绪更稳一点', subtitle: '别那么乱' },
-          { key: 'D', title: '边界更清楚', subtitle: '少受外界牵动' },
-        ],
+        question: '如果这件事推进顺一点，你最想先看到什么变化？',
+        options: lens.outcome,
       },
       {
         id: 'q3',
-        question: '当前最大阻力更像哪一种？',
+        question: '你现在最大的阻力，更像下面哪一种？',
         options: [
-          { key: 'A', title: '想太多', subtitle: '脑子停不下来' },
-          { key: 'B', title: '怕做错', subtitle: '担心后果' },
-          { key: 'C', title: '太在意他人', subtitle: '总被评价牵动' },
-          { key: 'D', title: '没力气', subtitle: '现在承载不够' },
+          { key: 'A', title: '信息太乱', subtitle: '脑子里东西太多，没收束' },
+          { key: 'B', title: '怕选错', subtitle: '担心一步走错带来代价' },
+          { key: 'C', title: '受外界牵动', subtitle: '很容易被别人或环境打断' },
+          { key: 'D', title: '能量不够', subtitle: '知道方向但暂时推不动' },
         ],
       },
     ],
@@ -41,44 +108,12 @@ function fallbackQuestionnaire(seedText = '') {
   };
 }
 
+function fallbackQuestionnaire(seedText = '') {
+  return buildDynamicQuestionnaire(seedText, '三问理清', '先根据你的问题生成三张计划卡片。');
+}
+
 function fallbackClarifyQuestionnaire(seedText = '') {
-  return {
-    title: '先理清一下',
-    summary: '我先用三问帮你把困境理清。',
-    questions: [
-      {
-        id: 'q1',
-        question: '现在最困扰你的，是哪一层？',
-        options: [
-          { key: 'A', title: '方向不清', subtitle: '不知道真正想要什么' },
-          { key: 'B', title: '反复卡住', subtitle: '一直推进不动' },
-          { key: 'C', title: '情绪太满', subtitle: '先稳住自己' },
-          { key: 'D', title: '关系拉扯', subtitle: '总被别人影响' },
-        ],
-      },
-      {
-        id: 'q2',
-        question: '你最想先改善的变化是什么？',
-        options: [
-          { key: 'A', title: '更清楚', subtitle: '知道自己真正要什么' },
-          { key: 'B', title: '更能行动', subtitle: '先迈出一步' },
-          { key: 'C', title: '更稳定', subtitle: '先别这么乱' },
-          { key: 'D', title: '更有边界', subtitle: '少被外界牵动' },
-        ],
-      },
-      {
-        id: 'q3',
-        question: '当前最大的阻力更像哪一种？',
-        options: [
-          { key: 'A', title: '想太多', subtitle: '脑子停不下来' },
-          { key: 'B', title: '怕选错', subtitle: '担心后果' },
-          { key: 'C', title: '太在意别人', subtitle: '总被评价牵动' },
-          { key: 'D', title: '能量不够', subtitle: '先恢复承载' },
-        ],
-      },
-    ],
-    seedText,
-  };
+  return buildDynamicQuestionnaire(seedText, '先理清一下', '我先根据你的问题生成三张澄清卡片。');
 }
 
 async function generatePlanQuestionnaire(seedText = '', env = process.env) {

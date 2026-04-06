@@ -36,28 +36,27 @@ async function run() {
 
     await page.goto(`${baseUrl}/chat`);
     await page.waitForSelector('#chat-window');
+    await page.click('#chat-mode-plan');
+    const initialPlanCardCount = await page.locator('.choice-stream-card').count();
+    assert(initialPlanCardCount === 0, 'plan mode should not show cards before user sends a question');
+
     await page.fill('#chat-input', '我最近一直很迷茫，不知道自己到底想要什么。');
     await page.click('#chat-form button[type="submit"]');
     await page.waitForFunction(() => {
-      const rows = document.querySelectorAll('.message-row.assistant .message-bubble p');
-      return rows.length >= 2;
+      return document.querySelectorAll('.choice-stream-card .followup-chip').length >= 4;
     });
 
-    const assistantCount = await page.locator('.message-row.assistant .message-bubble p').count();
-    assert(assistantCount >= 2, 'assistant response not rendered on front-end');
-    const choiceCardCount = await page.locator('.choice-stream-card').count();
-    assert(choiceCardCount === 0, 'chat mode should not render choice cards');
+    const choiceCardCount = await page.locator('.choice-stream-card .followup-chip').count();
+    assert(choiceCardCount >= 4, 'plan mode should render generated cards after user question');
 
-    await page.click('#chat-mode-plan');
-    await page.waitForSelector('.plan-card');
-    await page.locator('[data-plan-option-index]').first().click();
-    await page.click('#plan-next-button');
+    await page.locator('.choice-stream-card .followup-chip').first().click();
     await page.waitForFunction(() => {
-      const progress = document.querySelector('.plan-progress');
-      return progress ? /Step\s*2\s*of\s*3/.test(progress.textContent || '') : false;
+      const kicker = document.querySelector('.choice-stream-kicker');
+      return kicker ? /2\s*\/\s*3/.test(kicker.textContent || '') : false;
     });
+
     await page.click('#chat-mode-chat');
-    await page.waitForFunction(() => !document.querySelector('.plan-card'));
+    await page.waitForFunction(() => !document.querySelector('.choice-stream-card'));
 
     await page.fill('#chat-input', '请生成一张柔和粉橘色调、像玻璃球一样的情绪氛围图。');
     await page.click('#chat-form button[type="submit"]');

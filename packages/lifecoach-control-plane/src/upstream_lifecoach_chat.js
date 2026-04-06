@@ -19,7 +19,7 @@ function buildUpstreamEnv(env = process.env) {
   };
 }
 
-function buildGuidedMessages(flow, originalMessages) {
+function buildGuidedMessages(flow, originalMessages, options = {}) {
   const knowledgeLines = (flow.result.knowledgeHits || [])
     .map((item) => `- ${item.title}: ${item.summary}`)
     .join('\n');
@@ -37,6 +37,9 @@ function buildGuidedMessages(flow, originalMessages) {
     `当前 flavor score: ${flow.result.flavorScores.overall} (${flow.result.flavorScores.band})`,
     knowledgeLines ? `优先参考这些知识块:\n${knowledgeLines}` : '当前不需要额外知识灌输，只要自然使用教练框架。',
     '回答不要像在汇报系统内部状态，不要暴露后台 agent 名称。',
+    options.uiMode === 'plan'
+      ? '当前界面是 Plan mode。请直接围绕用户最新问题生成一个具体计划，不要使用模板卡片，不要出多选题，不要先反问问卷。优先输出目标聚焦、3到5步计划、以及最先执行的一步。'
+      : '当前界面是 Chat mode。保持自然对话，不要额外制造卡片或问卷。',
   ].join('\n');
 
   return [
@@ -45,13 +48,13 @@ function buildGuidedMessages(flow, originalMessages) {
   ];
 }
 
-async function maybeProxyLifecoachChat(flow, body, env = process.env) {
+async function maybeProxyLifecoachChat(flow, body, env = process.env, options = {}) {
   if (!isProxyEnabled(env)) {
     return { used: false, ok: false, data: null, error: null };
   }
 
   const proxyEnv = buildUpstreamEnv(env);
-  const messages = buildGuidedMessages(flow, Array.isArray(body.messages) ? body.messages : []);
+  const messages = buildGuidedMessages(flow, Array.isArray(body.messages) ? body.messages : [], options);
   const response = await executeChat({
     modality: body.modality || 'text',
     imageUrl: body.imageUrl || null,

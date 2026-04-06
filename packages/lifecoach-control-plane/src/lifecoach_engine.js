@@ -110,6 +110,50 @@ function buildCoachMessage(result, input, cerebellum) {
   ].join('\n');
 }
 
+function summarizeUserGoal(text = '') {
+  const compact = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!compact) return '当前这个问题';
+  return compact.length > 28 ? `${compact.slice(0, 28)}...` : compact;
+}
+
+function buildPlanMessage(result, input, cerebellum) {
+  const goal = summarizeUserGoal(input.text);
+  const route = result.route.primarySkill;
+
+  const routeSteps = route === 'goal-clarify'
+    ? [
+      `先把“${goal}”收束成一句你真正想达成的结果。`,
+      '把会影响你判断的限制条件单独列出来，不跟目标混在一起。',
+      '只保留一个本周内能验证方向的小动作。',
+    ]
+    : route === 'emotional-debrief'
+      ? [
+        `先把和“${goal}”最相关的触发事件单独拎出来。`,
+        '把事件、情绪和你脑中冒出的解释分开写。',
+        '只决定一个先稳住自己的动作，再谈后续推进。',
+      ]
+      : route === 'habit-reset'
+        ? [
+          `先把“${goal}”降成一个低门槛版本。`,
+          '把触发时机固定下来，不靠临时意志。',
+          '只追踪连续完成，而不是一次做很多。',
+        ]
+        : [
+          `先定义“${goal}”里最需要先解决的一层。`,
+          '把当前最大阻力说清楚，别同时处理所有问题。',
+          '先做一个今天就能开始的最小动作，再根据结果迭代。',
+        ];
+
+  return [
+    '我先按你的问题整理成一个可执行计划：',
+    `目标聚焦：${goal}`,
+    '建议步骤：',
+    ...routeSteps.map((step, index) => `${index + 1}. ${step}`),
+    `先做第一步：${routeSteps[0]}`,
+    `辅助判断：${cerebellum.recommendation}`,
+  ].join('\n');
+}
+
 function createSessionInput(body) {
   const extracted = buildUserTextFromMessages(body.messages || []);
   return {
@@ -141,7 +185,9 @@ function runLifecoachConversation(body, env, context = {}) {
   });
 
   const cerebellum = buildCerebellum(result, session.input, context.entitlements);
-  const assistantMessage = buildCoachMessage(result, session.input, cerebellum);
+  const assistantMessage = context.uiMode === 'plan'
+    ? buildPlanMessage(result, session.input, cerebellum)
+    : buildCoachMessage(result, session.input, cerebellum);
 
   return {
     session,

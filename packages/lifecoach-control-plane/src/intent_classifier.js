@@ -10,18 +10,16 @@ function hasGeneratedImageContext(body = {}) {
 function buildIntentPrompt(userText, hasImage, hasGeneratedImage) {
   return [
     '你是一个多模态意图分类器。',
-    '请根据用户最后一条输入，把意图分类成以下四类之一：',
+    '请根据用户最后一条输入，把意图分类成以下三类之一：',
     '- chat',
     '- image_generation',
     '- image_understanding',
-    '- clarify_with_choice_card',
     '只输出 JSON，格式为：{"intent":"chat","reason":"..."}',
     `用户是否已上传图片: ${hasImage ? 'yes' : 'no'}`,
     `会话中是否已有已生成图片: ${hasGeneratedImage ? 'yes' : 'no'}`,
     `用户输入: ${userText}`,
     '如果用户在延续上一张图片并要求调色、改风格、再来一版，应判为 image_generation。',
-    '如果用户表达很模糊、想理清困境、需要你先帮他做选择题式澄清，应优先判为 clarify_with_choice_card。',
-    ].join('\n');
+  ].join('\n');
 }
 
 async function inferSemanticIntent(body = {}, env = process.env) {

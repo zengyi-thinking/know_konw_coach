@@ -14,10 +14,6 @@ const state = {
   chatStarted: false,
   chatTodoList: null,
   chatMode: 'chat',
-  planQuestionnaire: null,
-  planStepIndex: 0,
-  planAnswers: {},
-  selectedPlanOptionIndex: null,
   mediaRecorder: null,
   mediaChunks: [],
   isRecording: false,
@@ -246,9 +242,7 @@ function syncChatInputPlaceholder() {
   if (!input) return;
 
   if (state.chatMode === 'plan') {
-    input.placeholder = state.planQuestionnaire
-      ? '先点卡片，或在这里补充你自己的回答…'
-      : '输入一个问题，Plan 会帮你拆成更清楚的几步…';
+    input.placeholder = '先把你的问题发出来，我会根据这条问题生成计划卡片…';
     return;
   }
 
@@ -267,45 +261,15 @@ function renderChatModeSwitch() {
   syncChatInputPlaceholder();
 }
 
-function getCurrentPlanQuestion() {
-  if (!state.planQuestionnaire || !Array.isArray(state.planQuestionnaire.questions)) {
-    return null;
-  }
-  return state.planQuestionnaire.questions[state.planStepIndex] || null;
-}
-
 function applyChatMode(mode) {
   state.chatMode = mode === 'plan' ? 'plan' : 'chat';
   renderChatModeSwitch();
-  renderPlanCard();
-  renderChatFollowups();
 }
 
-async function activatePlanMode() {
+function activatePlanMode() {
   applyChatMode('plan');
   setChatStarted(true);
-
-  if (state.planQuestionnaire?.questions?.length) {
-    renderPlanCard();
-    setChatStatus(state.planQuestionnaire.summary || '进入 Plan');
-    document.getElementById('chat-input')?.focus();
-    return;
-  }
-
-  setChatStatus('正在准备 Plan…');
-  const seedText = document.getElementById('chat-input')?.value.trim()
-    || state.chatMessages.slice().reverse().find((item) => item.role === 'user')?.text
-    || '';
-  const result = await api('/api/chat/plan/start', {
-    method: 'POST',
-    body: { seedText },
-  });
-  state.planQuestionnaire = result.questionnaire;
-  state.planStepIndex = 0;
-  state.planAnswers = {};
-  renderChatModeSwitch();
-  renderPlanCard();
-  setChatStatus(result.questionnaire?.summary || '进入 Plan');
+  setChatStatus('Plan 模式：先发出你的问题，再生成卡片');
   document.getElementById('chat-input')?.focus();
 }
 
@@ -665,175 +629,6 @@ async function generateChatTodoList() {
   }
 }
 
-function resetPlanState() {
-  state.planQuestionnaire = null;
-  state.planStepIndex = 0;
-  state.planAnswers = {};
-  state.selectedPlanOptionIndex = null;
-}
-
-function renderPlanCard() {
-  const node = document.getElementById('chat-plan-card');
-  if (!node) return;
-
-  if (state.chatMode !== 'plan' || !state.planQuestionnaire || !Array.isArray(state.planQuestionnaire.questions) || !state.planQuestionnaire.questions.length) {
-    node.innerHTML = '';
-    return;
-  }
-
-  const total = state.planQuestionnaire.questions.length;
-  const question = getCurrentPlanQuestion();
-  if (!question) {
-    node.innerHTML = '';
-    return;
-  }
-
-  const selectedAnswer = typeof state.planAnswers[question.id] === 'string' ? state.planAnswers[question.id] : '';
-  const completedSteps = state.planQuestionnaire.questions
-    .map((item, index) => ({
-      index,
-      question: item.question,
-      answer: state.planAnswers[item.id] || '',
-    }))
-    .filter((item) => item.index < state.planStepIndex && item.answer);
-
-  node.innerHTML = `
-    <article class="plan-card reveal">
-      <div class="plan-card-meta">
-        <span class="plan-kicker">Plan mode</span>
-        <div class="plan-progress">Step ${state.planStepIndex + 1} of ${total}</div>
-      </div>
-      <div class="plan-card-head">
-        <div>
-          <p class="plan-caption">${escapeHtml(state.planQuestionnaire.title || '多步计划')}</p>
-          <strong>${escapeHtml(question.question)}</strong>
-          <p class="plan-helper">${escapeHtml(state.planQuestionnaire.summary || '先用几张卡片把问题拆清楚，再往下走。')}</p>
-        </div>
-      </div>
-      <div class="plan-step-rail">
-        ${state.planQuestionnaire.questions.map((item, index) => {
-          const status = index < state.planStepIndex ? 'done' : (index === state.planStepIndex ? 'current' : 'upcoming');
-          const answer = state.planAnswers[item.id] || '';
-          const badge = index < state.planStepIndex ? '✓' : String(index + 1);
-          const hint = answer || (index === state.planStepIndex ? '当前问题' : '待完成');
-          return `
-            <button class="plan-step ${status}" type="button" data-plan-step-index="${index}" ${index > state.planStepIndex ? 'disabled' : ''}>
-              <span class="plan-step-badge">${escapeHtml(badge)}</span>
-              <span class="plan-step-copy">
-                <strong>${escapeHtml(item.question || `步骤 ${index + 1}`)}</strong>
-                <small>${escapeHtml(hint)}</small>
-              </span>
-            </button>
-          `;
-        }).join('')}
-      </div>
-      ${completedSteps.length ? `
-        <div class="plan-answer-stack">
-          ${completedSteps.map((item) => `
-            <div class="plan-answer-chip">
-              <strong>Step ${item.index + 1}</strong>
-              <p>${escapeHtml(item.answer)}</p>
-            </div>
-          `).join('')}
-        </div>
-      ` : ''}
-      <div class="plan-options">
-        ${(question.options || []).map((item, index) => `
-          <button class="plan-option ${selectedAnswer === item.title ? 'active' : ''}" type="button" data-plan-option-index="${index}">
-            <span class="plan-option-key">${escapeHtml(item.key || String(index + 1))}</span>
-            <span class="plan-option-copy">
-              <strong>${escapeHtml(item.title || '')}</strong>
-              ${item.subtitle ? `<small>${escapeHtml(item.subtitle)}</small>` : ''}
-            </span>
-          </button>
-        `).join('')}
-      </div>
-      <div class="plan-input-hint">也可以直接在输入框里改成你自己的说法，然后点发送或继续。</div>
-      <div class="plan-actions">
-        ${state.planStepIndex > 0 ? '<button class="ghost-button" id="plan-back-button" type="button">上一题</button>' : ''}
-        <button class="ghost-button" id="plan-skip-button" type="button">${state.planStepIndex + 1 >= total ? 'Skip' : '跳过'}</button>
-        <button class="button primary" id="plan-next-button" type="button">${state.planStepIndex + 1 >= total ? '完成 Plan' : '继续下一题'}</button>
-      </div>
-    </article>
-  `;
-
-  node.querySelectorAll('[data-plan-step-index]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const index = Number(button.dataset.planStepIndex);
-      if (Number.isNaN(index) || index > state.planStepIndex) return;
-      state.planStepIndex = index;
-      renderPlanCard();
-    });
-  });
-
-  node.querySelectorAll('[data-plan-option-index]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const index = Number(button.dataset.planOptionIndex);
-      const option = question.options?.[index];
-      if (!option) return;
-      state.planAnswers[question.id] = option.title;
-      const input = document.getElementById('chat-input');
-      if (input) {
-        input.value = option.title;
-      }
-      renderPlanCard();
-    });
-  });
-
-  document.getElementById('plan-back-button')?.addEventListener('click', () => {
-    if (state.planStepIndex <= 0) return;
-    state.planStepIndex -= 1;
-    renderPlanCard();
-  });
-
-  document.getElementById('plan-skip-button')?.addEventListener('click', async () => {
-    state.planAnswers[question.id] = state.planAnswers[question.id] || '跳过';
-    await advancePlanQuestion();
-  });
-
-  document.getElementById('plan-next-button')?.addEventListener('click', async () => {
-    const input = document.getElementById('chat-input');
-    if (input?.value.trim()) {
-      state.planAnswers[question.id] = input.value.trim();
-    }
-    if (!state.planAnswers[question.id]) {
-      setChatStatus('先选一个选项，或输入你的回答');
-      return;
-    }
-    await advancePlanQuestion();
-  });
-}
-
-async function advancePlanQuestion() {
-  const input = document.getElementById('chat-input');
-  if (input) input.value = '';
-
-  const questionnaire = state.planQuestionnaire;
-  if (!questionnaire) return;
-  if (state.planStepIndex + 1 < questionnaire.questions.length) {
-    state.planStepIndex += 1;
-    renderPlanCard();
-    return;
-  }
-
-  const summaryLines = [];
-  summaryLines.push(`我先回答完这份 ${questionnaire.title || 'Plan'}：`);
-  for (const question of questionnaire.questions) {
-    summaryLines.push(`Q: ${question.question}`);
-    summaryLines.push(`A: ${state.planAnswers[question.id] || '跳过'}`);
-  }
-  state.chatMessages.push({
-    role: 'user',
-    text: summaryLines.join('\n'),
-  });
-  persistChatMessages();
-  resetPlanState();
-  applyChatMode('chat');
-  renderPlanCard();
-  setChatStatus('Plan 已完成，正在生成回复…');
-  await sendChatMessageFromState();
-}
-
 function renderChatInspector(meta) {
   if (!meta?.lifecoach) return;
 
@@ -854,24 +649,26 @@ function renderChatFollowups() {
   const node = document.getElementById('chat-followups');
   if (!node) return;
 
-  if (state.chatMode !== 'plan' || state.planQuestionnaire || !state.chatLastChoiceCard || !Array.isArray(state.chatLastChoiceCard.options) || state.chatLastChoiceCard.options.length === 0) {
+  if (state.chatMode !== 'plan' || !state.chatLastChoiceCard || !Array.isArray(state.chatLastChoiceCard.options) || state.chatLastChoiceCard.options.length === 0) {
     node.innerHTML = '';
     return;
   }
 
+  const step = Number(state.chatLastChoiceCard.step) || 1;
+  const total = Number(state.chatLastChoiceCard.total) || Math.max(step, 1);
   node.innerHTML = `
     <article class="choice-stream-card reveal">
       <div class="choice-stream-head">
         <div>
-          <span class="choice-stream-kicker">Next move</span>
+          <span class="choice-stream-kicker">Plan step ${step}/${total}</span>
           <strong>${escapeHtml(state.chatLastChoiceCard.question || '继续')}</strong>
-          <p>选一个更贴近你的方向，我就顺着这一层继续展开。</p>
+          <p>这些卡片是根据你刚刚的问题生成的。选一个最接近的方向，或者直接在输入框里改写你的答案。</p>
         </div>
       </div>
       <div class="choice-stream-grid">
         ${state.chatLastChoiceCard.options.map((item, index) => `
           <button class="followup-chip followup-card card-option" type="button" data-followup-index="${index}">
-            <span class="card-option-key">${escapeHtml(item.key || '')}</span>
+            <span class="card-option-key">${escapeHtml(item.key || String(index + 1))}</span>
             <span class="card-option-text">
               <strong>${escapeHtml(item.title || item)}</strong>
               ${item.subtitle ? `<small>${escapeHtml(item.subtitle)}</small>` : ''}
@@ -885,8 +682,11 @@ function renderChatFollowups() {
   node.querySelectorAll('.followup-chip').forEach((button) => {
     button.addEventListener('click', async () => {
       const index = Number(button.dataset.followupIndex);
-      const choice = state.chatLastChoiceCard.options[index] || '';
-      const label = typeof choice === 'string' ? choice : `Q: ${state.chatLastChoiceCard.question || ''}\nA: ${choice.title || ''}`;
+      const choice = state.chatLastChoiceCard.options[index];
+      if (!choice) return;
+      const label = typeof choice === 'string'
+        ? choice
+        : `Q: ${state.chatLastChoiceCard.question || ''}\nA: ${choice.title || ''}`;
       state.chatMessages.push({
         role: 'user',
         text: label,
@@ -982,25 +782,6 @@ async function sendChatMessage() {
   const input = document.getElementById('chat-input');
   const rawText = (input?.value || '').trim();
 
-  if (state.chatMode === 'plan' && state.planQuestionnaire) {
-    if (state.chatAttachment) {
-      setChatStatus('Plan 先用文字就够了，图片可以切回 Chat 再发。');
-      return;
-    }
-    const question = getCurrentPlanQuestion();
-    if (!question) return;
-    if (rawText) {
-      state.planAnswers[question.id] = rawText;
-    }
-    if (!state.planAnswers[question.id]) {
-      setChatStatus('先选一个选项，或输入你的回答');
-      return;
-    }
-    setChatStarted(true);
-    await advancePlanQuestion();
-    return;
-  }
-
   if (!rawText && !state.chatAttachment) {
     setChatStatus('先写一句话，或者附上一张图片。');
     return;
@@ -1046,7 +827,13 @@ async function sendChatMessageFromState() {
     state.chatChoiceFlowState = result.lifecoach.choiceFlowState || null;
     persistChatMessages();
     renderChatInspector(result);
-    setChatStatus(result.lifecoach.processing.generatedImageUrl ? '图像已生成' : '已回复');
+    if (result.lifecoach?.processing?.generatedImageUrl) {
+      setChatStatus('图像已生成');
+    } else if (state.chatMode === 'plan' && state.chatLastChoiceCard) {
+      setChatStatus('已根据你的问题生成计划卡片');
+    } else {
+      setChatStatus('已回复');
+    }
   } catch (error) {
     setChatStatus(error.message || '聊天请求失败');
     throw error;
@@ -1065,7 +852,6 @@ function bindChatPage() {
   applyChatMode('chat');
   renderChatMessages();
   renderChatAttachments();
-  renderPlanCard();
   renderChatFollowups();
   renderChatTodoList();
 
@@ -1080,14 +866,12 @@ function bindChatPage() {
     state.chatLastChoiceCard = null;
     state.chatChoiceFlowState = null;
     state.chatTodoList = null;
-    resetPlanState();
     persistChatMessages();
     persistChatTodoList();
     setChatStarted(true);
     applyChatMode('chat');
     renderChatInspector(null);
     renderChatMessages();
-    renderPlanCard();
     renderChatFollowups();
     renderChatTodoList();
     setText('chat-sidebar-user', state.me?.user?.displayName || '对味聊天');
@@ -1101,15 +885,10 @@ function bindChatPage() {
   });
 
   document.querySelectorAll('[data-chat-mode]').forEach((button) => {
-    button.addEventListener('click', async () => {
+    button.addEventListener('click', () => {
       const mode = button.dataset.chatMode;
       if (mode === 'plan') {
-        try {
-          await activatePlanMode();
-        } catch (error) {
-          applyChatMode('chat');
-          setChatStatus(error.message || 'Plan 启动失败');
-        }
+        activatePlanMode();
         return;
       }
 

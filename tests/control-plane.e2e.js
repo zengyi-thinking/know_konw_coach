@@ -106,9 +106,8 @@ async function run() {
     assert(consoleChat.response.status === 200, 'console chat failed');
     assert(consoleChat.data.lifecoach.workflow?.id === 'long-horizon-confusion', 'console chat workflow missing');
     assert(consoleChat.data.lifecoach.flavorScores?.overall >= 0, 'console chat flavor score missing');
-    assert(consoleChat.data.lifecoach.choiceCard?.question, 'console chat choiceCard missing');
-    assert(Array.isArray(consoleChat.data.lifecoach.choiceCard?.options) && consoleChat.data.lifecoach.choiceCard.options.length >= 4, 'console chat choiceCard options missing');
-    assert(consoleChat.data.lifecoach.choiceFlowState?.mode === 'clarify', 'console chat clarify flow not started');
+    assert(consoleChat.data.lifecoach.choiceCard === null, 'console chat should not auto-start cards');
+    assert(consoleChat.data.lifecoach.choiceFlowState === null, 'console chat should not auto-start choiceFlow');
 
     const consoleFreeChat = await requestJson(`${baseConsole}/api/chat/completions`, {
       method: 'POST',
@@ -127,7 +126,25 @@ async function run() {
     assert(consoleFreeChat.data.lifecoach.choiceCard === null, 'console free chat should not return choiceCard');
     assert(consoleFreeChat.data.lifecoach.choiceFlowState === null, 'console free chat should not start choiceFlow');
 
-    const choice1 = consoleChat.data.lifecoach.choiceCard.options[0];
+    const consolePlan = await requestJson(`${baseConsole}/api/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionToken}`,
+      },
+      body: JSON.stringify({
+        uiMode: 'plan',
+        messages: [
+          { role: 'user', content: '我最近一直很迷茫，不知道自己到底想要什么。' },
+        ],
+      }),
+    });
+    assert(consolePlan.response.status === 200, 'console plan failed');
+    assert(consolePlan.data.lifecoach.choiceCard?.question, 'console plan should generate cards after user question');
+    assert(Array.isArray(consolePlan.data.lifecoach.choiceCard?.options) && consolePlan.data.lifecoach.choiceCard.options.length >= 4, 'console plan choiceCard options missing');
+    assert(consolePlan.data.lifecoach.choiceFlowState?.mode === 'clarify', 'console plan should start choiceFlow');
+
+    const choice1 = consolePlan.data.lifecoach.choiceCard.options[0];
     const step2 = await requestJson(`${baseConsole}/api/chat/completions`, {
       method: 'POST',
       headers: {
@@ -135,12 +152,13 @@ async function run() {
         Authorization: `Bearer ${sessionToken}`,
       },
       body: JSON.stringify({
+        uiMode: 'plan',
         messages: [
           { role: 'user', content: '我最近一直很迷茫，不知道自己到底想要什么。' },
-          { role: 'assistant', content: consoleChat.data.choices[0].message.content },
-          { role: 'user', content: `Q: ${consoleChat.data.lifecoach.choiceCard.question}\nA: ${choice1.title}` },
+          { role: 'assistant', content: consolePlan.data.choices[0].message.content },
+          { role: 'user', content: `Q: ${consolePlan.data.lifecoach.choiceCard.question}\nA: ${choice1.title}` },
         ],
-        choiceFlowState: consoleChat.data.lifecoach.choiceFlowState,
+        choiceFlowState: consolePlan.data.lifecoach.choiceFlowState,
       }),
     });
     assert(step2.response.status === 200, 'clarify step2 failed');
