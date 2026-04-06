@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="register">
-    <div class="page-shell">
-      <header class="topbar topbar-slim">
+    <div class="page-shell app-shell">
+      <aside class="sidebar">
         <a class="brand" href="/">
           <span class="brand-mark">料</span>
           <span>
@@ -16,40 +16,41 @@
             <small>控制台</small>
           </span>
         </a>
-        <nav class="topnav">
-          <a href="/">首页</a>
-          <a href="/auth">登录</a>
-        </nav>
-      </header>
 
-      <main class="page split-page">
-        <section class="story-panel card">
-          <p class="kicker">Create Account</p>
-          <h1>创建你的对话入口。</h1>
-          <p class="lead">注册后就能领取专属 key，打开增强模式。</p>
-          <div class="mini-steps">
-            <div><span>1</span> 创建账号</div>
-            <div><span>2</span> 生成 key</div>
-            <div><span>3</span> 配进 OpenClaw</div>
-            <div><span>4</span> 解锁增强火候</div>
-          </div>
-        </section>
+        <div class="sidebar-block">
+          <div class="sidebar-label">入口</div>
+          <a class="sidebar-link" href="/">首页</a>
+          <a class="sidebar-link" href="/auth">登录</a>
+          <a class="sidebar-link active" href="/register">注册</a>
+          <a class="sidebar-link" href="/chat">聊天</a>
+        </div>
+      </aside>
 
-        <section class="card auth-card">
-          <div class="panel-label">注册</div>
-          <form id="sign-up-form" class="stack-form">
-            <label>邮箱<input name="email" type="email" required></label>
-            <label>密码<input name="password" type="password" required></label>
-            <label>昵称<input name="displayName" type="text" placeholder="比如：麻辣系教练官"></label>
-            <button class="button primary wide" type="submit">创建增强账号</button>
-          </form>
-          <div class="helper-note">
-            已有账号？
-            <a href="/auth">直接登录</a>
-          </div>
-          <div class="notice-banner" id="register-notice">注册成功后自动进入配方台。</div>
-        </section>
-      </main>
+      <section class="content-shell">
+        <header class="content-topbar">
+          <div class="search-shell"><span>创建你的对味 Lifecoach…</span></div>
+        </header>
+
+        <main class="page split-page">
+          <section class="story-panel card">
+            <p class="kicker">Create Account</p>
+            <h1>创建你的对话入口。</h1>
+            <p class="lead">注册后就能领取专属 key，打开增强模式。</p>
+          </section>
+
+          <section class="card auth-card">
+            <div class="panel-label">注册</div>
+            <form id="sign-up-form" class="stack-form">
+              <label>邮箱<input name="email" type="email" required></label>
+              <label>密码<input name="password" type="password" required></label>
+              <label>昵称<input name="displayName" type="text" placeholder="你的名字"></label>
+              <button class="button primary wide" type="submit">创建账号</button>
+            </form>
+            <div class="helper-note">已有账号？ <a href="/auth">直接登录</a></div>
+            <div class="notice-banner" id="register-notice">注册成功后自动进入配方台。</div>
+          </section>
+        </main>
+      </section>
     </div>
     <script src="/app.js"></script>
   </body>

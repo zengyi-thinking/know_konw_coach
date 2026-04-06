@@ -3,60 +3,77 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>钥匙库 · 对味 Lifecoach</title>
+    <title>钥匙库 · 对味</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="keys">
-    <div class="page-shell">
-      <header class="topbar">
+    <div class="page-shell app-shell">
+      <aside class="sidebar">
         <a class="brand" href="/">
           <span class="brand-mark">料</span>
           <span>
             <strong>对味 Lifecoach</strong>
-            <small>增强配方控制台</small>
+            <small>控制台</small>
           </span>
         </a>
-        <nav class="topnav">
-          <a href="/dashboard">配方台</a>
-          <a href="/keys" class="active">钥匙库</a>
-          <a href="/integration">接入页</a>
-          <a href="/models">模型页</a>
-          <a href="/chat">聊天</a>
-          <button class="nav-button" id="logout-button" type="button">退出</button>
-        </nav>
-      </header>
 
-      <main class="page">
-        <section class="section-heading">
-          <p class="kicker">Key Pantry</p>
-          <h1>把增强火候封装成一把把可管理的钥匙。</h1>
-          <p class="lead">完整 key 只显示一次，之后只保留前缀和状态。像调料小袋一样，用的时候拆开，不需要时就封存。</p>
-        </section>
+        <div class="sidebar-block">
+          <div class="sidebar-label">工作台</div>
+          <a class="sidebar-link" href="/dashboard">配方台</a>
+          <a class="sidebar-link" href="/chat">聊天</a>
+          <a class="sidebar-link active" href="/keys">钥匙库</a>
+          <a class="sidebar-link" href="/integration">接入</a>
+          <a class="sidebar-link" href="/models">模型</a>
+        </div>
 
-        <section class="grid two">
-          <form id="create-key-form" class="card stack-form">
-            <div class="card-header">
-              <h2>创建新 key</h2>
-            </div>
-            <label>名称<input name="name" type="text" value="OpenClaw Lifecoach Key"></label>
-            <button class="button primary wide" type="submit">生成一把新钥匙</button>
-          </form>
-          <article class="card">
-            <div class="card-header">
-              <h2>完整值展示区</h2>
-            </div>
-            <pre id="key-output">创建后的完整 key 会只在这里展示一次。</pre>
-          </article>
-        </section>
-
-        <section class="card">
-          <div class="card-header">
-            <h2>现有钥匙</h2>
-            <button class="button secondary" id="refresh-keys" type="button">刷新列表</button>
+        <div class="sidebar-cta">
+          <div class="cta-card">
+            <p>完整 key 只展示一次，之后只保留前缀和状态。</p>
           </div>
-          <div id="keys-list" class="list-grid"></div>
-        </section>
-      </main>
+          <button class="sidebar-button" id="logout-button" type="button">退出</button>
+        </div>
+      </aside>
+
+      <section class="content-shell">
+        <header class="content-topbar">
+          <div class="search-shell"><span>管理你的增强 key…</span></div>
+          <div class="topbar-actions">
+            <a class="button secondary" href="/chat">Open Chat</a>
+          </div>
+        </header>
+
+        <main class="page">
+          <section class="section-heading">
+            <p class="kicker">Keys</p>
+            <h1>管理你的增强 key。</h1>
+            <p class="lead">创建、查看和吊销都在这里。</p>
+          </section>
+
+          <section class="grid two">
+            <form id="create-key-form" class="card stack-form">
+              <div class="card-header">
+                <h2>创建</h2>
+              </div>
+              <label>名称<input name="name" type="text" value="OpenClaw Lifecoach Key"></label>
+              <button class="button primary wide" type="submit">生成</button>
+            </form>
+            <article class="card">
+              <div class="card-header">
+                <h2>完整值</h2>
+              </div>
+              <pre id="key-output">创建后只展示一次。</pre>
+            </article>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2>现有 key</h2>
+              <button class="button secondary" id="refresh-keys" type="button">刷新</button>
+            </div>
+            <div id="keys-list" class="list-grid"></div>
+          </section>
+        </main>
+      </section>
     </div>
     <script src="/app.js"></script>
   </body>

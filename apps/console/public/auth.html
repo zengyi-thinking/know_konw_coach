@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="auth">
-    <div class="page-shell">
-      <header class="topbar topbar-slim">
+    <div class="page-shell app-shell">
+      <aside class="sidebar">
         <a class="brand" href="/">
           <span class="brand-mark">料</span>
           <span>
@@ -16,33 +16,40 @@
             <small>控制台</small>
           </span>
         </a>
-        <nav class="topnav">
-          <a href="/">首页</a>
-          <a href="/register">注册</a>
-        </nav>
-      </header>
 
-      <main class="page split-page">
-        <section class="story-panel card">
-          <p class="kicker">Sign In</p>
-          <h1>回来继续聊。</h1>
-          <p class="lead">登录后就能进入你的对味 Lifecoach。</p>
-        </section>
+        <div class="sidebar-block">
+          <div class="sidebar-label">入口</div>
+          <a class="sidebar-link" href="/">首页</a>
+          <a class="sidebar-link active" href="/auth">登录</a>
+          <a class="sidebar-link" href="/register">注册</a>
+          <a class="sidebar-link" href="/chat">聊天</a>
+        </div>
+      </aside>
 
-        <section class="card auth-card">
-          <div class="panel-label">登录</div>
-          <form id="sign-in-form" class="stack-form">
-            <label>邮箱<input name="email" type="email" required></label>
-            <label>密码<input name="password" type="password" required></label>
-            <button class="button primary wide" type="submit">登录控制台</button>
-          </form>
-          <div class="helper-note">
-            还没有账号？
-            <a href="/register">去注册</a>
-          </div>
-          <div class="notice-banner" id="auth-notice">登录后自动进入配方台。</div>
-        </section>
-      </main>
+      <section class="content-shell">
+        <header class="content-topbar">
+          <div class="search-shell"><span>登录你的对味 Lifecoach…</span></div>
+        </header>
+
+        <main class="page split-page">
+          <section class="story-panel card">
+            <p class="kicker">Sign In</p>
+            <h1>回来继续聊。</h1>
+            <p class="lead">登录后就能进入你的对味 Lifecoach。</p>
+          </section>
+
+          <section class="card auth-card">
+            <div class="panel-label">登录</div>
+            <form id="sign-in-form" class="stack-form">
+              <label>邮箱<input name="email" type="email" required></label>
+              <label>密码<input name="password" type="password" required></label>
+              <button class="button primary wide" type="submit">登录</button>
+            </form>
+            <div class="helper-note">还没有账号？ <a href="/register">去注册</a></div>
+            <div class="notice-banner" id="auth-notice">登录后自动进入配方台。</div>
+          </section>
+        </main>
+      </section>
     </div>
     <script src="/app.js"></script>
   </body>

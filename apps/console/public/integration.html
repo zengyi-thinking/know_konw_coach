@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="integration">
-    <div class="page-shell">
-      <header class="topbar">
+    <div class="page-shell app-shell">
+      <aside class="sidebar">
         <a class="brand" href="/">
           <span class="brand-mark">料</span>
           <span>
@@ -16,51 +16,58 @@
             <small>控制台</small>
           </span>
         </a>
-        <nav class="topnav">
-          <a href="/dashboard">配方台</a>
-          <a href="/keys">钥匙库</a>
-          <a href="/integration" class="active">接入页</a>
-          <a href="/models">模型页</a>
-          <a href="/chat">聊天</a>
-          <button class="nav-button" id="logout-button" type="button">退出</button>
-        </nav>
-      </header>
 
-      <main class="page">
-        <section class="section-heading">
-          <p class="kicker">Integration</p>
-          <h1>接进 OpenClaw。</h1>
-          <p class="lead">复制片段，注入环境变量即可。</p>
-        </section>
+        <div class="sidebar-block">
+          <div class="sidebar-label">工作台</div>
+          <a class="sidebar-link" href="/dashboard">配方台</a>
+          <a class="sidebar-link" href="/chat">聊天</a>
+          <a class="sidebar-link" href="/keys">钥匙库</a>
+          <a class="sidebar-link active" href="/integration">接入</a>
+          <a class="sidebar-link" href="/models">模型</a>
+        </div>
 
-        <section class="grid two">
-          <article class="card">
+        <div class="sidebar-cta">
+          <button class="sidebar-button" id="logout-button" type="button">退出</button>
+        </div>
+      </aside>
+
+      <section class="content-shell">
+        <header class="content-topbar">
+          <div class="search-shell"><span>OpenClaw integration…</span></div>
+        </header>
+
+        <main class="page">
+          <section class="section-heading">
+            <p class="kicker">Integration</p>
+            <h1>接进 OpenClaw。</h1>
+            <p class="lead">复制片段，注入环境变量即可。</p>
+          </section>
+
+          <section class="grid two">
+            <article class="card">
+              <div class="card-header"><h2>步骤</h2></div>
+              <ol class="step-list">
+                <li>先创建一把激活 key。</li>
+                <li>复制配置片段。</li>
+                <li>注入本地环境变量。</li>
+                <li>重新唤起小龙虾。</li>
+              </ol>
+            </article>
+            <article class="card">
+              <div class="card-header"><h2>提示</h2></div>
+              <div id="integration-hint" class="detail-list"></div>
+            </article>
+          </section>
+
+          <section class="card">
             <div class="card-header">
-              <h2>接入步骤</h2>
+              <h2>配置片段</h2>
+              <button class="button primary" id="load-snippet" type="button">加载</button>
             </div>
-            <ol class="step-list">
-              <li>先在钥匙库里创建一把激活状态的增强 key。</li>
-              <li>复制下面这段配置片段。</li>
-              <li>注入到本地 shell、系统环境变量，或 OpenClaw 私有配置。</li>
-              <li>重新唤起小龙虾，它就会从文本底味升级成增强风味。</li>
-            </ol>
-          </article>
-          <article class="card">
-            <div class="card-header">
-              <h2>对味提示</h2>
-            </div>
-            <div id="integration-hint" class="detail-list"></div>
-          </article>
-        </section>
-
-        <section class="card">
-          <div class="card-header">
-            <h2>配置片段</h2>
-            <button class="button primary" id="load-snippet" type="button">加载片段</button>
-          </div>
-          <pre id="snippet-output">点击按钮后加载。</pre>
-        </section>
-      </main>
+            <pre id="snippet-output">点击按钮后加载。</pre>
+          </section>
+        </main>
+      </section>
     </div>
     <script src="/app.js"></script>
   </body>

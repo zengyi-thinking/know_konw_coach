@@ -3,85 +3,94 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>对味聊天 · Lifecoach</title>
+    <title>聊天 · 对味</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="chat">
-    <div class="page-shell chat-shell">
-      <header class="topbar">
+    <div class="page-shell app-shell">
+      <aside class="sidebar">
         <a class="brand" href="/">
           <span class="brand-mark">料</span>
           <span>
             <strong>对味 Lifecoach</strong>
-            <small>多模态心理聊天窗口</small>
+            <small>聊天</small>
           </span>
         </a>
-        <nav class="topnav">
-          <a href="/dashboard">配方台</a>
-          <a href="/keys">钥匙库</a>
-          <a href="/integration">接入页</a>
-          <a href="/models">模型页</a>
-          <a href="/chat" class="active">聊天</a>
-          <button class="nav-button" id="logout-button" type="button">退出</button>
-        </nav>
-      </header>
 
-      <main class="page chat-page-claude">
-        <section class="chat-minimal-header">
-          <div>
-            <h1 id="chat-sidebar-user">对味聊天</h1>
-            <p class="chat-subtle">简洁、平稳、可追问。</p>
+        <div class="sidebar-block">
+          <div class="sidebar-label">工作台</div>
+          <a class="sidebar-link" href="/dashboard">配方台</a>
+          <a class="sidebar-link active" href="/chat">聊天</a>
+          <a class="sidebar-link" href="/keys">钥匙库</a>
+          <a class="sidebar-link" href="/integration">接入</a>
+          <a class="sidebar-link" href="/models">模型</a>
+        </div>
+
+        <div class="sidebar-block">
+          <div class="sidebar-label">快速开始</div>
+          <button class="sidebar-button" type="button" data-chat-prompt="我最近一直很迷茫，不知道自己到底想要什么。">长期迷茫</button>
+          <button class="sidebar-button" type="button" data-chat-prompt="我总是想证明给父母看，但越证明越累。">父母认可</button>
+          <button class="sidebar-button" type="button" data-chat-prompt="这张图里的信息让我很焦虑，你帮我看重点。">图片线索</button>
+          <button class="sidebar-button" type="button" data-chat-prompt="我想做一次语音式 check-in，先帮我整理心情。">语音 check-in</button>
+        </div>
+
+        <div class="sidebar-cta">
+          <div class="cta-card">
+            <p id="chat-sidebar-user">进入你的对味 Lifecoach。</p>
           </div>
-          <div class="chat-meta-actions">
+          <button class="sidebar-button" id="logout-button" type="button">退出</button>
+        </div>
+      </aside>
+
+      <section class="content-shell">
+        <header class="content-topbar">
+          <div class="search-shell">
+            <span id="chat-status-note">已连接你的 Lifecoach 内核</span>
+          </div>
+          <div class="topbar-actions">
             <span class="capsule" id="chat-capability-pill">多模态</span>
             <span class="capsule plum" id="chat-cerebellum-pill">小脑</span>
-            <button class="ghost-button" id="new-chat-button" type="button">新对话</button>
+            <button class="ghost-button" id="new-chat-button" type="button">New chat</button>
           </div>
-        </section>
+        </header>
 
-        <div class="chat-prompt-row soft-prompt-row">
-          <button class="prompt-chip" type="button" data-chat-prompt="我最近一直很迷茫，不知道自己到底想要什么。">长期迷茫</button>
-          <button class="prompt-chip" type="button" data-chat-prompt="我总是想证明给父母看，但越证明越累。">父母认可</button>
-          <button class="prompt-chip" type="button" data-chat-prompt="这张图里的信息让我很焦虑，你帮我看重点。">图片线索</button>
-          <button class="prompt-chip" type="button" data-chat-prompt="我想做一次语音式 check-in，先帮我整理心情。">语音 check-in</button>
-        </div>
-
-        <div class="chat-window chat-window-minimal">
-          <div class="chat-inspector-inline ghost-strip">
-            <div id="chat-inspector" class="detail-strip">
-              <span>主 skill：等待对话</span>
-              <span>工作流：等待激活</span>
-              <span>对味分：等待计算</span>
+        <main class="page chat-page-claude">
+          <div class="chat-window chat-window-minimal">
+            <div class="ghost-strip">
+              <div id="chat-inspector" class="detail-strip">
+                <span>主 skill：等待对话</span>
+                <span>工作流：等待激活</span>
+                <span>对味分：等待计算</span>
+              </div>
             </div>
+
+            <div class="chat-thread" id="chat-thread">
+              <div class="message-row assistant reveal">
+                <div class="message-badge">教练</div>
+                <article class="message-bubble">
+                  <p>说说你现在最想理清的一层。也可以带图过来。</p>
+                </article>
+              </div>
+            </div>
+
+            <div class="chat-attachments" id="chat-attachments"></div>
+            <div class="chat-followups" id="chat-followups"></div>
+
+            <form class="chat-composer chat-composer-minimal" id="chat-form">
+              <textarea id="chat-input" rows="3" placeholder="和 Lifecoach 直接说话…"></textarea>
+              <div class="minimal-toolbar">
+                <label class="toolbar-button file-button">
+                  <input id="chat-image-input" type="file" accept="image/*" hidden>
+                  图片
+                </label>
+                <button class="toolbar-button" id="chat-voice-button" type="button">语音</button>
+                <button class="toolbar-button" id="chat-read-button" type="button">朗读</button>
+                <button class="button primary send-button" type="submit">发送</button>
+              </div>
+            </form>
           </div>
-
-          <div class="chat-thread" id="chat-thread">
-            <div class="message-row assistant reveal">
-              <div class="message-badge">教练</div>
-              <article class="message-bubble">
-                <p>说说你现在最想理清的一层。也可以带图过来。</p>
-              </article>
-            </div>
-          </div>
-
-          <div class="chat-attachments" id="chat-attachments"></div>
-          <div class="chat-followups" id="chat-followups"></div>
-
-          <form class="chat-composer chat-composer-minimal" id="chat-form">
-            <textarea id="chat-input" rows="3" placeholder="和 Lifecoach 直接说话…"></textarea>
-            <div class="chat-toolbar minimal-toolbar">
-              <label class="toolbar-button file-button">
-                <input id="chat-image-input" type="file" accept="image/*" hidden>
-                图片
-              </label>
-              <button class="toolbar-button" id="chat-voice-button" type="button">语音</button>
-              <button class="toolbar-button" id="chat-read-button" type="button">朗读</button>
-              <span class="composer-note" id="chat-status-note">已连接你的 Lifecoach 内核</span>
-              <button class="button primary send-button" type="submit">发送</button>
-            </div>
-          </form>
-        </div>
-      </main>
+        </main>
+      </section>
     </div>
     <script src="/app.js"></script>
   </body>

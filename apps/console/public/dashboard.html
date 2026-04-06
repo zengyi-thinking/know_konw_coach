@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="dashboard">
-    <div class="page-shell">
-      <header class="topbar">
+    <div class="page-shell app-shell">
+      <aside class="sidebar">
         <a class="brand" href="/">
           <span class="brand-mark">料</span>
           <span>
@@ -16,90 +16,83 @@
             <small>控制台</small>
           </span>
         </a>
-        <nav class="topnav">
-          <a href="/dashboard" class="active">配方台</a>
-          <a href="/keys">钥匙库</a>
-          <a href="/integration">接入页</a>
-          <a href="/models">模型页</a>
-          <a href="/chat">聊天</a>
-          <button class="nav-button" id="logout-button" type="button">退出</button>
-        </nav>
-      </header>
 
-      <main class="page">
-        <section class="dashboard-hero">
-          <div class="hero-copy">
-            <p class="kicker">Console</p>
-            <h1 id="dashboard-greeting">正在检查你的风味状态…</h1>
-            <p class="lead">看状态，看用量，直接进入聊天。</p>
+        <div class="sidebar-block">
+          <div class="sidebar-label">工作台</div>
+          <a class="sidebar-link active" href="/dashboard">配方台</a>
+          <a class="sidebar-link" href="/chat">聊天</a>
+          <a class="sidebar-link" href="/keys">钥匙库</a>
+          <a class="sidebar-link" href="/integration">接入</a>
+          <a class="sidebar-link" href="/models">模型</a>
+        </div>
+
+        <div class="sidebar-cta">
+          <div class="cta-card">
+            <p>这里不堆说明，只保留你真正会用到的入口。</p>
           </div>
-          <div class="status-stack">
-            <article class="status-pill">
-              <span>当前状态</span>
-              <strong id="dashboard-mode">未加载</strong>
-            </article>
-            <article class="status-pill">
-              <span>当前套餐</span>
-              <strong id="dashboard-plan">未加载</strong>
-            </article>
+          <button class="sidebar-button" id="logout-button" type="button">退出</button>
+        </div>
+      </aside>
+
+      <section class="content-shell">
+        <header class="content-topbar">
+          <div class="search-shell"><span>搜索你的配置与记录…</span></div>
+          <div class="topbar-actions">
+            <a class="button secondary" href="/chat">Open Chat</a>
           </div>
-        </section>
+        </header>
 
-        <section class="metric-grid">
-          <article class="metric-card">
-            <span>激活能力</span>
-            <strong id="metric-features">-</strong>
-          </article>
-          <article class="metric-card">
-            <span>API Keys</span>
-            <strong id="metric-keys">-</strong>
-          </article>
-          <article class="metric-card">
-            <span>累计调用</span>
-            <strong id="metric-requests">-</strong>
-          </article>
-          <article class="metric-card">
-            <span>最近活跃</span>
-            <strong id="metric-last-used">-</strong>
-          </article>
-        </section>
-
-        <section class="grid two">
-          <article class="card">
-            <div class="card-header">
-              <h2>账号概览</h2>
-              <a class="inline-link" href="/keys">去管理 key</a>
+        <main class="page">
+          <section class="dashboard-hero">
+            <div class="hero-copy">
+              <p class="kicker">Console</p>
+              <h1 id="dashboard-greeting">正在检查你的风味状态…</h1>
+              <p class="lead">看状态，看用量，直接进入聊天。</p>
             </div>
-            <div id="me-card" class="detail-list"></div>
-          </article>
-          <article class="card">
-            <div class="card-header">
-              <h2>最近火候</h2>
-              <a class="inline-link" href="/integration">查看接入片段</a>
+            <div class="status-stack">
+              <article class="status-pill">
+                <span>当前状态</span>
+                <strong id="dashboard-mode">未加载</strong>
+              </article>
+              <article class="status-pill">
+                <span>当前套餐</span>
+                <strong id="dashboard-plan">未加载</strong>
+              </article>
             </div>
-            <div id="usage-card" class="detail-list"></div>
-          </article>
-        </section>
+          </section>
 
-        <section class="quick-links">
-          <a class="quick-link-card" href="/chat">
-            <span>聊天窗</span>
-            <strong>直接对话</strong>
-          </a>
-          <a class="quick-link-card" href="/keys">
-            <span>钥匙库</span>
-            <strong>管理 key</strong>
-          </a>
-          <a class="quick-link-card" href="/integration">
-            <span>接入页</span>
-            <strong>复制接入片段</strong>
-          </a>
-          <a class="quick-link-card" href="/models">
-            <span>模型页</span>
-            <strong>查看可用能力</strong>
-          </a>
-        </section>
-      </main>
+          <section class="metric-grid">
+            <article class="metric-card"><span>激活能力</span><strong id="metric-features">-</strong></article>
+            <article class="metric-card"><span>API Keys</span><strong id="metric-keys">-</strong></article>
+            <article class="metric-card"><span>累计调用</span><strong id="metric-requests">-</strong></article>
+            <article class="metric-card"><span>最近活跃</span><strong id="metric-last-used">-</strong></article>
+          </section>
+
+          <section class="grid two">
+            <article class="card">
+              <div class="card-header">
+                <h2>账号</h2>
+                <a class="inline-link" href="/keys">管理 key</a>
+              </div>
+              <div id="me-card" class="detail-list"></div>
+            </article>
+            <article class="card">
+              <div class="card-header">
+                <h2>用量</h2>
+                <a class="inline-link" href="/integration">查看接入</a>
+              </div>
+              <div id="usage-card" class="detail-list"></div>
+            </article>
+          </section>
+
+          <section class="quick-links">
+            <a class="quick-link-card" href="/chat"><span>聊天</span><strong>直接对话</strong></a>
+            <a class="quick-link-card" href="/keys"><span>钥匙库</span><strong>管理 key</strong></a>
+            <a class="quick-link-card" href="/integration"><span>接入</span><strong>复制片段</strong></a>
+            <a class="quick-link-card" href="/models"><span>模型</span><strong>查看能力</strong></a>
+          </section>
+        </main>
+      </section>
     </div>
     <script src="/app.js"></script>
   </body>

@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="landing">
-    <div class="page-shell spice-shell">
-      <header class="topbar">
+    <div class="page-shell app-shell">
+      <aside class="sidebar">
         <a class="brand" href="/">
           <span class="brand-mark">料</span>
           <span>
@@ -16,101 +16,123 @@
             <small>稳一点，近一点</small>
           </span>
         </a>
-        <nav class="topnav">
-          <a href="/auth">登录</a>
-          <a href="/register">注册</a>
-          <a href="/chat">聊天</a>
-          <a href="/integration">接入</a>
-        </nav>
-      </header>
 
-      <main class="page">
-        <section class="hero hero-wide">
-          <div class="hero-copy">
-            <p class="kicker">Lifecoach Package</p>
-            <h1>让小龙虾更像一个稳定、对味的教练。</h1>
-            <p class="lead">基础版直接可用。增强版加上语音、图片和更细的理解力。</p>
-            <div class="hero-actions">
-              <a class="button primary" href="/chat">开始聊天</a>
-              <a class="button secondary" href="/register">开通增强</a>
-            </div>
-            <div class="flavor-ribbon">
-              <span>文本底味</span>
-              <span>多模态提鲜</span>
-              <span>小脑慢炖</span>
-            </div>
-          </div>
-          <aside class="hero-panel foil-panel">
-            <div class="panel-label">两种模式</div>
-            <div class="heat-meter">
-              <div class="heat-bar heat-bar-low"></div>
-              <div class="heat-bar heat-bar-mid"></div>
-              <div class="heat-bar heat-bar-hot"></div>
-            </div>
-            <div class="tasting-grid">
-              <article>
-                <h2>基础清汤包</h2>
-                <p>直接安装，马上可用。</p>
-              </article>
-              <article>
-                <h2>浓香增强包</h2>
-                <p>登录后领取 key，加入语音和图片。</p>
-              </article>
-              <article>
-                <h2>小脑慢熬包</h2>
-                <p>让回答更稳，也更贴近你。</p>
-              </article>
-            </div>
-          </aside>
-        </section>
+        <div class="sidebar-block">
+          <div class="sidebar-label">开始</div>
+          <a class="sidebar-link active" href="/">首页</a>
+          <a class="sidebar-link" href="/chat">聊天</a>
+          <a class="sidebar-link" href="/integration">接入</a>
+        </div>
 
-        <section class="feature-band">
-          <article class="feature-card">
-            <div class="card-tag">底味</div>
-            <h2>会聊天</h2>
-            <p>基础文本教练直接可用。</p>
-          </article>
-          <article class="feature-card">
-            <div class="card-tag">提鲜</div>
-            <h2>会听会看</h2>
-            <p>增强 key 解锁多模态理解。</p>
-          </article>
-          <article class="feature-card">
-            <div class="card-tag">火候</div>
-            <h2>会追问</h2>
-            <p>慢慢把问题问到位。</p>
-          </article>
-        </section>
+        <div class="sidebar-block">
+          <div class="sidebar-label">账号</div>
+          <a class="sidebar-link" href="/auth">登录</a>
+          <a class="sidebar-link" href="/register">注册</a>
+        </div>
 
-        <section class="route-showcase">
-          <div class="section-heading">
-            <p class="kicker">入口</p>
-            <h2>常用页面。</h2>
+        <div class="sidebar-cta">
+          <div class="cta-card">
+            <p>基础版直接可用。增强版加上语音、图片和更细的理解力。</p>
           </div>
-          <div class="showcase-grid">
-            <a class="showcase-card" href="/auth">
-              <span class="showcase-index">01</span>
-              <h3>登录页</h3>
-              <p>进入你的增强控制台。</p>
-            </a>
-            <a class="showcase-card" href="/dashboard">
-              <span class="showcase-index">02</span>
-              <h3>配方台</h3>
-              <p>看状态、用量和 key。</p>
-            </a>
-            <a class="showcase-card" href="/chat">
-              <span class="showcase-index">03</span>
-              <h3>聊天窗</h3>
-              <p>直接和 Lifecoach 聊。</p>
-            </a>
-            <a class="showcase-card" href="/integration">
-              <span class="showcase-index">04</span>
-              <h3>接入页</h3>
-              <p>复制给 OpenClaw 的接入片段。</p>
-            </a>
+          <a class="button primary" href="/chat">Start Chat</a>
+        </div>
+      </aside>
+
+      <section class="content-shell">
+        <header class="content-topbar">
+          <div class="search-shell">
+            <span>搜索 Lifecoach…</span>
           </div>
-        </section>
-      </main>
+          <div class="topbar-actions">
+            <a class="button secondary" href="/auth">Log In</a>
+            <a class="button primary" href="/register">Sign Up</a>
+          </div>
+        </header>
+
+        <main class="page">
+          <section class="hero">
+            <div class="hero-copy">
+              <p class="kicker">Lifecoach Package</p>
+              <h1>让小龙虾更像一个稳定、对味的教练。</h1>
+              <p class="lead">基础版直接可用。增强版加入语音、图片和更细的理解力。</p>
+              <div class="hero-actions">
+                <a class="button primary" href="/chat">开始聊天</a>
+                <a class="button secondary" href="/register">开通增强</a>
+              </div>
+            </div>
+
+            <div class="foil-panel">
+              <div class="panel-label">风味</div>
+              <div class="heat-meter">
+                <div class="heat-bar heat-bar-low"></div>
+                <div class="heat-bar heat-bar-mid"></div>
+                <div class="heat-bar heat-bar-hot"></div>
+              </div>
+              <div class="tasting-grid">
+                <article>
+                  <h2>基础清汤包</h2>
+                  <p>直接安装，马上可用。</p>
+                </article>
+                <article>
+                  <h2>浓香增强包</h2>
+                  <p>登录后领取 key，加入语音和图片。</p>
+                </article>
+                <article>
+                  <h2>小脑慢熬包</h2>
+                  <p>让回答更稳，也更贴近你。</p>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section class="feature-band">
+            <article class="feature-card">
+              <div class="card-tag">底味</div>
+              <h2>会聊天</h2>
+              <p>基础文本教练直接可用。</p>
+            </article>
+            <article class="feature-card">
+              <div class="card-tag">提鲜</div>
+              <h2>会听会看</h2>
+              <p>增强 key 解锁多模态理解。</p>
+            </article>
+            <article class="feature-card">
+              <div class="card-tag">火候</div>
+              <h2>会追问</h2>
+              <p>慢慢把问题问到位。</p>
+            </article>
+          </section>
+
+          <section class="route-showcase">
+            <div class="section-heading">
+              <p class="kicker">入口</p>
+              <h2>常用页面。</h2>
+            </div>
+            <div class="showcase-grid">
+              <a class="showcase-card" href="/auth">
+                <span class="showcase-index">01</span>
+                <h3>登录</h3>
+                <p>进入控制台。</p>
+              </a>
+              <a class="showcase-card" href="/dashboard">
+                <span class="showcase-index">02</span>
+                <h3>配方台</h3>
+                <p>看状态、用量和 key。</p>
+              </a>
+              <a class="showcase-card" href="/chat">
+                <span class="showcase-index">03</span>
+                <h3>聊天</h3>
+                <p>直接和 Lifecoach 聊。</p>
+              </a>
+              <a class="showcase-card" href="/integration">
+                <span class="showcase-index">04</span>
+                <h3>接入</h3>
+                <p>复制接入片段。</p>
+              </a>
+            </div>
+          </section>
+        </main>
+      </section>
     </div>
     <script src="/app.js"></script>
   </body>

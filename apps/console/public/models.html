@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="models">
-    <div class="page-shell">
-      <header class="topbar">
+    <div class="page-shell app-shell">
+      <aside class="sidebar">
         <a class="brand" href="/">
           <span class="brand-mark">料</span>
           <span>
@@ -16,31 +16,42 @@
             <small>控制台</small>
           </span>
         </a>
-        <nav class="topnav">
-          <a href="/dashboard">配方台</a>
-          <a href="/keys">钥匙库</a>
-          <a href="/integration">接入页</a>
-          <a href="/models" class="active">模型页</a>
-          <a href="/chat">聊天</a>
-          <button class="nav-button" id="logout-button" type="button">退出</button>
-        </nav>
-      </header>
 
-      <main class="page">
-        <section class="section-heading">
-          <p class="kicker">Models</p>
-          <h1>当前可用能力。</h1>
-          <p class="lead">只看你现在能用什么。</p>
-        </section>
+        <div class="sidebar-block">
+          <div class="sidebar-label">工作台</div>
+          <a class="sidebar-link" href="/dashboard">配方台</a>
+          <a class="sidebar-link" href="/chat">聊天</a>
+          <a class="sidebar-link" href="/keys">钥匙库</a>
+          <a class="sidebar-link" href="/integration">接入</a>
+          <a class="sidebar-link active" href="/models">模型</a>
+        </div>
 
-        <section class="card">
-          <div class="card-header">
-            <h2>当前能力</h2>
-            <button class="button primary" id="load-models" type="button">加载模型列表</button>
-          </div>
-          <div id="models-grid" class="model-grid"></div>
-        </section>
-      </main>
+        <div class="sidebar-cta">
+          <button class="sidebar-button" id="logout-button" type="button">退出</button>
+        </div>
+      </aside>
+
+      <section class="content-shell">
+        <header class="content-topbar">
+          <div class="search-shell"><span>当前可用能力…</span></div>
+        </header>
+
+        <main class="page">
+          <section class="section-heading">
+            <p class="kicker">Models</p>
+            <h1>当前可用能力。</h1>
+            <p class="lead">只看你现在能用什么。</p>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2>模型</h2>
+              <button class="button primary" id="load-models" type="button">加载</button>
+            </div>
+            <div id="models-grid" class="model-grid"></div>
+          </section>
+        </main>
+      </section>
     </div>
     <script src="/app.js"></script>
   </body>
