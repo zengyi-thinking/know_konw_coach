@@ -7,6 +7,13 @@ function hasGeneratedImageContext(body = {}) {
   return messages.some((message) => message.role === 'assistant' && Boolean(message.generatedImageUrl));
 }
 
+function hasCurrentImageInput(body = {}) {
+  const messages = Array.isArray(body.messages) ? body.messages : [];
+  const last = [...messages].reverse().find((message) => message.role === 'user');
+  return Array.isArray(last?.content)
+    && last.content.some((item) => item.type === 'image_url' && item.image_url?.url);
+}
+
 function buildIntentPrompt(userText, hasImage, hasGeneratedImage) {
   return [
     '你是一个多模态意图分类器。',
@@ -29,9 +36,7 @@ async function inferSemanticIntent(body = {}, env = process.env) {
   }
 
   const userText = extractLastUserText(body.messages || []);
-  const hasImage = Array.isArray(body.messages)
-    && body.messages.some((message) => Array.isArray(message.content)
-      && message.content.some((item) => item.type === 'image_url' && item.image_url?.url));
+  const hasImage = hasCurrentImageInput(body);
   const hasGeneratedImage = hasGeneratedImageContext(body);
 
   const response = await executeChat({

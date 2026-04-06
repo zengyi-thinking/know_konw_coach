@@ -69,6 +69,7 @@ function buildTextualResponse(flow, body, authContext) {
       cerebellum: flow.cerebellum,
       choiceCard: null,
       choiceFlowState: null,
+      planQuestionnaire: null,
       processing: {
         modality: body.modality || lastInput.modality,
         capabilityIntent: 'chat',
@@ -117,6 +118,7 @@ function buildImageGenerationResponse(prompt, imageResult) {
       cerebellum: { enabled: false, focus: 'image', trace: ['image_generation'], recommendation: '图像生成由多模态能力完成。' },
       choiceCard: null,
       choiceFlowState: null,
+      planQuestionnaire: null,
       processing: {
         modality: 'image',
         capabilityIntent: 'image_generation',
@@ -129,8 +131,7 @@ function buildImageGenerationResponse(prompt, imageResult) {
   };
 }
 
-function buildQuestionnaireStepResponse(flow, body, questionnaire, stepIndex, answers = {}) {
-  const question = questionnaire.questions[stepIndex];
+function buildPlanQuestionnaireResponse(flow, body, questionnaire) {
   return {
     id: `chatcmpl_${crypto.randomUUID()}`,
     object: 'chat.completion',
@@ -141,15 +142,15 @@ function buildQuestionnaireStepResponse(flow, body, questionnaire, stepIndex, an
         index: 0,
         message: {
           role: 'assistant',
-          content: question.question,
+          content: questionnaire.summary || '我先根据你的问题整理了三张计划卡片，请一次性填完，我再继续。',
         },
         finish_reason: 'stop',
       },
     ],
     usage: {
       prompt_tokens: 18,
-      completion_tokens: 14,
-      total_tokens: 32,
+      completion_tokens: 24,
+      total_tokens: 42,
     },
     lifecoach: {
       mode: 'enhanced',
@@ -166,46 +167,32 @@ function buildQuestionnaireStepResponse(flow, body, questionnaire, stepIndex, an
       timelineOutcome: flow.result.timelineOutcome,
       flavorOptimization: flow.result.flavorOptimization,
       cerebellum: flow.cerebellum,
-      choiceCard: {
-        question: question.question,
-        options: question.options,
-        step: stepIndex + 1,
-        total: questionnaire.questions.length,
-      },
-      choiceFlowState: {
-        mode: 'clarify',
-        questionnaire,
-        stepIndex,
-        answers,
-      },
+      choiceCard: null,
+      choiceFlowState: null,
+      planQuestionnaire: questionnaire,
       processing: {
         modality: body.modality || 'text',
-        capabilityIntent: 'clarify_with_choice_card',
+        capabilityIntent: 'plan_intake',
         upstreamUsed: false,
         upstreamError: null,
         generatedImageUrl: null,
         persistedArtifacts: flow.result.persistence ? flow.result.persistence.files : [],
-        uiMode: body.uiMode || 'auto',
+        uiMode: 'plan',
       },
     },
   };
 }
 
-function shouldGeneratePlanCards(uiMode, intentType) {
-  return uiMode === 'plan' && !['image_generation', 'image_understanding'].includes(intentType);
-}
-
-async function continueClarifyFlow(body, authContext, env, options = {}) {
-  const flowState = body.choiceFlowState;
-  const questionnaire = flowState.questionnaire;
-  const currentQuestion = questionnaire.questions[flowState.stepIndex];
-  const messages = Array.isArray(body.messages) ? body.messages : [];
+async function finalizePlanFromAnswers(body, authContext, env, options = {}) {
+  const planResponseState = body.planResponseState || {};
+  const questionnaire = planResponseState.questionnaire;
+  const answers = planResponseState.answers || {};
+  const summary = buildPlanSummary(questionnaire, answers);
+  const originalMessages = Array.isArray(body.messages) ? body.messages : [];
+  const messages = originalMessages.length && extractLastUserInput(originalMessages).userText.includes('我补充了这三张计划卡片')
+    ? originalMessages
+    : [...originalMessages, { role: 'user', content: summary }];
   const lastInput = extractLastUserInput(messages);
-  const updatedAnswers = {
-    ...(flowState.answers || {}),
-    [currentQuestion.id]: lastInput.userText,
-  };
-
   const flow = runLifecoachConversation({
     messages,
     modality: body.modality || lastInput.modality,
@@ -217,45 +204,34 @@ async function continueClarifyFlow(body, authContext, env, options = {}) {
     uiMode: 'plan',
   });
 
-  if (flowState.stepIndex + 1 < questionnaire.questions.length) {
-    return buildQuestionnaireStepResponse(flow, body, questionnaire, flowState.stepIndex + 1, updatedAnswers);
-  }
-
-  const summary = buildPlanSummary(questionnaire, updatedAnswers);
-  const summarizedFlow = runLifecoachConversation({
-    messages: [
-      ...messages,
-      { role: 'user', content: summary },
-    ],
-    modality: 'text',
-  }, env, {
-    entitlements: authContext.entitlements,
-    workspaceRoot: options.workspaceRoot,
-    stateRoot: options.stateRoot,
-    uiMode: 'plan',
-  });
-
-  const response = buildTextualResponse(summarizedFlow, body, authContext);
-  response.choices[0].message.content = summarizedFlow.assistantMessage;
+  const response = buildTextualResponse(flow, { ...body, messages }, authContext);
   response.lifecoach.processing.capabilityIntent = 'plan';
   response.lifecoach.processing.uiMode = 'plan';
+
+  const upstream = await maybeProxyLifecoachChat(flow, { ...body, messages }, env, { uiMode: 'plan', planStage: 'final' });
+  const upstreamContent = upstream.ok
+    ? upstream.data?.choices?.[0]?.message?.content
+    : null;
+  if (upstreamContent) {
+    response.choices[0].message.content = upstreamContent;
+  }
+  response.lifecoach.processing.upstreamUsed = upstream.used && upstream.ok;
+  response.lifecoach.processing.upstreamError = upstream.used && !upstream.ok ? upstream.error : null;
+  response.lifecoach.processing.modelSource = upstream.used && upstream.ok ? 'upstream-relay' : 'local-core-fallback';
+  response.lifecoach.processing.intentSource = 'plan_questionnaire_submission';
   return response;
 }
 
 async function finalizeChatCompletion(body, authContext, env, options = {}) {
   const uiMode = body.uiMode === 'plan' ? 'plan' : 'chat';
   const intent = await inferSemanticIntent(body, env);
-  const effectiveIntentType = intent.type === 'clarify_with_choice_card' ? 'chat' : intent.type;
+  const responseMode = uiMode === 'plan' && intent.type === 'image_understanding' ? 'chat' : uiMode;
 
-  if (
-    body.choiceFlowState?.mode === 'clarify'
-    && body.choiceFlowState?.questionnaire
-    && uiMode === 'plan'
-  ) {
-    return continueClarifyFlow(body, authContext, env, options);
+  if (body.planResponseState?.mode === 'bulk_questionnaire' && uiMode === 'plan') {
+    return finalizePlanFromAnswers(body, authContext, env, options);
   }
 
-  if (effectiveIntentType === 'image_generation') {
+  if (intent.type === 'image_generation') {
     if (!authContext.entitlements?.featureImage) {
       throw new Error('feature_not_enabled:featureImage');
     }
@@ -276,19 +252,19 @@ async function finalizeChatCompletion(body, authContext, env, options = {}) {
     entitlements: authContext.entitlements,
     workspaceRoot: options.workspaceRoot,
     stateRoot: options.stateRoot,
-    uiMode,
+    uiMode: responseMode,
   });
 
-  if (shouldGeneratePlanCards(uiMode, effectiveIntentType)) {
+  if (uiMode === 'plan' && !['image_generation', 'image_understanding'].includes(intent.type)) {
     const questionnaire = await generateClarifyQuestionnaire(intent.userText || lastInput.userText || '', env);
-    return buildQuestionnaireStepResponse(flow, body, questionnaire, 0, {});
+    return buildPlanQuestionnaireResponse(flow, body, questionnaire);
   }
 
   const response = buildTextualResponse(flow, body, authContext);
-  response.lifecoach.processing.capabilityIntent = uiMode === 'plan' ? 'plan' : effectiveIntentType;
-  response.lifecoach.processing.uiMode = uiMode;
+  response.lifecoach.processing.capabilityIntent = responseMode === 'plan' ? 'plan' : intent.type;
+  response.lifecoach.processing.uiMode = responseMode;
 
-  const upstream = await maybeProxyLifecoachChat(flow, body, env, { uiMode });
+  const upstream = await maybeProxyLifecoachChat(flow, body, env, { uiMode: responseMode });
   const upstreamContent = upstream.ok
     ? upstream.data?.choices?.[0]?.message?.content
     : null;

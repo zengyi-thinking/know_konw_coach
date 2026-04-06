@@ -140,12 +140,13 @@ async function run() {
       }),
     });
     assert(consolePlan.response.status === 200, 'console plan failed');
-    assert(consolePlan.data.lifecoach.choiceCard?.question, 'console plan should generate cards after user question');
-    assert(Array.isArray(consolePlan.data.lifecoach.choiceCard?.options) && consolePlan.data.lifecoach.choiceCard.options.length >= 4, 'console plan choiceCard options missing');
-    assert(consolePlan.data.lifecoach.choiceFlowState?.mode === 'clarify', 'console plan should start choiceFlow');
+    assert(Array.isArray(consolePlan.data.lifecoach.planQuestionnaire?.questions) && consolePlan.data.lifecoach.planQuestionnaire.questions.length === 3, 'console plan should generate three questionnaire cards');
+    assert(consolePlan.data.lifecoach.choiceCard === null, 'console plan should not use step-by-step choiceCard');
 
-    const choice1 = consolePlan.data.lifecoach.choiceCard.options[0];
-    const step2 = await requestJson(`${baseConsole}/api/chat/completions`, {
+    const answers = Object.fromEntries(
+      consolePlan.data.lifecoach.planQuestionnaire.questions.map((question) => [question.id, question.options?.[0]?.title || '默认回答']),
+    );
+    const finalizedPlan = await requestJson(`${baseConsole}/api/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -156,13 +157,17 @@ async function run() {
         messages: [
           { role: 'user', content: '我最近一直很迷茫，不知道自己到底想要什么。' },
           { role: 'assistant', content: consolePlan.data.choices[0].message.content },
-          { role: 'user', content: `Q: ${consolePlan.data.lifecoach.choiceCard.question}\nA: ${choice1.title}` },
         ],
-        choiceFlowState: consolePlan.data.lifecoach.choiceFlowState,
+        planResponseState: {
+          mode: 'bulk_questionnaire',
+          questionnaire: consolePlan.data.lifecoach.planQuestionnaire,
+          answers,
+        },
       }),
     });
-    assert(step2.response.status === 200, 'clarify step2 failed');
-    assert(step2.data.lifecoach.choiceCard?.step === 2, 'clarify did not advance to step 2');
+    assert(finalizedPlan.response.status === 200, 'plan finalization failed');
+    assert(finalizedPlan.data.lifecoach.planQuestionnaire === null, 'finalized plan should not return another questionnaire');
+    assert(finalizedPlan.data.lifecoach.processing.capabilityIntent === 'plan', 'finalized plan should return plan intent');
 
     const consoleImageChat = await requestJson(`${baseConsole}/api/chat/completions`, {
       method: 'POST',

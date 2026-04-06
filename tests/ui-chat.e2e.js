@@ -13,6 +13,11 @@ function assert(condition, message) {
 
 async function run() {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'lifecoach-ui-chat-'));
+  const uploadImagePath = path.join(tempRoot, 'upload-test.png');
+  fs.writeFileSync(
+    uploadImagePath,
+    Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAukB9oNn14wAAAAASUVORK5CYII=', 'base64'),
+  );
   const env = {
     ...process.env,
     PORT: '0',
@@ -37,26 +42,35 @@ async function run() {
     await page.goto(`${baseUrl}/chat`);
     await page.waitForSelector('#chat-window');
     await page.click('#chat-mode-plan');
-    const initialPlanCardCount = await page.locator('.choice-stream-card').count();
-    assert(initialPlanCardCount === 0, 'plan mode should not show cards before user sends a question');
+    const initialQuestionnaireShellCount = await page.locator('.plan-questionnaire-card').count();
+    assert(initialQuestionnaireShellCount === 0, 'planning mode should not show questionnaire before user sends a message');
+    const initialPlanCardCount = await page.locator('.plan-question-item').count();
+    assert(initialPlanCardCount === 0, 'plan mode should not show generated question cards before user sends a question');
 
     await page.fill('#chat-input', '我最近一直很迷茫，不知道自己到底想要什么。');
     await page.click('#chat-form button[type="submit"]');
     await page.waitForFunction(() => {
-      return document.querySelectorAll('.choice-stream-card .followup-chip').length >= 4;
+      return document.querySelectorAll('.plan-question-item').length === 3;
     });
 
-    const choiceCardCount = await page.locator('.choice-stream-card .followup-chip').count();
-    assert(choiceCardCount >= 4, 'plan mode should render generated cards after user question');
+    const questionCardCount = await page.locator('.plan-question-item').count();
+    assert(questionCardCount === 3, 'plan mode should render three generated question cards');
 
-    await page.locator('.choice-stream-card .followup-chip').first().click();
-    await page.waitForFunction(() => {
-      const kicker = document.querySelector('.choice-stream-kicker');
-      return kicker ? /2\s*\/\s*3/.test(kicker.textContent || '') : false;
-    });
+    for (let index = 0; index < 3; index += 1) {
+      await page.locator('.plan-question-item').nth(index).locator('.plan-question-option').first().click();
+    }
+    await page.click('#plan-submit-button');
+    await page.waitForFunction(() => !document.querySelector('.plan-question-item'));
 
     await page.click('#chat-mode-chat');
-    await page.waitForFunction(() => !document.querySelector('.choice-stream-card'));
+    await page.setInputFiles('#chat-image-input', uploadImagePath);
+    await page.click('#chat-form button[type="submit"]');
+    await page.waitForFunction(() => {
+      return document.querySelectorAll('.message-row.user .message-image').length >= 1
+        && document.querySelectorAll('.message-row.assistant .message-bubble p').length >= 3;
+    });
+    const uploadedImageCount = await page.locator('.message-row.user .message-image').count();
+    assert(uploadedImageCount >= 1, 'uploaded image should render in chat stream');
 
     await page.fill('#chat-input', '请生成一张柔和粉橘色调、像玻璃球一样的情绪氛围图。');
     await page.click('#chat-form button[type="submit"]');

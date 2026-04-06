@@ -10,8 +10,9 @@ function extractLastUserText(messages = []) {
 
 function hasImageAttachment(body = {}) {
   const messages = Array.isArray(body.messages) ? body.messages : [];
-  return messages.some((message) => Array.isArray(message.content)
-    && message.content.some((item) => item.type === 'image_url' && item.image_url?.url));
+  const last = [...messages].reverse().find((message) => message.role === 'user');
+  return Array.isArray(last?.content)
+    && last.content.some((item) => item.type === 'image_url' && item.image_url?.url);
 }
 
 function hasGeneratedImageContext(body = {}) {
