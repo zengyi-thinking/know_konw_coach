@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { resolveWorkspaceRoot, resolveWorkspaceManifestPath } = require('./paths');
+const { resolveWorkspaceRoot, resolveWorkspaceUserRoot, resolveWorkspaceManifestPath, resolveWorkspaceOverlayRoots } = require('./paths');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -71,6 +71,7 @@ function inferWorkspaceManifest(workspaceRoot) {
 
 function loadWorkspaceBundle(env = process.env, workspaceOverride) {
   const workspaceRoot = resolveWorkspaceRoot(env, workspaceOverride);
+  const userWorkspaceRoot = resolveWorkspaceUserRoot(env, workspaceOverride);
   const manifestPath = resolveWorkspaceManifestPath(env, workspaceOverride);
   const manifest = fs.existsSync(manifestPath)
     ? readJson(manifestPath)
@@ -78,6 +79,8 @@ function loadWorkspaceBundle(env = process.env, workspaceOverride) {
 
   return {
     workspaceRoot,
+    userWorkspaceRoot,
+    overlayRoots: resolveWorkspaceOverlayRoots(env, workspaceOverride),
     manifestPath,
     manifest,
   };

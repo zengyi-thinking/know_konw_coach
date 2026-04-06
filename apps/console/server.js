@@ -27,6 +27,7 @@ const {
 const { getUsageSummary } = require('../../packages/lifecoach-control-plane/src/usage');
 const { finalizeChatCompletion } = require('../../packages/lifecoach-control-plane/src/chat_surface');
 const { loadEnvFiles } = require('../../packages/lifecoach-control-plane/src/env_loader');
+const { generateImageAsset, synthesizeSpeechAsset } = require('../../packages/lifecoach-control-plane/src/multimodal_surface');
 
 const publicRoot = path.join(__dirname, 'public');
 
@@ -199,6 +200,45 @@ function createConsoleHandler(options = {}) {
           entitlements: session.entitlements,
         }, env);
         sendJson(res, 200, result);
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === '/api/images/generations') {
+        const session = requireSession(req, env);
+        const body = await readJsonBody(req);
+        const result = await generateImageAsset({
+          prompt: body.prompt,
+          size: body.size,
+        }, env);
+        sendJson(res, result.ok ? 200 : 400, {
+          ok: result.ok,
+          imageUrl: result.imageUrl || null,
+          source: result.source,
+          error: result.error || null,
+        });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === '/api/audio/speech') {
+        const session = requireSession(req, env);
+        const body = await readJsonBody(req);
+        const result = await synthesizeSpeechAsset({
+          text: body.text,
+          voice: body.voice,
+          format: body.format,
+        }, env);
+        if (!result.ok || !Buffer.isBuffer(result.audio)) {
+          sendJson(res, 400, {
+            ok: false,
+            source: result.source,
+            error: result.error || 'speech_failed',
+          });
+          return;
+        }
+        res.writeHead(200, {
+          'Content-Type': result.contentType || 'audio/wav',
+        });
+        res.end(result.audio);
         return;
       }
 

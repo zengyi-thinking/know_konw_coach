@@ -87,5 +87,13 @@
     "memoryCache": "state/lifecoach/memory-cache",
     "proposals": "state/lifecoach/proposals",
     "systemReviews": "state/lifecoach/system-reviews"
+  },
+  "userCustomRoot": ".lifecoach-user",
+  "userCustomAreas": {
+    "memories": ".lifecoach-user/memories",
+    "knowledge": ".lifecoach-user/knowledge",
+    "skills": ".lifecoach-user/skills",
+    "prompts": ".lifecoach-user/prompts",
+    "notes": ".lifecoach-user/notes"
   }
 }

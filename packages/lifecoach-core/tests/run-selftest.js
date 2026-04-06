@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { requireRuntimeModule } = require('./require_runtime');
 const { runSession } = requireRuntimeModule('../src', '..');
+const { routeSkill, loadSkillRoutes } = requireRuntimeModule('../src/router/skill_router', '../router/skill_router');
+const { retrieveKnowledge } = requireRuntimeModule('../src/retrieval/knowledge_retriever', '../retrieval/knowledge_retriever');
 const { processMemory } = requireRuntimeModule('../src/memory/memory_manager', '../memory/memory_manager');
 const { generatePatchProposal } = requireRuntimeModule('../src/evolution/patch_proposal_generator', '../evolution/patch_proposal_generator');
 const { readGatewayConfig } = requireRuntimeModule('../src/gateway/config', '../gateway/config');
@@ -12,6 +14,7 @@ const { executeAudioTranscription } = requireRuntimeModule('../src/gateway/audio
 const {
   resolveWorkspacePackageRoot,
   resolveWorkspaceRoot,
+  resolveWorkspaceUserRoot,
   resolveWorkspaceManifestPath,
   resolveSelftestFixtureRoot,
   resolveStateRoot,
@@ -52,7 +55,9 @@ function assert(condition, message) {
 
 async function run() {
   const governance = readLayerGovernance(process.env, workspaceRoot);
+  const userWorkspaceRoot = resolveWorkspaceUserRoot(process.env, workspaceRoot);
   ensureDir(workspaceRoot, 'workspaceRoot 不存在，OpenClaw 安装结构不完整');
+  ensureDir(userWorkspaceRoot, 'workspace/.lifecoach-user 不存在');
   ensureDir(fixturesDir, 'selftest fixtures 不存在');
   ensureFile(workspaceManifestPath, 'workspace/.lifecoach/workspace.manifest.json 缺失');
   assert(governance && Array.isArray(governance.layers) && governance.layers.length > 0, 'layer governance 清单缺失');
@@ -67,9 +72,55 @@ async function run() {
   ensureDir(path.join(expectedStateRoot, 'memory-cache'), 'state/lifecoach/memory-cache 缺失');
   ensureDir(path.join(expectedStateRoot, 'proposals'), 'state/lifecoach/proposals 缺失');
   ensureDir(path.join(expectedStateRoot, 'system-reviews'), 'state/lifecoach/system-reviews 缺失');
+  ensureDir(path.join(userWorkspaceRoot, 'memories'), 'workspace/.lifecoach-user/memories 缺失');
+  ensureDir(path.join(userWorkspaceRoot, 'knowledge'), 'workspace/.lifecoach-user/knowledge 缺失');
+  ensureDir(path.join(userWorkspaceRoot, 'skills'), 'workspace/.lifecoach-user/skills 缺失');
+  ensureDir(path.join(userWorkspaceRoot, 'prompts'), 'workspace/.lifecoach-user/prompts 缺失');
+  ensureDir(path.join(userWorkspaceRoot, 'notes'), 'workspace/.lifecoach-user/notes 缺失');
 
   const tests = [];
   tests.push('enhanced install structure ok');
+
+  const customSkillDir = path.join(userWorkspaceRoot, 'skills', 'custom-clarify');
+  fs.mkdirSync(customSkillDir, { recursive: true });
+  fs.writeFileSync(path.join(customSkillDir, 'route.json'), JSON.stringify({
+    priority: 0,
+    keywords: ['自定义澄清信号'],
+    sceneTags: ['custom_overlay_scene'],
+  }, null, 2));
+  fs.writeFileSync(path.join(customSkillDir, 'SKILL.md'), '# custom clarify\n', 'utf8');
+  fs.writeFileSync(path.join(customSkillDir, 'response_schema.json'), JSON.stringify({ type: 'object' }, null, 2));
+
+  const customKnowledgeDir = path.join(userWorkspaceRoot, 'knowledge', 'frameworks');
+  fs.mkdirSync(customKnowledgeDir, { recursive: true });
+  fs.writeFileSync(path.join(customKnowledgeDir, 'custom-clarity-001.json'), JSON.stringify({
+    id: 'custom-clarity-001',
+    title: '自定义澄清知识',
+    summary: '用户自定义覆盖层知识',
+    scenes: ['custom_overlay_scene'],
+    keywords: ['自定义澄清信号'],
+    recommendedSkills: ['custom-clarify'],
+  }, null, 2));
+  fs.writeFileSync(path.join(customKnowledgeDir, 'custom-clarity-001.md'), '这是用户自定义知识块。\n', 'utf8');
+
+  const customRoutes = loadSkillRoutes(workspaceRoot, process.env);
+  assert(customRoutes.some((item) => item.skill === 'custom-clarify'), 'workspace/.lifecoach-user 自定义 skill 未被加载');
+
+  const customRoute = routeSkill({
+    modality: 'text',
+    text: '我现在遇到了自定义澄清信号，想收束一下。',
+    sceneTags: ['custom_overlay_scene'],
+  }, workspaceRoot, process.env);
+  assert(customRoute.rankedSkills.some((item) => item.skill === 'custom-clarify'), 'workspace/.lifecoach-user 自定义 skill 未进入路由候选');
+
+  const customKnowledge = retrieveKnowledge({
+    modality: 'text',
+    text: '我现在遇到了自定义澄清信号，想收束一下。',
+    sceneTags: ['custom_overlay_scene'],
+    primarySkill: 'custom-clarify',
+  }, workspaceRoot, 3, { env: process.env });
+  assert(customKnowledge.some((item) => item.id === 'custom-clarity-001'), 'workspace/.lifecoach-user 自定义 knowledge 未生效');
+  tests.push('user custom overlay roots ok');
 
   const goalFixture = loadJson('goal-clarify.json');
   const goal = runSession(goalFixture, {

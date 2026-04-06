@@ -1,20 +1,34 @@
 const fs = require('fs');
 const path = require('path');
+const { resolveWorkspaceOverlayRoots } = require('../paths');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-function loadSkillRoutes(workspaceRoot) {
-  const skillsDir = path.join(workspaceRoot, 'skills');
-  const skillNames = fs.readdirSync(skillsDir, { withFileTypes: true })
+function listSkillNames(skillsDir) {
+  if (!fs.existsSync(skillsDir)) return [];
+  return fs.readdirSync(skillsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name);
+}
 
-  return skillNames.map((skillName) => ({
-    skill: skillName,
-    route: readJson(path.join(skillsDir, skillName, 'route.json')),
-  }));
+function loadSkillRoutes(workspaceRoot, env = process.env) {
+  const { skillsRoots } = resolveWorkspaceOverlayRoots(env, workspaceRoot);
+  const routesBySkill = new Map();
+
+  for (const skillsDir of skillsRoots) {
+    for (const skillName of listSkillNames(skillsDir)) {
+      const routePath = path.join(skillsDir, skillName, 'route.json');
+      if (!fs.existsSync(routePath)) continue;
+      routesBySkill.set(skillName, {
+        skill: skillName,
+        route: readJson(routePath),
+      });
+    }
+  }
+
+  return Array.from(routesBySkill.values());
 }
 
 function countKeywordHits(text, keywords) {
@@ -27,9 +41,9 @@ function matchesModality(inputModality, routeModalities) {
   return routeModalities.includes(inputModality);
 }
 
-function routeSkill(input, workspaceRoot) {
+function routeSkill(input, workspaceRoot, env = process.env) {
   const normalizedText = [input.text || '', ...(input.sceneTags || [])].join(' ').toLowerCase();
-  const routes = loadSkillRoutes(workspaceRoot);
+  const routes = loadSkillRoutes(workspaceRoot, env);
 
   const scored = routes
     .filter(({ route }) => matchesModality(input.modality || 'text', route.modality))

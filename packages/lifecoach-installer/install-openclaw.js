@@ -27,10 +27,34 @@ function removeTarget(targetPath) {
   fs.rmSync(targetPath, { recursive: true, force: true });
 }
 
-function copyEntry(sourcePath, targetPath) {
+function copyReplace(sourcePath, targetPath) {
   removeTarget(targetPath);
   ensureDir(path.dirname(targetPath));
   fs.cpSync(sourcePath, targetPath, { recursive: true });
+}
+
+function copyMerge(sourcePath, targetPath) {
+  const sourceStat = fs.statSync(sourcePath);
+
+  if (sourceStat.isDirectory()) {
+    ensureDir(targetPath);
+    for (const entry of fs.readdirSync(sourcePath, { withFileTypes: true })) {
+      copyMerge(path.join(sourcePath, entry.name), path.join(targetPath, entry.name));
+    }
+    return;
+  }
+
+  ensureDir(path.dirname(targetPath));
+  fs.cpSync(sourcePath, targetPath, { force: true });
+}
+
+function copyEntry(sourcePath, targetPath, strategy = 'replace') {
+  if (strategy === 'merge') {
+    copyMerge(sourcePath, targetPath);
+    return;
+  }
+
+  copyReplace(sourcePath, targetPath);
 }
 
 function renderTemplate(value, context) {
@@ -141,7 +165,7 @@ function install() {
   for (const entry of manifest.copy || []) {
     const sourcePath = path.join(repoRoot, entry.source);
     const targetPath = path.join(openclawHome, entry.target);
-    copyEntry(sourcePath, targetPath);
+    copyEntry(sourcePath, targetPath, entry.strategy);
   }
 
   const appDir = path.join(openclawHome, 'app', manifest.appId);

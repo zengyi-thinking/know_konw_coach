@@ -67,7 +67,7 @@ function resolveRuntimeRoot(env = process.env) {
 function resolveWorkspaceRoot(env = process.env, override) {
   if (override) return override;
   if (env.LIFECOACH_WORKSPACE_ROOT) {
-    return env.LIFECOACH_WORKSPACE_ROOT;
+    return path.resolve(env.LIFECOACH_WORKSPACE_ROOT);
   }
 
   const openclawRoot = resolveOpenClawRoot(env);
@@ -77,6 +77,27 @@ function resolveWorkspaceRoot(env = process.env, override) {
   }
 
   return path.join(resolveWorkspacePackageRoot(env), 'content');
+}
+
+function resolveWorkspaceUserRoot(env = process.env, workspaceOverride) {
+  if (env.LIFECOACH_USER_WORKSPACE_ROOT) {
+    return path.resolve(env.LIFECOACH_USER_WORKSPACE_ROOT);
+  }
+
+  return path.join(resolveWorkspaceRoot(env, workspaceOverride), '.lifecoach-user');
+}
+
+function resolveWorkspaceOverlayRoots(env = process.env, workspaceOverride) {
+  const workspaceRoot = resolveWorkspaceRoot(env, workspaceOverride);
+  const userRoot = resolveWorkspaceUserRoot(env, workspaceOverride);
+  return {
+    workspaceRoot,
+    userRoot,
+    skillsRoots: [path.join(workspaceRoot, 'skills'), path.join(userRoot, 'skills')],
+    knowledgeRoots: [path.join(workspaceRoot, 'knowledge'), path.join(userRoot, 'knowledge')],
+    promptsRoots: [path.join(workspaceRoot, 'prompts'), path.join(userRoot, 'prompts')],
+    memoriesRoots: [path.join(workspaceRoot, 'memories'), path.join(userRoot, 'memories')],
+  };
 }
 
 function resolveConfigRoot(env = process.env) {
@@ -160,6 +181,8 @@ module.exports = {
   resolvePackageRoot,
   resolveRuntimeRoot,
   resolveWorkspaceRoot,
+  resolveWorkspaceUserRoot,
+  resolveWorkspaceOverlayRoots,
   resolveConfigRoot,
   resolveSchemaRoot,
   resolveStateRoot,

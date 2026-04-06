@@ -10,6 +10,8 @@ const state = {
   chatLastAssistantText: '',
   chatLastFollowups: [],
   chatBusy: false,
+  chatStarted: false,
+  chatMode: 'chat',
 };
 
 function pageName() {
@@ -92,6 +94,33 @@ async function api(path, options = {}) {
   return data;
 }
 
+async function apiBinary(path, payload) {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  if (state.token) {
+    headers.Authorization = `Bearer ${state.token}`;
+  }
+
+  const response = await fetch(path, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const contentType = response.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await response.json() : await response.text();
+    throw new Error(data.error || 'request_failed');
+  }
+
+  return {
+    blob: await response.blob(),
+    contentType: response.headers.get('content-type') || '',
+  };
+}
+
 function formatEntitlements(entitlements = {}) {
   return [
     entitlements.featureText ? '文本' : null,
@@ -130,6 +159,25 @@ function bindLogoutButtons() {
 
 function setChatStatus(text) {
   setText('chat-status-note', text);
+}
+
+function setChatMode(mode) {
+  state.chatMode = mode;
+  document.querySelectorAll('[data-chat-mode]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.chatMode === mode);
+  });
+}
+
+function setChatStarted(started) {
+  state.chatStarted = Boolean(started);
+  const body = document.body;
+  const stage = document.getElementById('chat-bubble-stage');
+  const windowNode = document.getElementById('chat-window');
+  if (!body || !stage || !windowNode) return;
+
+  body.classList.toggle('chat-started', state.chatStarted);
+  stage.classList.toggle('bubble-stage-docked', state.chatStarted);
+  windowNode.classList.toggle('chat-window-hidden', !state.chatStarted);
 }
 
 function renderDashboard() {
@@ -356,25 +404,14 @@ function renderChatAttachments() {
 }
 
 function renderChatInspector(meta) {
-  const node = document.getElementById('chat-inspector');
-  if (!node) return;
+  if (!meta?.lifecoach) return;
 
-  const route = meta?.lifecoach?.route?.primarySkill || '等待对话';
-  const workflow = meta?.lifecoach?.workflow?.stageId || meta?.lifecoach?.workflow?.id || '等待激活';
-  const flavor = meta?.lifecoach?.flavorScores
-    ? `${meta.lifecoach.flavorScores.overall} / ${meta.lifecoach.flavorScores.band}`
-    : '等待计算';
-
-  node.innerHTML = [
-    { label: '主 skill', value: route },
-    { label: '工作流', value: workflow },
-    { label: '对味分', value: flavor },
-  ].map((row) => `
-    <div class="detail-row">
-      <span>${row.label}</span>
-      <strong>${escapeHtml(row.value)}</strong>
-    </div>
-  `).join('');
+  const workflow = meta.lifecoach.workflow?.title || meta.lifecoach.workflow?.id || '';
+  const route = meta.lifecoach.route?.primarySkill || '';
+  const summary = workflow || route;
+  if (summary) {
+    setText('chat-sidebar-user', summary);
+  }
 }
 
 function renderChatFollowups() {
@@ -390,7 +427,13 @@ function renderChatFollowups() {
     <div class="followup-label">继续追问</div>
     <div class="followup-grid">
       ${state.chatLastFollowups.map((item, index) => `
-        <button class="followup-chip" type="button" data-followup-index="${index}">${escapeHtml(item)}</button>
+        <button class="followup-chip card-option" type="button" data-followup-index="${index}">
+          <span class="card-option-key">${escapeHtml(item.key || '')}</span>
+          <span class="card-option-text">
+            <strong>${escapeHtml(item.title || item)}</strong>
+            ${item.subtitle ? `<small>${escapeHtml(item.subtitle)}</small>` : ''}
+          </span>
+        </button>
       `).join('')}
     </div>
   `;
@@ -399,13 +442,14 @@ function renderChatFollowups() {
     button.addEventListener('click', async () => {
       const index = Number(button.dataset.followupIndex);
       const choice = state.chatLastFollowups[index] || '';
-      const cleanChoice = choice.replace(/^[A-D]\.\s*/, '');
-      const input = document.getElementById('chat-input');
-      if (input) {
-        input.value = cleanChoice;
-      }
+      const label = typeof choice === 'string' ? choice : `${choice.key || ''}. ${choice.title || ''}`;
+      state.chatMessages.push({
+        role: 'user',
+        text: label,
+      });
+      persistChatMessages();
       try {
-        await sendChatMessage();
+        await sendChatMessageFromState();
       } catch {}
     });
   });
@@ -426,6 +470,7 @@ function renderChatMessages() {
 
   const rows = state.chatMessages.map((item, index) => {
     const attachment = item.imageDataUrl ? `<img class="message-image" src="${item.imageDataUrl}" alt="user attachment">` : '';
+    const generated = item.generatedImageUrl ? `<img class="message-image generated-image" src="${item.generatedImageUrl}" alt="generated image">` : '';
     const actions = item.role === 'assistant'
       ? `<div class="message-actions"><button class="ghost-button speak-message" data-index="${index}" type="button">朗读</button></div>`
       : '';
@@ -434,6 +479,7 @@ function renderChatMessages() {
         <div class="message-badge">${item.role === 'assistant' ? '教练' : '你'}</div>
         <article class="message-bubble">
           ${attachment}
+          ${generated}
           <p>${escapeHtml(item.text)}</p>
           ${actions}
         </article>
@@ -497,18 +543,55 @@ async function sendChatMessage() {
 
   const userMessage = {
     role: 'user',
-    text: rawText || '请先帮我看这张图片，然后陪我聊聊现在的感受。',
+    text: rawText || (state.chatMode === 'image' ? '请根据这个想法生成一张图。' : '请先帮我看这张图片，然后陪我聊聊现在的感受。'),
     imageDataUrl: state.chatAttachment ? state.chatAttachment.dataUrl : null,
   };
+  setChatStarted(true);
   state.chatMessages.push(userMessage);
   persistChatMessages();
+  if (input) input.value = '';
+  await sendChatMessageFromState();
+}
+
+async function sendChatMessageFromState() {
+  const input = document.getElementById('chat-input');
   state.chatLastFollowups = [];
   state.chatBusy = true;
   renderChatMessages();
   renderChatFollowups();
-  setChatStatus('Lifecoach 正在用你的调料包内核收束当前问题…');
+  setChatStatus(state.chatMode === 'image' ? '正在生成图像…' : '正在回复…');
 
   try {
+    if (state.chatMode === 'image') {
+      const imageResult = await api('/api/images/generations', {
+        method: 'POST',
+        body: {
+          prompt: rawText || '生成一张柔和、温暖、像玻璃球一样带有情绪氛围的图像。',
+          size: '1024x1024',
+        },
+      });
+
+      const generatedText = imageResult.source === 'upstream-image-model'
+        ? '我先为你生成了一张图像。'
+        : '我先做了一张示意图。';
+
+      state.chatMessages.push({
+        role: 'assistant',
+        text: generatedText,
+        generatedImageUrl: imageResult.imageUrl || null,
+      });
+      state.chatLastAssistantText = generatedText;
+      state.chatLastFollowups = [
+        'A. 更暖一点',
+        'B. 更像玻璃球',
+        'C. 更安静一点',
+        'D. 按我的情绪再改一版',
+      ];
+      persistChatMessages();
+      setChatStatus(imageResult.source === 'upstream-image-model' ? '图像已生成' : '示意图已生成');
+      return;
+    }
+
     const result = await api('/api/chat/completions', {
       method: 'POST',
       body: {
@@ -525,17 +608,13 @@ async function sendChatMessage() {
     state.chatLastFollowups = Array.isArray(result.lifecoach.followups) ? result.lifecoach.followups : [];
     persistChatMessages();
     renderChatInspector(result);
-    setText('chat-sidebar-user', `${state.me.user.displayName}，这轮我更倾向于从 ${result.lifecoach.route.primarySkill} 这层陪你往前走。`);
-    setText('chat-capability-pill', result.lifecoach.processing.modality === 'image' ? '图片对话已参与' : '文字对话进行中');
-    setText('chat-cerebellum-pill', result.lifecoach.processing.modelSource === 'upstream-relay' ? `真实模型：${result.model}` : `小脑：${result.lifecoach.cerebellum.focus}`);
-    setChatStatus(`已完成：${result.lifecoach.route.primarySkill} · 对味分 ${result.lifecoach.flavorScores.overall} · ${result.lifecoach.processing.modelSource === 'upstream-relay' ? '真实模型已调用' : '本地内核回退'}`);
+    setChatStatus(result.lifecoach.processing.modelSource === 'upstream-relay' ? '已回复' : '已回复');
   } catch (error) {
     setChatStatus(error.message || '聊天请求失败');
     throw error;
   } finally {
     state.chatBusy = false;
     state.chatAttachment = null;
-    if (input) input.value = '';
     renderChatAttachments();
     renderChatMessages();
     renderChatFollowups();
@@ -544,19 +623,41 @@ async function sendChatMessage() {
 
 function bindChatPage() {
   restoreChatMessages();
+  setChatStarted(true);
   renderChatMessages();
   renderChatAttachments();
   renderChatFollowups();
+
+  document.getElementById('chat-orb-button')?.addEventListener('click', () => {
+    setChatStarted(true);
+    document.getElementById('chat-input')?.focus();
+  });
+
+  document.querySelectorAll('[data-chat-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const mode = button.dataset.chatMode || 'chat';
+      setChatMode(mode);
+      const input = document.getElementById('chat-input');
+      if (!input) return;
+      input.placeholder = mode === 'image'
+        ? '描述你想生成的画面…'
+        : mode === 'voice'
+          ? '先说一句你想整理的心情…'
+          : '和 Lifecoach 直接说话…';
+    });
+  });
 
   document.getElementById('new-chat-button')?.addEventListener('click', () => {
     state.chatMessages = [];
     state.chatLastAssistantText = '';
     state.chatLastFollowups = [];
     persistChatMessages();
+    setChatStarted(true);
     renderChatInspector(null);
     renderChatMessages();
     renderChatFollowups();
-    setChatStatus('已开始新对话。');
+    setText('chat-sidebar-user', state.me?.user?.displayName || '对味聊天');
+    setChatStatus('新对话');
   });
 
   document.getElementById('chat-form')?.addEventListener('submit', async (event) => {
@@ -590,17 +691,17 @@ function bindChatPage() {
       dataUrl,
     };
     renderChatAttachments();
-    setChatStatus('图片已加入，这条消息会以多模态方式发送。');
+    setChatStatus('已加入图片');
   });
 
   const recognition = initSpeechRecognition();
   document.getElementById('chat-voice-button')?.addEventListener('click', () => {
     if (!recognition) {
-      setChatStatus('当前浏览器不支持语音输入，请直接输入文字。');
+      setChatStatus('当前浏览器不支持语音输入');
       return;
     }
     recognition.start();
-    setChatStatus('正在听你说话…');
+    setChatStatus('正在听…');
   });
   if (recognition) {
     recognition.onresult = (event) => {
@@ -609,15 +710,41 @@ function bindChatPage() {
       if (input) {
         input.value = input.value ? `${input.value} ${transcript}` : transcript;
       }
-      setChatStatus('语音已转成文字，可以继续发给 Lifecoach。');
+      setChatStatus('语音已转文字');
     };
     recognition.onerror = () => {
-      setChatStatus('语音识别失败，请重试或改用文字输入。');
+      setChatStatus('语音识别失败');
     };
   }
 
   document.getElementById('chat-read-button')?.addEventListener('click', () => {
-    speakText(state.chatLastAssistantText);
+    (async () => {
+      try {
+        const { blob } = await apiBinary('/api/audio/speech', {
+          text: state.chatLastAssistantText,
+          voice: 'alloy',
+          format: 'wav',
+        });
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.play().finally(() => {
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+        });
+      } catch {
+        speakText(state.chatLastAssistantText);
+      }
+    })();
+  });
+
+  document.getElementById('chat-generate-image-button')?.addEventListener('click', async () => {
+    setChatMode('image');
+    const input = document.getElementById('chat-input');
+    if (input && !input.value.trim()) {
+      input.value = '生成一张柔和、温暖、像玻璃球一样带有情绪氛围的图像。';
+    }
+    try {
+      await sendChatMessage();
+    } catch {}
   });
 }
 
@@ -645,8 +772,9 @@ async function initPage() {
     }
     if (pageName() === 'chat') {
       bindChatPage();
-      setText('chat-sidebar-user', `${state.me.user.displayName}，你现在可以直接和你的 Lifecoach 内核聊天。`);
+      setText('chat-sidebar-user', state.me.user.displayName || '对味聊天');
       renderChatInspector(null);
+      setChatMode('chat');
     }
   }
 }

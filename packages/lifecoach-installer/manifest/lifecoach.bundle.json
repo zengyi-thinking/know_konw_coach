@@ -25,7 +25,8 @@
     },
     {
       "source": "packages/lifecoach-workspace/content",
-      "target": "workspace"
+      "target": "workspace",
+      "strategy": "merge"
     }
   ],
   "directories": [
@@ -35,6 +36,12 @@
     "state/lifecoach/memory-cache",
     "state/lifecoach/proposals",
     "state/lifecoach/system-reviews",
+    "workspace/.lifecoach-user",
+    "workspace/.lifecoach-user/memories",
+    "workspace/.lifecoach-user/knowledge",
+    "workspace/.lifecoach-user/skills",
+    "workspace/.lifecoach-user/prompts",
+    "workspace/.lifecoach-user/notes",
     "workspace/evolution/proposals",
     "workspace/evolution/signals"
   ],

@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { runLifecoachConversation } = require('./lifecoach_engine');
 const { maybeProxyLifecoachChat } = require('./upstream_lifecoach_chat');
+const { buildFollowupOptions } = require('./followup_generator');
 
 function extractLastUserInput(messages = []) {
   const last = [...messages].reverse().find((item) => item.role === 'user');
@@ -84,45 +85,6 @@ function buildChatCompletion(body, authContext, env, options = {}) {
   };
 
   return { flow, response };
-}
-
-function buildFollowupOptions(flow) {
-  const workflow = flow.result.workflow;
-  const route = flow.result.route.primarySkill;
-
-  if (workflow?.id === 'long-horizon-confusion' && workflow.stageId === 'diagnose_pattern') {
-    return [
-      'A. 先聊最近一个让你最纠结的决定',
-      'B. 先说说你最怕失去谁的认可',
-      'C. 先区分这是你的目标，还是你替别人活出来的目标',
-      'D. 先只找一个最小可行动作，不急着谈人生总方向',
-    ];
-  }
-
-  if (route === 'goal-clarify') {
-    return [
-      'A. 我想先说清楚我真正想要的结果',
-      'B. 我想先说说为什么总是卡住',
-      'C. 我想先列一下我现有的资源',
-      'D. 你直接帮我收束成一个最小行动',
-    ];
-  }
-
-  if (route === 'emotional-debrief') {
-    return [
-      'A. 我想先说具体发生了什么',
-      'B. 我想先说最刺到我的那句话',
-      'C. 我想先理清我为什么会反应这么大',
-      'D. 先帮我落到一个今天能做的小动作',
-    ];
-  }
-
-  return [
-    'A. 先帮我把问题说清楚',
-    'B. 先帮我看我卡在哪里',
-    'C. 先帮我收束成一个下一步',
-    'D. 先帮我从时间线上看这件事',
-  ];
 }
 
 async function finalizeChatCompletion(body, authContext, env, options = {}) {

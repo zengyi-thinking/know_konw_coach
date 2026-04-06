@@ -61,6 +61,25 @@ apps/
 
 这些动态 artifact 会显式写入对静态资产的引用，例如当前命中的 `skill route` 路径和 workspace manifest 路径，从而把“静态规则”和“动态演化”真正连起来。
 
+## 用户自定义内容建议放置位置
+
+为避免升级时和包托管内容混在一起，安装器会额外创建：
+
+- `~/.openclaw/workspace/.lifecoach-user/memories`
+- `~/.openclaw/workspace/.lifecoach-user/knowledge`
+- `~/.openclaw/workspace/.lifecoach-user/skills`
+- `~/.openclaw/workspace/.lifecoach-user/prompts`
+- `~/.openclaw/workspace/.lifecoach-user/notes`
+
+建议把你的用户自定义内容优先放到这组目录里。
+
+这样可以形成一个更清晰的边界：
+
+- 包托管内容：继续位于标准 `workspace` 目录结构中，随版本更新
+- 用户自定义内容：集中放在 `.lifecoach-user/` 下，避免与包内容混写
+
+当前版本仍然保持对 OpenClaw 标准 `workspace` 结构的兼容，不会把包内容搬离 `workspace` 根。
+
 ## 安装与验证
 
 先安装 OpenClaw：

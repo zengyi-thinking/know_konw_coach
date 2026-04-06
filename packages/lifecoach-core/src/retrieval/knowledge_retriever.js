@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { resolveWorkspaceOverlayRoots } = require('../paths');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -9,25 +10,30 @@ function readText(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-function collectKnowledgeFiles(workspaceRoot) {
-  const baseDir = path.join(workspaceRoot, 'knowledge');
-  const buckets = fs.readdirSync(baseDir, { withFileTypes: true }).filter((entry) => entry.isDirectory());
-  const results = [];
+function collectKnowledgeFiles(workspaceRoot, env = process.env) {
+  const { knowledgeRoots } = resolveWorkspaceOverlayRoots(env, workspaceRoot);
+  const resultsById = new Map();
 
-  for (const bucket of buckets) {
-    const bucketDir = path.join(baseDir, bucket.name);
-    const jsonFiles = fs.readdirSync(bucketDir).filter((name) => name.endsWith('.json'));
-    for (const jsonFile of jsonFiles) {
-      const metaPath = path.join(bucketDir, jsonFile);
-      const mdPath = metaPath.replace(/\.json$/, '.md');
-      results.push({
-        metadata: readJson(metaPath),
-        content: fs.existsSync(mdPath) ? readText(mdPath) : '',
-      });
+  for (const baseDir of knowledgeRoots) {
+    if (!fs.existsSync(baseDir)) continue;
+    const buckets = fs.readdirSync(baseDir, { withFileTypes: true }).filter((entry) => entry.isDirectory());
+
+    for (const bucket of buckets) {
+      const bucketDir = path.join(baseDir, bucket.name);
+      const jsonFiles = fs.readdirSync(bucketDir).filter((name) => name.endsWith('.json'));
+      for (const jsonFile of jsonFiles) {
+        const metaPath = path.join(bucketDir, jsonFile);
+        const mdPath = metaPath.replace(/\.json$/, '.md');
+        const metadata = readJson(metaPath);
+        resultsById.set(metadata.id, {
+          metadata,
+          content: fs.existsSync(mdPath) ? readText(mdPath) : '',
+        });
+      }
     }
   }
 
-  return results;
+  return Array.from(resultsById.values());
 }
 
 function scoreKnowledgeHit(item, input, options = {}) {
@@ -65,7 +71,8 @@ function scoreKnowledgeHit(item, input, options = {}) {
 }
 
 function retrieveKnowledge(input, workspaceRoot, limit = 2, options = {}) {
-  return collectKnowledgeFiles(workspaceRoot)
+  const env = options.env || process.env;
+  return collectKnowledgeFiles(workspaceRoot, env)
     .map((item) => {
       const measured = scoreKnowledgeHit(item, input, options);
       return { ...item, score: measured.score, workflowPriorityIndex: measured.workflowPriorityIndex };

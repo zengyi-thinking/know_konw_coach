@@ -136,9 +136,7 @@ function runLifecoachConversation(body, env, context = {}) {
       LIFECOACH_STATE_ROOT: stateRoot,
     },
     workspaceRoot,
-    gatewayOptions: {
-      mockResponse: { message: 'control-plane-local-mock' },
-    },
+    disableUpstreamExecution: true,
     persistArtifacts: true,
   });
 

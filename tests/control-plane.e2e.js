@@ -108,6 +108,35 @@ async function run() {
     assert(consoleChat.data.lifecoach.flavorScores?.overall >= 0, 'console chat flavor score missing');
     assert(Array.isArray(consoleChat.data.lifecoach.followups) && consoleChat.data.lifecoach.followups.length >= 4, 'console chat followups missing');
 
+    const imageGeneration = await requestJson(`${baseConsole}/api/images/generations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionToken}`,
+      },
+      body: JSON.stringify({
+        prompt: '生成一张柔和粉橘色调的玻璃球氛围图。',
+      }),
+    });
+    assert(imageGeneration.response.status === 200, 'console image generation failed');
+    assert(typeof imageGeneration.data.imageUrl === 'string' && imageGeneration.data.imageUrl.length > 20, 'console image generation missing imageUrl');
+
+    const speechResponse = await fetch(`${baseConsole}/api/audio/speech`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionToken}`,
+      },
+      body: JSON.stringify({
+        text: '请把这段回复读出来。',
+        voice: 'alloy',
+        format: 'wav',
+      }),
+    });
+    assert(speechResponse.status === 200, 'console speech endpoint failed');
+    const speechBlobBuffer = Buffer.from(await speechResponse.arrayBuffer());
+    assert(speechBlobBuffer.length > 0, 'console speech audio empty');
+
     const chat = await requestJson(`${baseGateway}/v1/chat/completions`, {
       method: 'POST',
       headers: {
@@ -160,7 +189,7 @@ async function run() {
     assert(asr.response.status === 200, 'audio transcription failed');
     assert(asr.data.lifecoach.cerebellum.enabled === true, 'audio cerebellum missing');
 
-    const speechResponse = await fetch(`${baseGateway}/v1/audio/speech`, {
+    const gatewaySpeechResponse = await fetch(`${baseGateway}/v1/audio/speech`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -171,8 +200,8 @@ async function run() {
         voice: 'alloy',
       }),
     });
-    assert(speechResponse.status === 200, 'speech synthesis failed');
-    const speechBuffer = Buffer.from(await speechResponse.arrayBuffer());
+    assert(gatewaySpeechResponse.status === 200, 'speech synthesis failed');
+    const speechBuffer = Buffer.from(await gatewaySpeechResponse.arrayBuffer());
     assert(speechBuffer.length > 0, 'speech audio buffer empty');
 
     const cerebellum = await requestJson(`${baseGateway}/v1/cerebellum/think`, {
@@ -220,6 +249,8 @@ async function run() {
         'api key create ok',
         'integration snippet ok',
         'console chat ok',
+        'console image generation ok',
+        'console speech ok',
         'enhanced chat ok',
         'image enhanced chat ok',
         'audio transcription ok',

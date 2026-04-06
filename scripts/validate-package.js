@@ -66,6 +66,7 @@ function validateKnowledgePairs() {
 function validateManifestSources() {
   for (const entry of manifest.copy || []) {
     assertExists(entry.source);
+    assert(!entry.strategy || ['replace', 'merge'].includes(entry.strategy), `unsupported copy strategy: ${entry.strategy}`);
   }
 }
 

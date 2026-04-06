@@ -57,6 +57,10 @@ function shouldGenerateGovernanceProposal(options = {}) {
   return options.enableGovernanceProposals === true;
 }
 
+function shouldExecuteUpstream(options = {}) {
+  return options.disableUpstreamExecution !== true;
+}
+
 function runSession(session, options = {}) {
   const env = options.env || process.env;
   const runtimePaths = buildRuntimePaths(env, options.workspaceRoot);
@@ -65,17 +69,23 @@ function runSession(session, options = {}) {
   const safety = evaluateSafety(session.input, workspaceRoot);
   const route = safety.needsSafetyMode
     ? { primarySkill: 'safety', fallback: 'coach-intake', rankedSkills: [] }
-    : routeSkill(session.input, workspaceRoot);
+    : routeSkill(session.input, workspaceRoot, env);
   const workflow = buildWorkflowState(session, route, env, options.workspaceRoot);
   const knowledgeHits = retrieveKnowledge({
     ...session.input,
     primarySkill: route.primarySkill,
-  }, workspaceRoot, workflow ? 3 : 2, { workflowState: workflow });
+  }, workspaceRoot, workflow ? 3 : 2, { workflowState: workflow, env });
   const gateway = buildGatewayRequest(session.input || {}, env);
   const capabilities = detectCapabilities(env);
-  const upstream = (session.input?.modality || 'text') === 'audio'
-    ? executeAudioTranscription(session.input || {}, env, options.gatewayOptions || {})
-    : executeChat(session.input || {}, env, options.gatewayOptions || {});
+  const upstream = shouldExecuteUpstream(options)
+    ? ((session.input?.modality || 'text') === 'audio'
+      ? executeAudioTranscription(session.input || {}, env, options.gatewayOptions || {})
+      : executeChat(session.input || {}, env, options.gatewayOptions || {}))
+    : Promise.resolve({
+      ok: false,
+      skipped: true,
+      reason: 'upstream_execution_disabled',
+    });
   const memory = processMemory(session, options.existingMemories || []);
   const event = logSessionEvent({
     sessionId: session.sessionId,

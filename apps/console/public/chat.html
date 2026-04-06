@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="chat">
-    <div class="page-shell app-shell">
+    <div class="page-shell app-shell app-shell-chat">
       <aside class="sidebar">
         <a class="brand" href="/">
           <span class="brand-mark">料</span>
@@ -45,25 +45,29 @@
       <section class="content-shell">
         <header class="content-topbar">
           <div class="search-shell">
-            <span id="chat-status-note">已连接你的 Lifecoach 内核</span>
+            <span id="chat-status-note">对味聊天</span>
           </div>
           <div class="topbar-actions">
-            <span class="capsule" id="chat-capability-pill">多模态</span>
-            <span class="capsule plum" id="chat-cerebellum-pill">小脑</span>
             <button class="ghost-button" id="new-chat-button" type="button">New chat</button>
           </div>
         </header>
 
         <main class="page chat-page-claude">
-          <div class="chat-window chat-window-minimal">
-            <div class="ghost-strip">
-              <div id="chat-inspector" class="detail-strip">
-                <span>主 skill：等待对话</span>
-                <span>工作流：等待激活</span>
-                <span>对味分：等待计算</span>
-              </div>
-            </div>
+          <div class="chat-mode-row">
+            <button class="mode-pill active" type="button" data-chat-mode="chat">Smart Chat</button>
+            <button class="mode-pill" type="button" data-chat-mode="voice">Voice</button>
+            <button class="mode-pill" type="button" data-chat-mode="image">Image</button>
+          </div>
 
+          <div class="chat-bubble-stage" id="chat-bubble-stage">
+            <button class="hero-orb-button" id="chat-orb-button" type="button" aria-label="进入对味聊天">
+              <span class="hero-orb">
+                <span class="hero-orb-core"></span>
+              </span>
+            </button>
+          </div>
+
+          <div class="chat-window chat-window-minimal chat-window-hidden" id="chat-window">
             <div class="chat-thread" id="chat-thread">
               <div class="message-row assistant reveal">
                 <div class="message-badge">教练</div>
@@ -83,6 +87,7 @@
                   <input id="chat-image-input" type="file" accept="image/*" hidden>
                   图片
                 </label>
+                <button class="toolbar-button" id="chat-generate-image-button" type="button">生图</button>
                 <button class="toolbar-button" id="chat-voice-button" type="button">语音</button>
                 <button class="toolbar-button" id="chat-read-button" type="button">朗读</button>
                 <button class="button primary send-button" type="submit">发送</button>
