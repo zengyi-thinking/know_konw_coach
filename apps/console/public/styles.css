@@ -1295,6 +1295,10 @@ body[data-page="chat"] .page.chat-page-claude {
   height: 100%;
 }
 
+body.plan-questionnaire-active .chat-window-minimal {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
 body[data-page="chat"] .chat-window-minimal {
   flex: 1;
   min-height: 0;
@@ -1408,6 +1412,16 @@ body.chat-started .chat-window-hidden {
   gap: 12px;
 }
 
+body.plan-questionnaire-active .chat-thread {
+  max-height: 72px;
+  padding: 6px 18px 4px;
+  gap: 6px;
+}
+
+body.plan-questionnaire-active .chat-thread > .message-row.assistant:first-child {
+  display: none;
+}
+
 .message-row {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);
@@ -1475,6 +1489,41 @@ body.chat-started .chat-window-hidden {
   white-space: pre-wrap;
 }
 
+.message-richtext {
+  display: grid;
+  gap: 8px;
+}
+
+.message-richtext p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.message-richtext ol,
+.message-richtext ul {
+  margin: 0;
+  padding-left: 1.35em;
+  display: grid;
+  gap: 6px;
+}
+
+.message-richtext li {
+  line-height: 1.62;
+}
+
+.message-richtext strong {
+  color: inherit;
+  font-weight: 800;
+}
+
+.message-richtext code {
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 0.92em;
+  padding: 0.08em 0.32em;
+  border-radius: 8px;
+  background: rgba(95, 73, 54, 0.08);
+}
+
 .message-image {
   display: block;
   max-width: 180px;
@@ -1507,9 +1556,25 @@ body.chat-started .chat-window-hidden {
   padding: 0 18px 12px;
 }
 
+body.plan-questionnaire-active .chat-decision-stream {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: 4px;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
 .chat-plan-card,
 .chat-followups {
   padding: 0;
+}
+
+body.plan-questionnaire-active .chat-followups {
+  min-height: 0;
+  display: block;
 }
 
 .plan-card,
@@ -1738,6 +1803,12 @@ body.chat-started .chat-window-hidden {
   gap: 14px;
 }
 
+body.plan-questionnaire-active .plan-questionnaire-card {
+  min-height: 0;
+  display: grid;
+  gap: 14px;
+}
+
 .plan-questionnaire-empty {
   background:
     linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(248, 242, 235, 0.96)),
@@ -1759,22 +1830,16 @@ body.chat-started .chat-window-hidden {
 
 .plan-questionnaire-head strong {
   display: block;
-  font-size: 1.04rem;
-  line-height: 1.5;
-}
-
-.plan-questionnaire-head p {
-  margin: 8px 0 0;
-  color: var(--muted-soft);
-  line-height: 1.6;
+  font-size: 0.96rem;
+  line-height: 1.4;
 }
 
 .plan-questionnaire-progress {
-  padding: 8px 12px;
+  padding: 7px 10px;
   border-radius: 999px;
   background: rgba(255, 244, 236, 0.96);
   color: var(--accent-deep);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -1787,8 +1852,30 @@ body.chat-started .chat-window-hidden {
 }
 
 .plan-switch-button {
-  min-width: 84px;
-  padding: 9px 12px;
+  min-width: 72px;
+  padding: 8px 10px;
+  font-size: 0.84rem;
+}
+
+.plan-problem-strip {
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(95, 73, 54, 0.1);
+  background: rgba(255, 250, 244, 0.92);
+  display: grid;
+  gap: 4px;
+}
+
+.plan-problem-strip span {
+  color: var(--muted-soft);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.plan-problem-strip strong {
+  color: var(--ink);
+  line-height: 1.42;
 }
 
 .plan-question-empty-grid {
@@ -1829,11 +1916,6 @@ body.chat-started .chat-window-hidden {
   font-size: 0.92rem;
 }
 
-.plan-question-list {
-  display: grid;
-  gap: 12px;
-}
-
 .plan-question-item {
   padding: 14px;
   border-radius: 22px;
@@ -1854,13 +1936,31 @@ body.chat-started .chat-window-hidden {
   box-shadow: 0 16px 28px rgba(203, 103, 61, 0.1);
 }
 
-.plan-question-item.inactive {
-  cursor: pointer;
+body.plan-questionnaire-active .plan-step-rail {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 2px;
 }
 
-.plan-question-item.inactive:hover {
-  transform: translateY(-1px);
-  border-color: rgba(203, 103, 61, 0.16);
+body.plan-questionnaire-active .plan-step {
+  padding: 10px 12px;
+  border-radius: 18px;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+}
+
+body.plan-questionnaire-active .plan-step-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+}
+
+body.plan-questionnaire-active .plan-step-copy strong {
+  font-size: 0.82rem;
+}
+
+body.plan-questionnaire-active .plan-step-copy small {
+  font-size: 0.76rem;
 }
 
 .plan-question-title {
@@ -1894,6 +1994,27 @@ body.chat-started .chat-window-hidden {
 .plan-question-title-copy small {
   color: var(--muted-soft);
   line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.plan-question-stage {
+  position: relative;
+  overflow: visible;
+  min-height: auto;
+}
+
+body.plan-questionnaire-active .plan-question-stage {
+  overflow: visible;
+  padding-right: 0;
+  padding-bottom: 0;
+}
+
+.plan-card-direction-next {
+  animation: slideQuestionInFromRight 220ms ease;
+}
+
+.plan-card-direction-prev {
+  animation: slideQuestionInFromLeft 220ms ease;
 }
 
 .plan-question-options {
@@ -1961,7 +2082,7 @@ body.chat-started .chat-window-hidden {
 
 .plan-answer-input {
   width: 100%;
-  min-height: 76px;
+  min-height: 64px;
   resize: vertical;
   border-radius: 18px;
   border: 1px solid rgba(95, 73, 54, 0.16);
@@ -1983,128 +2104,9 @@ body.chat-started .chat-window-hidden {
   flex-wrap: wrap;
 }
 
-.plan-option,
-.followup-chip {
-  position: relative;
-  border: 1px solid rgba(95, 73, 54, 0.12);
-  background: rgba(255, 249, 243, 0.94);
-  border-radius: 22px;
-  padding: 16px;
-  text-align: left;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.plan-option {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 18px;
-  gap: 14px;
-  align-items: center;
-  cursor: pointer;
-}
-
-.followup-chip {
-  color: var(--muted);
-  cursor: pointer;
-  font-weight: 600;
-  min-height: 96px;
-}
-
-.plan-option:hover,
-.followup-chip:hover {
-  transform: translateY(-1px);
-  border-color: rgba(203, 103, 61, 0.22);
-  box-shadow: 0 14px 24px rgba(129, 103, 82, 0.1);
-}
-
-.plan-option::after {
-  content: '→';
-  color: var(--muted-soft);
-  font-weight: 700;
-  justify-self: end;
-}
-
-.followup-chip::after {
-  content: '↗';
-  position: absolute;
-  right: 16px;
-  top: 16px;
-  color: var(--muted-soft);
-  font-weight: 700;
-}
-
-.plan-option.active {
-  border-color: rgba(203, 103, 61, 0.26);
-  background: linear-gradient(145deg, rgba(255, 243, 235, 1), rgba(255, 248, 242, 0.98));
-  box-shadow: 0 18px 30px rgba(203, 103, 61, 0.12);
-}
-
-.card-option {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
-  min-width: 0;
-  padding-right: 28px;
-}
-
-.plan-option-key,
-.card-option-key {
-  width: 44px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--ink);
-  font-weight: 800;
-}
-
-.plan-option {
-  padding-right: 18px;
-}
-
-.plan-option.active .plan-option-key {
-  background: rgba(203, 103, 61, 0.14);
-  color: var(--accent-deep);
-}
-
-.plan-option-copy,
-.card-option-text {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-
-.plan-option-copy strong,
-.card-option-text strong {
-  color: var(--ink);
-  font-weight: 700;
-}
-
-.plan-option-copy small,
-.card-option-text small {
-  color: var(--muted-soft);
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-.plan-input-hint {
-  margin-top: 14px;
-  color: var(--muted-soft);
-  font-size: 0.9rem;
-}
-
-.plan-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 16px;
+body.plan-questionnaire-active .plan-question-actions {
+  margin-top: 0;
+  padding-top: 4px;
 }
 
 .attachment-pill {
@@ -2311,6 +2313,28 @@ pre {
   }
 }
 
+@keyframes slideQuestionInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideQuestionInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @media (max-width: 1100px) {
   .app-shell {
     grid-template-columns: 220px minmax(0, 1fr);
@@ -2461,6 +2485,10 @@ pre {
   }
 
   .plan-question-options {
+    grid-template-columns: 1fr;
+  }
+
+  body.plan-questionnaire-active .plan-step-rail {
     grid-template-columns: 1fr;
   }
 

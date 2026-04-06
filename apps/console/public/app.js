@@ -17,6 +17,7 @@ const state = {
   planQuestionnaire: null,
   planAnswers: {},
   planActiveQuestionIndex: 0,
+  planDirection: 'next',
   mediaRecorder: null,
   mediaChunks: [],
   isRecording: false,
@@ -136,6 +137,78 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function formatInlineRichText(value) {
+  return escapeHtml(value || '')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+
+function renderAssistantRichText(text) {
+  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
+  const blocks = [];
+  let paragraphLines = [];
+  let listType = null;
+  let listStart = 1;
+  let listItems = [];
+
+  const flushParagraph = () => {
+    if (!paragraphLines.length) return;
+    blocks.push(`<p>${formatInlineRichText(paragraphLines.join('\n')).replace(/\n/g, '<br>')}</p>`);
+    paragraphLines = [];
+  };
+
+  const flushList = () => {
+    if (!listItems.length || !listType) return;
+    const tag = listType === 'ol' ? 'ol' : 'ul';
+    const attrs = listType === 'ol' && listStart > 1 ? ` start="${listStart}"` : '';
+    blocks.push(`<${tag}${attrs}>${listItems.map((item) => `<li>${formatInlineRichText(item)}</li>`).join('')}</${tag}>`);
+    listType = null;
+    listStart = 1;
+    listItems = [];
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const orderedMatch = line.match(/^(\d+)\.\s*(.+)$/);
+    const bulletMatch = line.match(/^[-*]\s*(.+)$/) || line.match(/^-(\S.*)$/);
+
+    if (orderedMatch) {
+      flushParagraph();
+      if (listType !== 'ol') {
+        flushList();
+        listType = 'ol';
+        listStart = Number(orderedMatch[1]) || 1;
+      }
+      listItems.push(orderedMatch[2]);
+      continue;
+    }
+
+    if (bulletMatch) {
+      flushParagraph();
+      if (listType !== 'ul') {
+        flushList();
+        listType = 'ul';
+      }
+      listItems.push(bulletMatch[1]);
+      continue;
+    }
+
+    flushList();
+    paragraphLines.push(line);
+  }
+
+  flushParagraph();
+  flushList();
+
+  return blocks.length ? blocks.join('') : `<p>${formatInlineRichText(text)}</p>`;
 }
 
 async function readFileAsDataUrl(file) {
@@ -662,11 +735,16 @@ function resetPlanState() {
   state.planQuestionnaire = null;
   state.planAnswers = {};
   state.planActiveQuestionIndex = 0;
+  state.planDirection = 'next';
 }
 
 function renderPlanQuestionnaire() {
   const node = document.getElementById('chat-followups');
   if (!node) return;
+  const questionnaireActive = state.chatMode === 'plan'
+    && Array.isArray(state.planQuestionnaire?.questions)
+    && state.planQuestionnaire.questions.length > 0;
+  document.body.classList.toggle('plan-questionnaire-active', questionnaireActive);
 
   if (state.chatMode !== 'plan') {
     node.innerHTML = '';
@@ -687,6 +765,17 @@ function renderPlanQuestionnaire() {
     state.planActiveQuestionIndex = 0;
   }
   const activeIndex = state.planActiveQuestionIndex;
+  const activeQuestion = questions[activeIndex];
+  if (!activeQuestion) {
+    node.innerHTML = '';
+    return;
+  }
+  const planSeedText = String(
+    state.planQuestionnaire.seedText
+      || state.chatMessages.slice().reverse().find((item) => item.role === 'user')?.text
+      || '',
+  ).trim();
+  const activeAnswer = String(state.planAnswers[activeQuestion.id] || '');
   const answeredCount = questions.filter((question) => String(state.planAnswers[question.id] || '').trim()).length;
   node.innerHTML = `
     <article class="plan-questionnaire-card reveal">
@@ -694,7 +783,6 @@ function renderPlanQuestionnaire() {
         <div>
           <span class="choice-stream-kicker">规划问答</span>
           <strong>${escapeHtml(state.planQuestionnaire.title || '先补充几个关键信息')}</strong>
-          <p>${escapeHtml(state.planQuestionnaire.summary || '我先根据你的问题生成三张规划卡。')}</p>
         </div>
         <div class="plan-questionnaire-side">
           <div class="plan-questionnaire-progress">已完成 ${answeredCount} / ${totalQuestions}</div>
@@ -704,38 +792,51 @@ function renderPlanQuestionnaire() {
           </div>
         </div>
       </div>
-      <div class="plan-question-list">
+      ${planSeedText ? `
+        <div class="plan-problem-strip">
+          <span>当前问题</span>
+          <strong>${escapeHtml(planSeedText)}</strong>
+        </div>
+      ` : ''}
+      <div class="plan-step-rail">
         ${questions.map((question, questionIndex) => {
-          const answer = String(state.planAnswers[question.id] || '');
-          const isActive = questionIndex === activeIndex;
+          const answer = String(state.planAnswers[question.id] || '').trim();
+          const status = questionIndex === activeIndex ? 'current' : (answer ? 'done' : 'upcoming');
           return `
-            <section class="plan-question-item ${isActive ? 'active' : 'inactive'}" data-plan-question-id="${escapeHtml(question.id)}" data-plan-question-index="${questionIndex}">
-              <div class="plan-question-title">
-                <span>${questionIndex + 1}</span>
-                <div class="plan-question-title-copy">
-                  <strong>${escapeHtml(question.question || '')}</strong>
-                  ${!isActive && answer ? `<small>已填写：${escapeHtml(answer)}</small>` : ''}
-                </div>
-              </div>
-              ${isActive ? `
-                <div class="plan-question-body">
-                  <div class="plan-question-options">
-                    ${(question.options || []).map((option, optionIndex) => `
-                      <button class="plan-question-option ${answer === option.title ? 'active' : ''}" type="button" data-plan-question-option="${escapeHtml(question.id)}:${optionIndex}">
-                        <span class="plan-question-option-key">${escapeHtml(option.key || String(optionIndex + 1))}</span>
-                        <span class="plan-question-option-copy">
-                          <strong>${escapeHtml(option.title || '')}</strong>
-                          ${option.subtitle ? `<small>${escapeHtml(option.subtitle)}</small>` : ''}
-                        </span>
-                      </button>
-                    `).join('')}
-                  </div>
-                  <textarea class="plan-answer-input" data-plan-answer-input="${escapeHtml(question.id)}" rows="3" placeholder="也可以在这里直接写你自己的回答…">${escapeHtml(answer)}</textarea>
-                </div>
-              ` : ''}
-            </section>
+            <button class="plan-step ${status}" type="button" data-plan-step-index="${questionIndex}">
+              <span class="plan-step-badge">${answer ? '✓' : questionIndex + 1}</span>
+              <span class="plan-step-copy">
+                <strong>问题 ${questionIndex + 1}</strong>
+                <small>${answer ? `已填写：${escapeHtml(answer)}` : '待填写'}</small>
+              </span>
+            </button>
           `;
         }).join('')}
+      </div>
+      <div class="plan-question-stage">
+        <section class="plan-question-item active plan-card-direction-${escapeHtml(state.planDirection)}" data-plan-question-id="${escapeHtml(activeQuestion.id)}" data-plan-question-index="${activeIndex}">
+          <div class="plan-question-title">
+            <span>${activeIndex + 1}</span>
+            <div class="plan-question-title-copy">
+              <strong>${escapeHtml(activeQuestion.question || '')}</strong>
+              <small>左右切换问题卡；返回上一张后也可以重新修改答案。</small>
+            </div>
+          </div>
+          <div class="plan-question-body">
+            <div class="plan-question-options">
+              ${(activeQuestion.options || []).map((option, optionIndex) => `
+                <button class="plan-question-option ${activeAnswer === option.title ? 'active' : ''}" type="button" data-plan-question-option="${escapeHtml(activeQuestion.id)}:${optionIndex}">
+                  <span class="plan-question-option-key">${escapeHtml(option.key || String(optionIndex + 1))}</span>
+                  <span class="plan-question-option-copy">
+                    <strong>${escapeHtml(option.title || '')}</strong>
+                    ${option.subtitle ? `<small>${escapeHtml(option.subtitle)}</small>` : ''}
+                  </span>
+                </button>
+              `).join('')}
+            </div>
+            <textarea class="plan-answer-input" data-plan-answer-input="${escapeHtml(activeQuestion.id)}" rows="3" placeholder="也可以在这里直接写你自己的回答…">${escapeHtml(activeAnswer)}</textarea>
+          </div>
+        </section>
       </div>
       <div class="plan-question-actions">
         <button class="ghost-button" id="plan-reset-button" type="button">清空回答</button>
@@ -753,10 +854,9 @@ function renderPlanQuestionnaire() {
       const option = question?.options?.[optionIndex];
       if (!question || !option) return;
       state.planAnswers[question.id] = option.title || '';
+      state.planDirection = 'next';
       state.planActiveQuestionIndex = Math.min(questionIndex + 1, totalQuestions - 1);
       renderPlanQuestionnaire();
-      const nextNode = node.querySelector(`[data-plan-question-index="${state.planActiveQuestionIndex}"]`);
-      nextNode?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
   });
 
@@ -767,11 +867,11 @@ function renderPlanQuestionnaire() {
     });
   });
 
-  node.querySelectorAll('[data-plan-question-index]').forEach((section) => {
-    section.addEventListener('click', (event) => {
-      if (event.target.closest('button, textarea')) return;
-      const nextIndex = Number(section.dataset.planQuestionIndex);
-      if (Number.isNaN(nextIndex)) return;
+  node.querySelectorAll('[data-plan-step-index]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const nextIndex = Number(button.dataset.planStepIndex);
+      if (Number.isNaN(nextIndex) || nextIndex === state.planActiveQuestionIndex) return;
+      state.planDirection = nextIndex > state.planActiveQuestionIndex ? 'next' : 'prev';
       state.planActiveQuestionIndex = nextIndex;
       renderPlanQuestionnaire();
     });
@@ -780,19 +880,20 @@ function renderPlanQuestionnaire() {
   document.getElementById('plan-reset-button')?.addEventListener('click', () => {
     state.planAnswers = {};
     state.planActiveQuestionIndex = 0;
+    state.planDirection = 'next';
     renderPlanQuestionnaire();
   });
 
   document.getElementById('plan-prev-question')?.addEventListener('click', () => {
+    state.planDirection = 'prev';
     state.planActiveQuestionIndex = Math.max(0, state.planActiveQuestionIndex - 1);
     renderPlanQuestionnaire();
-    node.querySelector(`[data-plan-question-index="${state.planActiveQuestionIndex}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
   document.getElementById('plan-next-question')?.addEventListener('click', () => {
+    state.planDirection = 'next';
     state.planActiveQuestionIndex = Math.min(totalQuestions - 1, state.planActiveQuestionIndex + 1);
     renderPlanQuestionnaire();
-    node.querySelector(`[data-plan-question-index="${state.planActiveQuestionIndex}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
   document.getElementById('plan-submit-button')?.addEventListener('click', async () => {
@@ -856,7 +957,7 @@ function renderChatMessages() {
     <div class="message-row assistant reveal">
       <div class="message-badge">教练</div>
       <article class="message-bubble">
-        <p>说说你现在最想理清的一层。</p>
+        <div class="message-richtext"><p>说说你现在最想理清的一层。</p></div>
       </article>
     </div>
   `;
@@ -867,13 +968,16 @@ function renderChatMessages() {
     const actions = item.role === 'assistant'
       ? `<div class="message-actions"><button class="ghost-button speak-message" data-index="${index}" type="button">朗读</button></div>`
       : '';
+    const textContent = item.role === 'assistant'
+      ? `<div class="message-richtext">${renderAssistantRichText(item.text)}</div>`
+      : `<p>${escapeHtml(item.text)}</p>`;
     return `
       <div class="message-row ${item.role === 'assistant' ? 'assistant' : 'user'} reveal">
         <div class="message-badge">${item.role === 'assistant' ? '教练' : '你'}</div>
         <article class="message-bubble">
           ${attachment}
           ${generated}
-          <p>${escapeHtml(item.text)}</p>
+          ${textContent}
           ${actions}
         </article>
       </div>

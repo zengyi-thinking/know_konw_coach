@@ -50,17 +50,18 @@ async function run() {
     await page.fill('#chat-input', '我最近一直很迷茫，不知道自己到底想要什么。');
     await page.click('#chat-form button[type="submit"]');
     await page.waitForFunction(() => {
-      return document.querySelectorAll('.plan-question-item').length === 3;
+      return document.querySelectorAll('.plan-step').length === 3
+        && document.querySelectorAll('.plan-question-item.active').length === 1;
     });
 
-    const questionCardCount = await page.locator('.plan-question-item').count();
-    assert(questionCardCount === 3, 'plan mode should render three generated question cards');
+    const questionStepCount = await page.locator('.plan-step').count();
+    assert(questionStepCount === 3, 'plan mode should render three generated question cards');
 
     for (let index = 0; index < 3; index += 1) {
-      await page.locator('.plan-question-item').nth(index).locator('.plan-question-option').first().click();
+      await page.locator('.plan-question-item.active').locator('.plan-question-option').first().click();
     }
     await page.click('#plan-submit-button');
-    await page.waitForFunction(() => !document.querySelector('.plan-question-item'));
+    await page.waitForFunction(() => !document.querySelector('.plan-step'));
 
     await page.click('#chat-mode-chat');
     await page.setInputFiles('#chat-image-input', uploadImagePath);
