@@ -106,20 +106,23 @@ async function run() {
     assert(consoleChat.response.status === 200, 'console chat failed');
     assert(consoleChat.data.lifecoach.workflow?.id === 'long-horizon-confusion', 'console chat workflow missing');
     assert(consoleChat.data.lifecoach.flavorScores?.overall >= 0, 'console chat flavor score missing');
-    assert(Array.isArray(consoleChat.data.lifecoach.followups) && consoleChat.data.lifecoach.followups.length >= 4, 'console chat followups missing');
+    assert(consoleChat.data.lifecoach.choiceCard?.question, 'console chat choiceCard missing');
+    assert(Array.isArray(consoleChat.data.lifecoach.choiceCard?.options) && consoleChat.data.lifecoach.choiceCard.options.length >= 4, 'console chat choiceCard options missing');
 
-    const imageGeneration = await requestJson(`${baseConsole}/api/images/generations`, {
+    const consoleImageChat = await requestJson(`${baseConsole}/api/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${sessionToken}`,
       },
       body: JSON.stringify({
-        prompt: '生成一张柔和粉橘色调的玻璃球氛围图。',
+        messages: [
+          { role: 'user', content: '请生成一张柔和粉橘色调、像玻璃球一样的情绪氛围图。' },
+        ],
       }),
     });
-    assert(imageGeneration.response.status === 200, 'console image generation failed');
-    assert(typeof imageGeneration.data.imageUrl === 'string' && imageGeneration.data.imageUrl.length > 20, 'console image generation missing imageUrl');
+    assert(consoleImageChat.response.status === 200, 'console image generation failed');
+    assert(typeof consoleImageChat.data.lifecoach.processing.generatedImageUrl === 'string' && consoleImageChat.data.lifecoach.processing.generatedImageUrl.length > 20, 'console image generation missing generatedImageUrl');
 
     const speechResponse = await fetch(`${baseConsole}/api/audio/speech`, {
       method: 'POST',

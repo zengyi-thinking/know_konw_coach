@@ -15,9 +15,13 @@
     "gateway:dev": "node apps/gateway/server.js",
     "platform:dev": "node apps/platform/server.js",
     "test:control-plane": "node tests/control-plane.e2e.js",
-    "test:platform": "node tests/platform.e2e.js"
+    "test:platform": "node tests/platform.e2e.js",
+    "test:ui-chat": "node tests/ui-chat.e2e.js"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "playwright": "^1.59.1"
   }
 }

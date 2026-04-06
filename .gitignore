@@ -24,3 +24,6 @@ logs/
 # Temp
 tmp/
 temp/
+
+# Node
+node_modules/

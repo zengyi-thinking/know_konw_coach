@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>对味 Lifecoach</title>
+    <script src="/theme.js"></script>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="landing">
@@ -44,6 +45,14 @@
             <span>搜索 Lifecoach…</span>
           </div>
           <div class="topbar-actions">
+            <div class="theme-switcher">
+              <label class="theme-switcher-label" for="theme-select">主题</label>
+              <select class="theme-select" id="theme-select" data-theme-select>
+                <option value="warm-tea">Warm Tea</option>
+                <option value="taisho-nouveau">Taisho Nouveau</option>
+                <option value="zine-handmade">Zine Handmade</option>
+              </select>
+            </div>
             <a class="button secondary" href="/auth">Log In</a>
             <a class="button primary" href="/register">Sign Up</a>
           </div>

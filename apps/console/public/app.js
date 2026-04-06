@@ -8,10 +8,9 @@ const state = {
   chatMessages: [],
   chatAttachment: null,
   chatLastAssistantText: '',
-  chatLastFollowups: [],
+  chatLastChoiceCard: null,
   chatBusy: false,
   chatStarted: false,
-  chatMode: 'chat',
 };
 
 function pageName() {
@@ -20,6 +19,77 @@ function pageName() {
 
 function protectedPage() {
   return ['dashboard', 'keys', 'integration', 'models', 'chat'].includes(pageName());
+}
+
+const themeState = {
+  key: 'lifecoach_console_theme',
+  themes: ['warm-tea', 'taisho-nouveau', 'zine-handmade'],
+};
+
+function normalizeTheme(theme) {
+  return themeState.themes.includes(theme) ? theme : 'warm-tea';
+}
+
+function getThemeRuntime() {
+  return window.LifeCoachTheme && typeof window.LifeCoachTheme.setTheme === 'function'
+    ? window.LifeCoachTheme
+    : null;
+}
+
+function getCurrentTheme() {
+  const runtime = getThemeRuntime();
+  if (runtime) {
+    return normalizeTheme(runtime.getTheme());
+  }
+
+  try {
+    return normalizeTheme(localStorage.getItem(themeState.key));
+  } catch {
+    return 'warm-tea';
+  }
+}
+
+function setCurrentTheme(theme) {
+  const runtime = getThemeRuntime();
+  if (runtime) {
+    return normalizeTheme(runtime.setTheme(theme));
+  }
+
+  const next = normalizeTheme(theme);
+  document.documentElement.setAttribute('data-theme', next);
+  try {
+    localStorage.setItem(themeState.key, next);
+  } catch {}
+  window.dispatchEvent(new CustomEvent('lifecoach-theme-change', { detail: { theme: next } }));
+  return next;
+}
+
+function syncThemeSelectors(theme) {
+  document.querySelectorAll('[data-theme-select]').forEach((select) => {
+    if (select.value !== theme) {
+      select.value = theme;
+    }
+  });
+}
+
+function initThemeSelector() {
+  const selects = document.querySelectorAll('[data-theme-select]');
+  if (!selects.length) return;
+
+  const current = getCurrentTheme();
+  syncThemeSelectors(current);
+
+  selects.forEach((select) => {
+    select.addEventListener('change', (event) => {
+      const next = setCurrentTheme(event.currentTarget.value);
+      syncThemeSelectors(next);
+    });
+  });
+
+  window.addEventListener('lifecoach-theme-change', (event) => {
+    const next = normalizeTheme(event.detail?.theme);
+    syncThemeSelectors(next);
+  });
 }
 
 function saveToken(token) {
@@ -159,13 +229,6 @@ function bindLogoutButtons() {
 
 function setChatStatus(text) {
   setText('chat-status-note', text);
-}
-
-function setChatMode(mode) {
-  state.chatMode = mode;
-  document.querySelectorAll('[data-chat-mode]').forEach((button) => {
-    button.classList.toggle('active', button.dataset.chatMode === mode);
-  });
 }
 
 function setChatStarted(started) {
@@ -357,6 +420,7 @@ function toApiMessages() {
       return {
         role: 'assistant',
         content: item.text,
+        generatedImageUrl: item.generatedImageUrl || null,
       };
     }
 
@@ -391,7 +455,7 @@ function renderChatAttachments() {
       <img src="${state.chatAttachment.dataUrl}" alt="attachment preview">
       <div>
         <strong>${escapeHtml(state.chatAttachment.name)}</strong>
-        <span>图片将随本条消息一起发给 Lifecoach</span>
+        <span>这张图片会随消息一起发出</span>
       </div>
       <button class="ghost-button" id="remove-chat-attachment" type="button">移除</button>
     </article>
@@ -418,15 +482,15 @@ function renderChatFollowups() {
   const node = document.getElementById('chat-followups');
   if (!node) return;
 
-  if (!state.chatLastFollowups.length) {
+  if (!state.chatLastChoiceCard || !Array.isArray(state.chatLastChoiceCard.options) || state.chatLastChoiceCard.options.length === 0) {
     node.innerHTML = '';
     return;
   }
 
   node.innerHTML = `
-    <div class="followup-label">继续追问</div>
+    <div class="followup-label">${escapeHtml(state.chatLastChoiceCard.question || '继续')}</div>
     <div class="followup-grid">
-      ${state.chatLastFollowups.map((item, index) => `
+      ${state.chatLastChoiceCard.options.map((item, index) => `
         <button class="followup-chip card-option" type="button" data-followup-index="${index}">
           <span class="card-option-key">${escapeHtml(item.key || '')}</span>
           <span class="card-option-text">
@@ -441,8 +505,8 @@ function renderChatFollowups() {
   node.querySelectorAll('.followup-chip').forEach((button) => {
     button.addEventListener('click', async () => {
       const index = Number(button.dataset.followupIndex);
-      const choice = state.chatLastFollowups[index] || '';
-      const label = typeof choice === 'string' ? choice : `${choice.key || ''}. ${choice.title || ''}`;
+      const choice = state.chatLastChoiceCard.options[index] || '';
+      const label = typeof choice === 'string' ? choice : `Q: ${state.chatLastChoiceCard.question || ''}\nA: ${choice.title || ''}`;
       state.chatMessages.push({
         role: 'user',
         text: label,
@@ -463,7 +527,7 @@ function renderChatMessages() {
     <div class="message-row assistant reveal">
       <div class="message-badge">教练</div>
       <article class="message-bubble">
-        <p>我在这儿。你可以直接说最近的困惑，也可以带一张图片过来，我们先一起看清楚现在最值得处理的那一层。</p>
+        <p>说说你现在最想理清的一层。</p>
       </article>
     </div>
   `;
@@ -543,7 +607,7 @@ async function sendChatMessage() {
 
   const userMessage = {
     role: 'user',
-    text: rawText || (state.chatMode === 'image' ? '请根据这个想法生成一张图。' : '请先帮我看这张图片，然后陪我聊聊现在的感受。'),
+    text: rawText || '请先帮我看这张图片，然后陪我聊聊现在的感受。',
     imageDataUrl: state.chatAttachment ? state.chatAttachment.dataUrl : null,
   };
   setChatStarted(true);
@@ -554,44 +618,13 @@ async function sendChatMessage() {
 }
 
 async function sendChatMessageFromState() {
-  const input = document.getElementById('chat-input');
-  state.chatLastFollowups = [];
+  state.chatLastChoiceCard = null;
   state.chatBusy = true;
   renderChatMessages();
   renderChatFollowups();
-  setChatStatus(state.chatMode === 'image' ? '正在生成图像…' : '正在回复…');
+  setChatStatus('正在回复…');
 
   try {
-    if (state.chatMode === 'image') {
-      const imageResult = await api('/api/images/generations', {
-        method: 'POST',
-        body: {
-          prompt: rawText || '生成一张柔和、温暖、像玻璃球一样带有情绪氛围的图像。',
-          size: '1024x1024',
-        },
-      });
-
-      const generatedText = imageResult.source === 'upstream-image-model'
-        ? '我先为你生成了一张图像。'
-        : '我先做了一张示意图。';
-
-      state.chatMessages.push({
-        role: 'assistant',
-        text: generatedText,
-        generatedImageUrl: imageResult.imageUrl || null,
-      });
-      state.chatLastAssistantText = generatedText;
-      state.chatLastFollowups = [
-        'A. 更暖一点',
-        'B. 更像玻璃球',
-        'C. 更安静一点',
-        'D. 按我的情绪再改一版',
-      ];
-      persistChatMessages();
-      setChatStatus(imageResult.source === 'upstream-image-model' ? '图像已生成' : '示意图已生成');
-      return;
-    }
-
     const result = await api('/api/chat/completions', {
       method: 'POST',
       body: {
@@ -603,12 +636,13 @@ async function sendChatMessageFromState() {
     state.chatMessages.push({
       role: 'assistant',
       text: assistantText,
+      generatedImageUrl: result.lifecoach?.processing?.generatedImageUrl || null,
     });
     state.chatLastAssistantText = assistantText;
-    state.chatLastFollowups = Array.isArray(result.lifecoach.followups) ? result.lifecoach.followups : [];
+    state.chatLastChoiceCard = result.lifecoach.choiceCard || null;
     persistChatMessages();
     renderChatInspector(result);
-    setChatStatus(result.lifecoach.processing.modelSource === 'upstream-relay' ? '已回复' : '已回复');
+    setChatStatus(result.lifecoach.processing.generatedImageUrl ? '图像已生成' : '已回复');
   } catch (error) {
     setChatStatus(error.message || '聊天请求失败');
     throw error;
@@ -633,24 +667,10 @@ function bindChatPage() {
     document.getElementById('chat-input')?.focus();
   });
 
-  document.querySelectorAll('[data-chat-mode]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const mode = button.dataset.chatMode || 'chat';
-      setChatMode(mode);
-      const input = document.getElementById('chat-input');
-      if (!input) return;
-      input.placeholder = mode === 'image'
-        ? '描述你想生成的画面…'
-        : mode === 'voice'
-          ? '先说一句你想整理的心情…'
-          : '和 Lifecoach 直接说话…';
-    });
-  });
-
   document.getElementById('new-chat-button')?.addEventListener('click', () => {
     state.chatMessages = [];
     state.chatLastAssistantText = '';
-    state.chatLastFollowups = [];
+    state.chatLastChoiceCard = null;
     persistChatMessages();
     setChatStarted(true);
     renderChatInspector(null);
@@ -658,6 +678,7 @@ function bindChatPage() {
     renderChatFollowups();
     setText('chat-sidebar-user', state.me?.user?.displayName || '对味聊天');
     setChatStatus('新对话');
+    document.getElementById('chat-input')?.focus();
   });
 
   document.getElementById('chat-form')?.addEventListener('submit', async (event) => {
@@ -692,6 +713,7 @@ function bindChatPage() {
     };
     renderChatAttachments();
     setChatStatus('已加入图片');
+    setChatStarted(true);
   });
 
   const recognition = initSpeechRecognition();
@@ -701,6 +723,7 @@ function bindChatPage() {
       return;
     }
     recognition.start();
+    setChatStarted(true);
     setChatStatus('正在听…');
   });
   if (recognition) {
@@ -735,20 +758,10 @@ function bindChatPage() {
       }
     })();
   });
-
-  document.getElementById('chat-generate-image-button')?.addEventListener('click', async () => {
-    setChatMode('image');
-    const input = document.getElementById('chat-input');
-    if (input && !input.value.trim()) {
-      input.value = '生成一张柔和、温暖、像玻璃球一样带有情绪氛围的图像。';
-    }
-    try {
-      await sendChatMessage();
-    } catch {}
-  });
 }
 
 async function initPage() {
+  initThemeSelector();
   bindLogoutButtons();
   bindAuthForms();
   bindKeyCreateForm();
@@ -774,7 +787,7 @@ async function initPage() {
       bindChatPage();
       setText('chat-sidebar-user', state.me.user.displayName || '对味聊天');
       renderChatInspector(null);
-      setChatMode('chat');
+      document.getElementById('chat-input')?.focus();
     }
   }
 }

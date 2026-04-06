@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>聊天 · 对味</title>
+    <script src="/theme.js"></script>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="chat">
@@ -48,17 +49,19 @@
             <span id="chat-status-note">对味聊天</span>
           </div>
           <div class="topbar-actions">
+            <div class="theme-switcher">
+              <label class="theme-switcher-label" for="theme-select">主题</label>
+              <select class="theme-select" id="theme-select" data-theme-select>
+                <option value="warm-tea">Warm Tea</option>
+                <option value="taisho-nouveau">Taisho Nouveau</option>
+                <option value="zine-handmade">Zine Handmade</option>
+              </select>
+            </div>
             <button class="ghost-button" id="new-chat-button" type="button">New chat</button>
           </div>
         </header>
 
         <main class="page chat-page-claude">
-          <div class="chat-mode-row">
-            <button class="mode-pill active" type="button" data-chat-mode="chat">Smart Chat</button>
-            <button class="mode-pill" type="button" data-chat-mode="voice">Voice</button>
-            <button class="mode-pill" type="button" data-chat-mode="image">Image</button>
-          </div>
-
           <div class="chat-bubble-stage" id="chat-bubble-stage">
             <button class="hero-orb-button" id="chat-orb-button" type="button" aria-label="进入对味聊天">
               <span class="hero-orb">
@@ -83,14 +86,12 @@
             <form class="chat-composer chat-composer-minimal" id="chat-form">
               <textarea id="chat-input" rows="3" placeholder="和 Lifecoach 直接说话…"></textarea>
               <div class="minimal-toolbar">
-                <label class="toolbar-button file-button">
+                <label class="toolbar-button file-button icon-button" aria-label="上传图片">
                   <input id="chat-image-input" type="file" accept="image/*" hidden>
-                  图片
+                  ＋
                 </label>
-                <button class="toolbar-button" id="chat-generate-image-button" type="button">生图</button>
-                <button class="toolbar-button" id="chat-voice-button" type="button">语音</button>
-                <button class="toolbar-button" id="chat-read-button" type="button">朗读</button>
-                <button class="button primary send-button" type="submit">发送</button>
+                <button class="toolbar-button icon-button" id="chat-voice-button" type="button" aria-label="语音输入">◉</button>
+                <button class="button primary send-button" type="submit">↗</button>
               </div>
             </form>
           </div>
