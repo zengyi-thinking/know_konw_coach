@@ -1,0 +1,12 @@
+{
+  "id": "framework-sociology-reframe-001",
+  "title": "社会学视角的结构归因框架",
+  "type": "framework",
+  "topics": ["结构归因", "病耻感剥离", "家庭系统", "权力关系"],
+  "scenes": ["总觉得都是自己的错", "被家庭或环境压住", "需要结构化理解"],
+  "riskLevel": "low",
+  "recommendedSkills": ["emotional-debrief", "coach-intake"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["是不是都是我的问题", "为什么总是我在扛", "家庭压得我喘不过气", "结构性问题"],
+  "summary": "帮助模型把个体困境放回关系和系统结构中理解，降低用户的自责感。"
+}
