@@ -74,6 +74,12 @@
   "learning": {
     "flavorMetricsPath": ".lifecoach/flavor-metrics.json"
   },
+  "workflows": [
+    {
+      "id": "long-horizon-confusion",
+      "path": ".lifecoach/workflows/long-horizon-confusion-workflow.json"
+    }
+  ],
   "dynamicStateLinks": {
     "events": "state/lifecoach/events",
     "timeline": "state/lifecoach/timeline",

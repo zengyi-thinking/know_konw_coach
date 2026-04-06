@@ -26,6 +26,7 @@ const { buildBackstageArbitration } = require('./governance/arbitration');
 const { readFlavorMetrics, computeFlavorScores } = require('./learning/flavor_scorer');
 const { evaluateTimelineOutcome } = require('./learning/timeline_outcome_evaluator');
 const { buildFlavorOptimizationPlan } = require('./learning/flavor_optimizer');
+const { buildWorkflowState } = require('./workflows/workflow_router');
 
 function buildRuntimePaths(env, workspaceOverride) {
   const workspaceRoot = resolveWorkspaceRoot(env, workspaceOverride);
@@ -65,10 +66,11 @@ function runSession(session, options = {}) {
   const route = safety.needsSafetyMode
     ? { primarySkill: 'safety', fallback: 'coach-intake', rankedSkills: [] }
     : routeSkill(session.input, workspaceRoot);
+  const workflow = buildWorkflowState(session, route, env, options.workspaceRoot);
   const knowledgeHits = retrieveKnowledge({
     ...session.input,
     primarySkill: route.primarySkill,
-  }, workspaceRoot, 2);
+  }, workspaceRoot, workflow ? 3 : 2, { workflowState: workflow });
   const gateway = buildGatewayRequest(session.input || {}, env);
   const capabilities = detectCapabilities(env);
   const upstream = (session.input?.modality || 'text') === 'audio'
@@ -176,6 +178,7 @@ function runSession(session, options = {}) {
   const result = {
     safety,
     route,
+    workflow,
     knowledgeHits,
     memory: memoryWithTimeline,
     event: eventWithPolicy,
@@ -184,6 +187,7 @@ function runSession(session, options = {}) {
     routeQuality,
     review,
     proposal,
+    workflow,
     flavorScores,
     flavorOptimization,
     timelineOutcome,

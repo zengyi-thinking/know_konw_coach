@@ -1,0 +1,17 @@
+{
+  "sessionId": "fixture-long-horizon-confusion",
+  "timestamp": "2026-04-05T14:00:00.000Z",
+  "input": {
+    "modality": "text",
+    "text": "这些年我一直很迷茫，不知道自己到底想要什么，好像做很多事都是为了证明给父母看，现在越想越乱。",
+    "sceneTags": ["goal_clarity", "long_term_confusion"]
+  },
+  "userProfile": {
+    "longTermGoal": "建立不依赖父母评价的自我方向感",
+    "pattern": "每次做选择时都会回到父母认可的问题上"
+  },
+  "output": {
+    "reply": "我们先把这份长期迷茫拆开看，不急着一次解决全部问题。",
+    "nextAction": "写下最近一个最让你纠结的决定，以及你最怕失去谁的认可"
+  }
+}

@@ -43,6 +43,13 @@ function validateAgents() {
   }
 }
 
+function validateWorkflows() {
+  for (const workflow of workspaceManifest.workflows || []) {
+    assertExists(path.join('packages', 'lifecoach-workspace', 'content', workflow.path));
+  }
+  assert((workspaceManifest.workflows || []).some((workflow) => workflow.id === 'long-horizon-confusion'), 'workspace manifest missing long-horizon-confusion workflow');
+}
+
 function validateKnowledgePairs() {
   const knowledgeRoot = path.join(repoRoot, 'packages', 'lifecoach-workspace', 'content', 'knowledge');
   const buckets = fs.readdirSync(knowledgeRoot, { withFileTypes: true }).filter((entry) => entry.isDirectory());
@@ -113,6 +120,7 @@ try {
   validateLayerGovernance();
   validateFlavorMetrics();
   validateAgents();
+  validateWorkflows();
   validateSkillTriples();
   validateKnowledgePairs();
   console.log(JSON.stringify({

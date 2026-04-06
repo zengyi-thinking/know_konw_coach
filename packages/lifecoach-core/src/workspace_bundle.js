@@ -58,6 +58,7 @@ function inferWorkspaceManifest(workspaceRoot) {
     learning: {
       flavorMetricsPath: '.lifecoach/flavor-metrics.json',
     },
+    workflows: [],
     dynamicStateLinks: {
       events: 'state/lifecoach/events',
       timeline: 'state/lifecoach/timeline',

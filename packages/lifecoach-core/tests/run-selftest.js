@@ -107,6 +107,16 @@ async function run() {
   assert(weekly.route.primarySkill === 'weekly-review', 'weekly-review 路由失败');
   tests.push('weekly-review route ok');
 
+  const longHorizonConfusion = runSession(loadJson('long-horizon-confusion.json'), {
+    workspaceRoot,
+    gatewayOptions: { mockResponse: { message: 'ok' } }
+  });
+  assert(longHorizonConfusion.workflow && longHorizonConfusion.workflow.id === 'long-horizon-confusion', 'long-horizon confusion workflow 未激活');
+  assert(['clarify', 'diagnose_pattern', 'action_bridge', 'stabilize', 'timeline_review'].includes(longHorizonConfusion.workflow.stageId), 'workflow stage 异常');
+  assert(longHorizonConfusion.knowledgeHits.some((item) => item.id === 'framework-goal-clarity-001'), 'goal-clarity knowledge 未召回');
+  assert(longHorizonConfusion.knowledgeHits.some((item) => item.id === 'framework-diagnostic-onion-001' || item.id === 'case-family-seeking-parental-approval-001'), '长期迷茫相关知识未被优先召回');
+  tests.push('long horizon confusion workflow ok');
+
   const lowActionability = runSession(loadJson('flavor-low-actionability.json'), {
     workspaceRoot,
     gatewayOptions: { mockResponse: { message: 'ok' } }

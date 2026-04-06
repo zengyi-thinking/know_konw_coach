@@ -1,0 +1,94 @@
+{
+  "id": "long-horizon-confusion",
+  "title": "长期迷茫与方向困惑工作流",
+  "description": "针对长期处于迷茫、方向不清、价值感外包、反复卡住的用户，先稳住、再澄清、再识别模式、再转向最小行动，并沿时间线持续复盘。",
+  "activation": {
+    "keywords": [
+      "一直很迷茫",
+      "长期很迷茫",
+      "不知道自己到底想要什么",
+      "总觉得没有方向",
+      "这些年一直很乱",
+      "方向很多",
+      "不知道从哪开始",
+      "反复卡住",
+      "为什么总是这样"
+    ],
+    "sceneTags": [
+      "goal_clarity",
+      "focus",
+      "priority",
+      "long_term_confusion"
+    ],
+    "routeBias": [
+      "goal-clarify",
+      "coach-intake",
+      "emotional-debrief"
+    ]
+  },
+  "externalInspirations": [
+    {
+      "name": "ICF Core Competencies",
+      "focus": "建立教练关系、主动倾听、唤起觉察、促进成长"
+    },
+    {
+      "name": "Motivational Interviewing",
+      "focus": "处理长期摇摆与 ambivalence，而不是直接说服"
+    },
+    {
+      "name": "ACT Values Clarification",
+      "focus": "在混乱与拉扯中重新找回价值导向"
+    },
+    {
+      "name": "Solution-Focused Coaching",
+      "focus": "从困惑回到一个更小、更可推进的下一步"
+    }
+  ],
+  "sharedKnowledgeIds": [
+    "framework-goal-clarity-001"
+  ],
+  "stages": [
+    {
+      "id": "stabilize",
+      "description": "先让用户从混乱和过载回到可思考状态。",
+      "priorityKnowledgeIds": [
+        "framework-rebuild-pyramid-001",
+        "framework-emotional-debrief-001"
+      ]
+    },
+    {
+      "id": "clarify",
+      "description": "帮助用户从‘我很乱’进入更清楚的真正问题与方向。",
+      "priorityKnowledgeIds": [
+        "framework-goal-clarity-001",
+        "framework-rebuild-pyramid-001"
+      ]
+    },
+    {
+      "id": "diagnose_pattern",
+      "description": "识别迷茫背后的反复模式、评价依赖或系统性拉扯。",
+      "priorityKnowledgeIds": [
+        "framework-diagnostic-onion-001",
+        "case-family-seeking-parental-approval-001",
+        "case-family-love-as-debt-001"
+      ]
+    },
+    {
+      "id": "action_bridge",
+      "description": "把已经看清的问题收束成一个低阻力、可验证的小行动。",
+      "priorityKnowledgeIds": [
+        "framework-diagnosis-to-action-transition-001",
+        "framework-goal-clarity-001",
+        "framework-rebuild-pyramid-001"
+      ]
+    },
+    {
+      "id": "timeline_review",
+      "description": "沿时间线检查实践效果，防止重新掉回迷茫循环。",
+      "priorityKnowledgeIds": [
+        "framework-weekly-review-001",
+        "framework-habit-reset-001"
+      ]
+    }
+  ]
+}

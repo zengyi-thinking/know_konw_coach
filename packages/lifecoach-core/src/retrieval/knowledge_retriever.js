@@ -30,7 +30,7 @@ function collectKnowledgeFiles(workspaceRoot) {
   return results;
 }
 
-function scoreKnowledgeHit(item, input) {
+function scoreKnowledgeHit(item, input, options = {}) {
   const text = `${input.text || ''} ${(input.sceneTags || []).join(' ')}`.toLowerCase();
   const scenes = Array.isArray(item.metadata.scenes) ? item.metadata.scenes : [];
   const keywords = Array.isArray(item.metadata.keywords) ? item.metadata.keywords : [];
@@ -47,14 +47,35 @@ function scoreKnowledgeHit(item, input) {
     score += 12;
   }
 
-  return score;
+  const workflowState = options.workflowState || null;
+  const workflowPriorityIds = Array.isArray(workflowState?.priorityKnowledgeIds) ? workflowState.priorityKnowledgeIds : [];
+  const workflowPriorityIndex = workflowPriorityIds.indexOf(item.metadata.id);
+  if (workflowState && Array.isArray(workflowState.priorityKnowledgeIds) && workflowState.priorityKnowledgeIds.includes(item.metadata.id)) {
+    score += 28 + Math.max(0, workflowPriorityIds.length - workflowPriorityIndex);
+  }
+
+  if (workflowState && workflowState.id === 'long-horizon-confusion' && item.metadata.type === 'case' && hasSemanticMatch) {
+    score += 10;
+  }
+
+  return {
+    score,
+    workflowPriorityIndex: workflowPriorityIndex >= 0 ? workflowPriorityIndex : 999,
+  };
 }
 
-function retrieveKnowledge(input, workspaceRoot, limit = 2) {
+function retrieveKnowledge(input, workspaceRoot, limit = 2, options = {}) {
   return collectKnowledgeFiles(workspaceRoot)
-    .map((item) => ({ ...item, score: scoreKnowledgeHit(item, input) }))
+    .map((item) => {
+      const measured = scoreKnowledgeHit(item, input, options);
+      return { ...item, score: measured.score, workflowPriorityIndex: measured.workflowPriorityIndex };
+    })
     .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.workflowPriorityIndex !== b.workflowPriorityIndex) return a.workflowPriorityIndex - b.workflowPriorityIndex;
+      return a.metadata.id.localeCompare(b.metadata.id);
+    })
     .slice(0, limit)
     .map((item) => ({
       id: item.metadata.id,

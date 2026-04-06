@@ -58,6 +58,7 @@ function persistSessionArtifacts(session, result, runtimePaths, workspaceManifes
     sessionId: session.sessionId,
     timestamp: session.timestamp,
     event: result.event,
+    workflow: result.workflow || null,
     flavorSnapshot: result.flavorScores ? {
       overall: result.flavorScores.overall,
       band: result.flavorScores.band,
@@ -69,6 +70,7 @@ function persistSessionArtifacts(session, result, runtimePaths, workspaceManifes
     sessionId: session.sessionId,
     timestamp: session.timestamp,
     timeline: result.timeline,
+    workflow: result.workflow || null,
     timelineOutcome: result.timelineOutcome || null,
     workspaceRefs,
   }));
@@ -79,6 +81,7 @@ function persistSessionArtifacts(session, result, runtimePaths, workspaceManifes
     review: result.review,
     routeQuality: result.routeQuality,
     arbitration: result.arbitration || null,
+    workflow: result.workflow || null,
     flavorScores: result.flavorScores || null,
     timelineOutcome: result.timelineOutcome || null,
     workspaceRefs,
