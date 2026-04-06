@@ -108,6 +108,26 @@ async function run() {
     assert(consoleChat.data.lifecoach.flavorScores?.overall >= 0, 'console chat flavor score missing');
     assert(consoleChat.data.lifecoach.choiceCard?.question, 'console chat choiceCard missing');
     assert(Array.isArray(consoleChat.data.lifecoach.choiceCard?.options) && consoleChat.data.lifecoach.choiceCard.options.length >= 4, 'console chat choiceCard options missing');
+    assert(consoleChat.data.lifecoach.choiceFlowState?.mode === 'clarify', 'console chat clarify flow not started');
+
+    const choice1 = consoleChat.data.lifecoach.choiceCard.options[0];
+    const step2 = await requestJson(`${baseConsole}/api/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionToken}`,
+      },
+      body: JSON.stringify({
+        messages: [
+          { role: 'user', content: '我最近一直很迷茫，不知道自己到底想要什么。' },
+          { role: 'assistant', content: consoleChat.data.choices[0].message.content },
+          { role: 'user', content: `Q: ${consoleChat.data.lifecoach.choiceCard.question}\nA: ${choice1.title}` },
+        ],
+        choiceFlowState: consoleChat.data.lifecoach.choiceFlowState,
+      }),
+    });
+    assert(step2.response.status === 200, 'clarify step2 failed');
+    assert(step2.data.lifecoach.choiceCard?.step === 2, 'clarify did not advance to step 2');
 
     const consoleImageChat = await requestJson(`${baseConsole}/api/chat/completions`, {
       method: 'POST',
@@ -268,6 +288,7 @@ async function run() {
         'api key create ok',
         'integration snippet ok',
         'console chat ok',
+        'clarify multi-step ok',
         'console image generation ok',
         'console speech ok',
         'console transcription ok',

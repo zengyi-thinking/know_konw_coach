@@ -41,6 +41,46 @@ function fallbackQuestionnaire(seedText = '') {
   };
 }
 
+function fallbackClarifyQuestionnaire(seedText = '') {
+  return {
+    title: '先理清一下',
+    summary: '我先用三问帮你把困境理清。',
+    questions: [
+      {
+        id: 'q1',
+        question: '现在最困扰你的，是哪一层？',
+        options: [
+          { key: 'A', title: '方向不清', subtitle: '不知道真正想要什么' },
+          { key: 'B', title: '反复卡住', subtitle: '一直推进不动' },
+          { key: 'C', title: '情绪太满', subtitle: '先稳住自己' },
+          { key: 'D', title: '关系拉扯', subtitle: '总被别人影响' },
+        ],
+      },
+      {
+        id: 'q2',
+        question: '你最想先改善的变化是什么？',
+        options: [
+          { key: 'A', title: '更清楚', subtitle: '知道自己真正要什么' },
+          { key: 'B', title: '更能行动', subtitle: '先迈出一步' },
+          { key: 'C', title: '更稳定', subtitle: '先别这么乱' },
+          { key: 'D', title: '更有边界', subtitle: '少被外界牵动' },
+        ],
+      },
+      {
+        id: 'q3',
+        question: '当前最大的阻力更像哪一种？',
+        options: [
+          { key: 'A', title: '想太多', subtitle: '脑子停不下来' },
+          { key: 'B', title: '怕选错', subtitle: '担心后果' },
+          { key: 'C', title: '太在意别人', subtitle: '总被评价牵动' },
+          { key: 'D', title: '能量不够', subtitle: '先恢复承载' },
+        ],
+      },
+    ],
+    seedText,
+  };
+}
+
 async function generatePlanQuestionnaire(seedText = '', env = process.env) {
   if (!isProxyEnabled(env)) {
     return fallbackQuestionnaire(seedText);
@@ -79,6 +119,44 @@ async function generatePlanQuestionnaire(seedText = '', env = process.env) {
   return fallbackQuestionnaire(seedText);
 }
 
+async function generateClarifyQuestionnaire(seedText = '', env = process.env) {
+  if (!isProxyEnabled(env)) {
+    return fallbackClarifyQuestionnaire(seedText);
+  }
+
+  const prompt = [
+    '你是一个 life coach 的澄清流程设计器。',
+    '请根据用户当前的模糊表达，生成 3 个循序渐进的澄清问题。',
+    '每个问题都要附带 4 个短选项。',
+    '输出 JSON，格式：',
+    '{"title":"...","summary":"...","questions":[{"id":"q1","question":"...","options":[{"key":"A","title":"...","subtitle":"..."},{"key":"B","title":"...","subtitle":"..."},{"key":"C","title":"...","subtitle":"..."},{"key":"D","title":"...","subtitle":"..."}]},{"id":"q2","question":"...","options":[...]},{"id":"q3","question":"...","options":[...]}]}',
+    `用户当前输入: ${seedText || '用户想理清自己的困境。'}`,
+    '问题要短，像 Claude 的 plan 卡片，不要解释太多。',
+  ].join('\n');
+
+  const response = await executeChat({
+    modality: 'text',
+    messages: [
+      { role: 'system', content: prompt },
+      { role: 'user', content: '生成三问澄清问卷。' },
+    ],
+  }, buildUpstreamEnv(env), { timeoutMs: 30000 });
+
+  if (!response.ok) {
+    return fallbackClarifyQuestionnaire(seedText);
+  }
+
+  const content = response.data?.choices?.[0]?.message?.content || '';
+  try {
+    const parsed = JSON.parse(content);
+    if (Array.isArray(parsed.questions) && parsed.questions.length === 3) {
+      return parsed;
+    }
+  } catch {}
+
+  return fallbackClarifyQuestionnaire(seedText);
+}
+
 function buildPlanSummary(questionnaire, answers) {
   const lines = ['我先回答完这份三问问卷：'];
   for (const question of questionnaire.questions || []) {
@@ -91,5 +169,6 @@ function buildPlanSummary(questionnaire, answers) {
 
 module.exports = {
   generatePlanQuestionnaire,
+  generateClarifyQuestionnaire,
   buildPlanSummary,
 };

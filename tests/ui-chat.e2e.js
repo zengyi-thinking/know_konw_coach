@@ -47,6 +47,11 @@ async function run() {
     assert(assistantCount >= 2, 'assistant response not rendered on front-end');
     const choiceCardCount = await page.locator('.card-option').count();
     assert(choiceCardCount >= 4, 'choice card options not rendered on front-end');
+    await page.locator('.card-option').first().click();
+    await page.waitForFunction(() => {
+      const progress = document.querySelector('.plan-progress');
+      return progress ? /2\s*\/\s*3/.test(progress.textContent || '') : true;
+    });
 
     await page.fill('#chat-input', '请生成一张柔和粉橘色调、像玻璃球一样的情绪氛围图。');
     await page.click('#chat-form button[type="submit"]');

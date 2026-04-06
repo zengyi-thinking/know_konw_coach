@@ -93,6 +93,28 @@ function inferRuleIntent(body = {}) {
   }
 
   const normalized = String(text || '').toLowerCase();
+  const strongClarifySignals = [
+    '一直很迷茫',
+    '长期很迷茫',
+    '不知道自己到底想要什么',
+    '不知道自己想要什么',
+    '总觉得没有方向',
+    '我需要理清',
+    '帮我理一下',
+    '帮我做一个选择',
+    '不知道该怎么选',
+    '很纠结',
+  ].some((item) => normalized.includes(item.toLowerCase()));
+
+  if (strongClarifySignals) {
+    return {
+      type: 'clarify_with_choice_card',
+      userText: text,
+      reason: 'strong_clarify_signal',
+      needsSemanticCheck: false,
+    };
+  }
+
   const ambiguousSignals = [
     '我需要理清',
     '我需要想清楚',

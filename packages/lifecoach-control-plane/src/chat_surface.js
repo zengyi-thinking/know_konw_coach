@@ -4,6 +4,7 @@ const { maybeProxyLifecoachChat } = require('./upstream_lifecoach_chat');
 const { inferSemanticIntent } = require('./intent_classifier');
 const { generateImageAsset } = require('./multimodal_surface');
 const { generateChoiceCard } = require('./choice_card_generator');
+const { generateClarifyQuestionnaire, buildPlanSummary } = require('./plan_questionnaire');
 
 function extractLastUserInput(messages = []) {
   const last = [...messages].reverse().find((item) => item.role === 'user');
@@ -184,8 +185,123 @@ function buildChoiceOnlyResponse(flow, body, choiceCard) {
   };
 }
 
+function buildQuestionnaireStepResponse(flow, body, questionnaire, stepIndex, answers = {}) {
+  const question = questionnaire.questions[stepIndex];
+  return {
+    id: `chatcmpl_${crypto.randomUUID()}`,
+    object: 'chat.completion',
+    created: Math.floor(Date.now() / 1000),
+    model: body.model || 'lifecoach-core',
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: 'assistant',
+          content: question.question,
+        },
+        finish_reason: 'stop',
+      },
+    ],
+    usage: {
+      prompt_tokens: 18,
+      completion_tokens: 14,
+      total_tokens: 32,
+    },
+    lifecoach: {
+      mode: 'enhanced',
+      route: flow.result.route,
+      workflow: flow.result.workflow || null,
+      safety: flow.result.safety,
+      knowledgeHits: flow.result.knowledgeHits.map((item) => ({
+        id: item.id,
+        title: item.title,
+        score: item.score,
+      })),
+      adaptivePolicy: flow.result.adaptivePolicy,
+      flavorScores: flow.result.flavorScores,
+      timelineOutcome: flow.result.timelineOutcome,
+      flavorOptimization: flow.result.flavorOptimization,
+      cerebellum: flow.cerebellum,
+      choiceCard: {
+        question: question.question,
+        options: question.options,
+        step: stepIndex + 1,
+        total: questionnaire.questions.length,
+      },
+      choiceFlowState: {
+        mode: 'clarify',
+        questionnaire,
+        stepIndex,
+        answers,
+      },
+      processing: {
+        modality: body.modality || 'text',
+        capabilityIntent: 'clarify_with_choice_card',
+        upstreamUsed: false,
+        upstreamError: null,
+        generatedImageUrl: null,
+        persistedArtifacts: flow.result.persistence ? flow.result.persistence.files : [],
+      },
+    },
+  };
+}
+
+async function continueClarifyFlow(body, authContext, env, options = {}) {
+  const flowState = body.choiceFlowState;
+  const questionnaire = flowState.questionnaire;
+  const currentQuestion = questionnaire.questions[flowState.stepIndex];
+  const messages = Array.isArray(body.messages) ? body.messages : [];
+  const lastInput = extractLastUserInput(messages);
+  const updatedAnswers = {
+    ...(flowState.answers || {}),
+    [currentQuestion.id]: lastInput.userText,
+  };
+
+  const flow = runLifecoachConversation({
+    messages,
+    modality: body.modality || lastInput.modality,
+    imageUrl: body.imageUrl || lastInput.imageUrl,
+  }, env, {
+    entitlements: authContext.entitlements,
+    workspaceRoot: options.workspaceRoot,
+    stateRoot: options.stateRoot,
+  });
+
+  if (flowState.stepIndex + 1 < questionnaire.questions.length) {
+    return buildQuestionnaireStepResponse(flow, body, questionnaire, flowState.stepIndex + 1, updatedAnswers);
+  }
+
+  const summary = buildPlanSummary(questionnaire, updatedAnswers);
+  const summarizedFlow = runLifecoachConversation({
+    messages: [
+      ...messages,
+      { role: 'user', content: summary },
+    ],
+    modality: 'text',
+  }, env, {
+    entitlements: authContext.entitlements,
+    workspaceRoot: options.workspaceRoot,
+    stateRoot: options.stateRoot,
+  });
+
+  const response = buildTextualResponse(summarizedFlow, body, authContext);
+  response.choiceCard = null;
+  response.lifecoach.choiceCard = null;
+  response.lifecoach.choiceFlowState = null;
+  response.choices[0].message.content = summarizedFlow.assistantMessage;
+  return response;
+}
+
 async function finalizeChatCompletion(body, authContext, env, options = {}) {
   const intent = await inferSemanticIntent(body, env);
+
+  if (
+    body.choiceFlowState?.mode === 'clarify'
+    && body.choiceFlowState?.questionnaire
+    && !['image_generation', 'image_understanding'].includes(intent.type)
+  ) {
+    return continueClarifyFlow(body, authContext, env, options);
+  }
 
   if (intent.type === 'image_generation') {
     if (!authContext.entitlements?.featureImage) {
@@ -225,9 +341,11 @@ async function finalizeChatCompletion(body, authContext, env, options = {}) {
   response.lifecoach.processing.modelSource = upstream.used && upstream.ok ? 'upstream-relay' : 'local-core-fallback';
   const choiceCard = await generateChoiceCard(flow, body, env);
   if (intent.type === 'clarify_with_choice_card') {
-    return buildChoiceOnlyResponse(flow, body, choiceCard);
+    const questionnaire = await generateClarifyQuestionnaire(intent.userText || '', env);
+    return buildQuestionnaireStepResponse(flow, body, questionnaire, 0, {});
   }
   response.lifecoach.choiceCard = choiceCard;
+  response.lifecoach.choiceFlowState = null;
   response.lifecoach.processing.intentSource = intent.reason || 'rule';
   return response;
 }

@@ -9,6 +9,7 @@ const state = {
   chatAttachment: null,
   chatLastAssistantText: '',
   chatLastChoiceCard: null,
+  chatChoiceFlowState: null,
   chatBusy: false,
   chatStarted: false,
   planQuestionnaire: null,
@@ -408,6 +409,7 @@ function bindPageButtons() {
 
 function persistChatMessages() {
   localStorage.setItem('lifecoach_console_chat_messages', JSON.stringify(state.chatMessages));
+  localStorage.setItem('lifecoach_console_choice_flow', JSON.stringify(state.chatChoiceFlowState));
 }
 
 function restoreChatMessages() {
@@ -417,6 +419,12 @@ function restoreChatMessages() {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
       state.chatMessages = parsed;
+    }
+  } catch {}
+  try {
+    const flowRaw = localStorage.getItem('lifecoach_console_choice_flow');
+    if (flowRaw) {
+      state.chatChoiceFlowState = JSON.parse(flowRaw);
     }
   } catch {}
 }
@@ -744,6 +752,7 @@ async function sendChatMessageFromState() {
       method: 'POST',
       body: {
         messages: toApiMessages(),
+        choiceFlowState: state.chatChoiceFlowState,
       },
     });
 
@@ -755,6 +764,7 @@ async function sendChatMessageFromState() {
     });
     state.chatLastAssistantText = assistantText;
     state.chatLastChoiceCard = result.lifecoach.choiceCard || null;
+    state.chatChoiceFlowState = result.lifecoach.choiceFlowState || null;
     persistChatMessages();
     renderChatInspector(result);
     setChatStatus(result.lifecoach.processing.generatedImageUrl ? '图像已生成' : '已回复');
@@ -787,6 +797,7 @@ function bindChatPage() {
     state.chatMessages = [];
     state.chatLastAssistantText = '';
     state.chatLastChoiceCard = null;
+    state.chatChoiceFlowState = null;
     resetPlanState();
     persistChatMessages();
     setChatStarted(true);
@@ -898,7 +909,7 @@ function bindChatPage() {
           setChatStarted(true);
           setChatStatus('正在录音…');
           return;
-        } catch (error) {
+        } catch {
           setChatStatus('麦克风不可用，回退浏览器识别');
         }
       }
