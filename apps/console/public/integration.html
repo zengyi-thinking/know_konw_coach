@@ -34,7 +34,7 @@
 
       <section class="content-shell">
         <header class="content-topbar">
-          <div class="search-shell"><span>OpenClaw integration…</span></div>
+          <div class="search-shell"><span>该页面已并入钥匙库统一页面…</span></div>
           <div class="topbar-actions">
             <div class="theme-switcher">
               <label class="theme-switcher-label" for="theme-select">主题</label>
@@ -49,22 +49,28 @@
 
         <main class="page">
           <section class="section-heading">
-            <p class="kicker">Integration</p>
-            <h1>接进 OpenClaw。</h1>
-            <p class="lead">复制片段，注入环境变量即可。</p>
+            <p class="kicker">Integration Alias</p>
+            <h1>接入页已迁移到 /keys。</h1>
+            <p class="lead">正在跳转到统一页面的接入区块。</p>
           </section>
 
           <section class="card">
-            <div class="card-header">
-              <h2>配置片段</h2>
-              <button class="button primary" id="load-snippet" type="button">加载</button>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span>目标地址</span>
+                <strong>/keys#integration-section</strong>
+              </div>
             </div>
-            <pre id="snippet-output">点击按钮后加载。</pre>
-            <div id="integration-hint" class="detail-list compact-detail"></div>
+            <p class="lead">如果没有自动跳转，可点击 <a class="inline-link" href="/keys#integration-section">这里</a>。</p>
           </section>
         </main>
       </section>
     </div>
+    <script>
+      if (window.location.pathname !== '/keys') {
+        window.location.replace('/keys#integration-section');
+      }
+    </script>
     <script src="/app.js"></script>
   </body>
 </html>

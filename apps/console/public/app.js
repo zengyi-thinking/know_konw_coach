@@ -11,6 +11,13 @@ const state = {
   chatLastChoiceCard: null,
   chatBusy: false,
   chatStarted: false,
+  planQuestionnaire: null,
+  planStepIndex: 0,
+  planAnswers: {},
+  selectedPlanOptionIndex: null,
+  mediaRecorder: null,
+  mediaChunks: [],
+  isRecording: false,
 };
 
 function pageName() {
@@ -467,6 +474,114 @@ function renderChatAttachments() {
   });
 }
 
+function resetPlanState() {
+  state.planQuestionnaire = null;
+  state.planStepIndex = 0;
+  state.planAnswers = {};
+  state.selectedPlanOptionIndex = null;
+}
+
+function renderPlanCard() {
+  const node = document.getElementById('chat-plan-card');
+  if (!node) return;
+
+  if (!state.planQuestionnaire || !Array.isArray(state.planQuestionnaire.questions) || !state.planQuestionnaire.questions.length) {
+    node.innerHTML = '';
+    return;
+  }
+
+  const total = state.planQuestionnaire.questions.length;
+  const question = state.planQuestionnaire.questions[state.planStepIndex];
+  if (!question) {
+    node.innerHTML = '';
+    return;
+  }
+
+  const selectedAnswer = typeof state.planAnswers[question.id] === 'string' ? state.planAnswers[question.id] : '';
+  node.innerHTML = `
+    <article class="plan-card reveal">
+      <div class="plan-card-head">
+        <div>
+          <strong>${escapeHtml(question.question)}</strong>
+        </div>
+        <div class="plan-progress">${state.planStepIndex + 1} / ${total}</div>
+      </div>
+      <div class="plan-options">
+        ${(question.options || []).map((item, index) => `
+          <button class="plan-option ${selectedAnswer === item.title ? 'active' : ''}" type="button" data-plan-option-index="${index}">
+            <span class="plan-option-key">${escapeHtml(item.key || String(index + 1))}</span>
+            <span class="plan-option-copy">
+              <strong>${escapeHtml(item.title || '')}</strong>
+              ${item.subtitle ? `<small>${escapeHtml(item.subtitle)}</small>` : ''}
+            </span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="plan-actions">
+        <button class="ghost-button" id="plan-skip-button" type="button">${state.planStepIndex + 1 >= total ? 'Skip' : '跳过'}</button>
+        <button class="button primary" id="plan-next-button" type="button">${state.planStepIndex + 1 >= total ? '完成' : '→'}</button>
+      </div>
+    </article>
+  `;
+
+  node.querySelectorAll('[data-plan-option-index]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const index = Number(button.dataset.planOptionIndex);
+      const option = question.options?.[index];
+      if (!option) return;
+      state.planAnswers[question.id] = option.title;
+      const input = document.getElementById('chat-input');
+      if (input) {
+        input.value = option.title;
+      }
+      renderPlanCard();
+    });
+  });
+
+  document.getElementById('plan-skip-button')?.addEventListener('click', async () => {
+    state.planAnswers[question.id] = state.planAnswers[question.id] || '跳过';
+    await advancePlanQuestion();
+  });
+
+  document.getElementById('plan-next-button')?.addEventListener('click', async () => {
+    const input = document.getElementById('chat-input');
+    if (input?.value.trim()) {
+      state.planAnswers[question.id] = input.value.trim();
+    }
+    if (!state.planAnswers[question.id]) {
+      setChatStatus('先选一个选项，或输入你的回答');
+      return;
+    }
+    await advancePlanQuestion();
+  });
+}
+
+async function advancePlanQuestion() {
+  const input = document.getElementById('chat-input');
+  if (input) input.value = '';
+
+  if (!state.planQuestionnaire) return;
+  if (state.planStepIndex + 1 < state.planQuestionnaire.questions.length) {
+    state.planStepIndex += 1;
+    renderPlanCard();
+    return;
+  }
+
+  const summaryLines = [];
+  for (const question of state.planQuestionnaire.questions) {
+    summaryLines.push(`Q: ${question.question}`);
+    summaryLines.push(`A: ${state.planAnswers[question.id] || '跳过'}`);
+  }
+  state.chatMessages.push({
+    role: 'user',
+    text: summaryLines.join('\n'),
+  });
+  persistChatMessages();
+  resetPlanState();
+  renderPlanCard();
+  await sendChatMessageFromState();
+}
+
 function renderChatInspector(meta) {
   if (!meta?.lifecoach) return;
 
@@ -660,6 +775,7 @@ function bindChatPage() {
   setChatStarted(true);
   renderChatMessages();
   renderChatAttachments();
+  renderPlanCard();
   renderChatFollowups();
 
   document.getElementById('chat-orb-button')?.addEventListener('click', () => {
@@ -671,14 +787,32 @@ function bindChatPage() {
     state.chatMessages = [];
     state.chatLastAssistantText = '';
     state.chatLastChoiceCard = null;
+    resetPlanState();
     persistChatMessages();
     setChatStarted(true);
     renderChatInspector(null);
     renderChatMessages();
+    renderPlanCard();
     renderChatFollowups();
     setText('chat-sidebar-user', state.me?.user?.displayName || '对味聊天');
     setChatStatus('新对话');
     document.getElementById('chat-input')?.focus();
+  });
+
+  document.getElementById('start-plan-button')?.addEventListener('click', async () => {
+    const seedText = document.getElementById('chat-input')?.value.trim()
+      || state.chatMessages.slice().reverse().find((item) => item.role === 'user')?.text
+      || '';
+    const result = await api('/api/chat/plan/start', {
+      method: 'POST',
+      body: { seedText },
+    });
+    state.planQuestionnaire = result.questionnaire;
+    state.planStepIndex = 0;
+    state.planAnswers = {};
+    renderPlanCard();
+    setChatStarted(true);
+    setChatStatus(result.questionnaire?.summary || '进入 Plan');
   });
 
   document.getElementById('chat-form')?.addEventListener('submit', async (event) => {
@@ -718,13 +852,65 @@ function bindChatPage() {
 
   const recognition = initSpeechRecognition();
   document.getElementById('chat-voice-button')?.addEventListener('click', () => {
-    if (!recognition) {
-      setChatStatus('当前浏览器不支持语音输入');
-      return;
-    }
-    recognition.start();
-    setChatStarted(true);
-    setChatStatus('正在听…');
+    (async () => {
+      if (state.mediaRecorder && state.isRecording) {
+        state.mediaRecorder.stop();
+        return;
+      }
+
+      if (navigator.mediaDevices?.getUserMedia && window.MediaRecorder) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          state.mediaChunks = [];
+          state.mediaRecorder = new MediaRecorder(stream);
+          state.mediaRecorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+              state.mediaChunks.push(event.data);
+            }
+          };
+          state.mediaRecorder.onstop = async () => {
+            state.isRecording = false;
+            const audioBlob = new Blob(state.mediaChunks, { type: state.mediaRecorder.mimeType || 'audio/webm' });
+            const dataUrl = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(audioBlob);
+            });
+            const result = await api('/api/audio/transcriptions', {
+              method: 'POST',
+              body: {
+                audioDataUrl: dataUrl,
+                language: 'zh',
+              },
+            });
+            const input = document.getElementById('chat-input');
+            if (input) {
+              input.value = input.value ? `${input.value} ${result.text}` : result.text;
+            }
+            setChatStatus('语音已转文字');
+            stream.getTracks().forEach((track) => {
+              track.stop();
+            });
+          };
+          state.mediaRecorder.start();
+          state.isRecording = true;
+          setChatStarted(true);
+          setChatStatus('正在录音…');
+          return;
+        } catch (error) {
+          setChatStatus('麦克风不可用，回退浏览器识别');
+        }
+      }
+
+      if (!recognition) {
+        setChatStatus('当前浏览器不支持语音输入');
+        return;
+      }
+      recognition.start();
+      setChatStarted(true);
+      setChatStatus('正在听…');
+    })();
   });
   if (recognition) {
     recognition.onresult = (event) => {
@@ -776,6 +962,12 @@ async function initPage() {
     }
     if (pageName() === 'keys') {
       renderKeys();
+      if (window.location.hash === '#integration-section') {
+        await loadIntegration();
+      }
+      if (window.location.hash === '#models-section') {
+        await loadModels();
+      }
     }
     if (pageName() === 'integration') {
       await loadIntegration();

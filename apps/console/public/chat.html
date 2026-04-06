@@ -57,6 +57,7 @@
                 <option value="zine-handmade">Zine Handmade</option>
               </select>
             </div>
+            <button class="ghost-button" id="start-plan-button" type="button">Plan</button>
             <button class="ghost-button" id="new-chat-button" type="button">New chat</button>
           </div>
         </header>
@@ -81,17 +82,20 @@
             </div>
 
             <div class="chat-attachments" id="chat-attachments"></div>
+            <div class="chat-plan-card" id="chat-plan-card"></div>
             <div class="chat-followups" id="chat-followups"></div>
 
             <form class="chat-composer chat-composer-minimal" id="chat-form">
-              <textarea id="chat-input" rows="3" placeholder="和 Lifecoach 直接说话…"></textarea>
-              <div class="minimal-toolbar">
-                <label class="toolbar-button file-button icon-button" aria-label="上传图片">
-                  <input id="chat-image-input" type="file" accept="image/*" hidden>
-                  ＋
-                </label>
-                <button class="toolbar-button icon-button" id="chat-voice-button" type="button" aria-label="语音输入">◉</button>
-                <button class="button primary send-button" type="submit">↗</button>
+              <div class="chat-input-shell">
+                <textarea id="chat-input" rows="3" placeholder="和 Lifecoach 直接说话…"></textarea>
+                <div class="minimal-toolbar">
+                  <label class="toolbar-button file-button icon-button" aria-label="上传图片">
+                    <input id="chat-image-input" type="file" accept="image/*" hidden>
+                    ＋
+                  </label>
+                  <button class="toolbar-button icon-button" id="chat-voice-button" type="button" aria-label="语音输入">◉</button>
+                  <button class="button primary send-button" type="submit">↗</button>
+                </div>
               </div>
             </form>
           </div>

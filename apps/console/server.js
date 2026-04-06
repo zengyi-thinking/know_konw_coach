@@ -27,7 +27,8 @@ const {
 const { getUsageSummary } = require('../../packages/lifecoach-control-plane/src/usage');
 const { finalizeChatCompletion } = require('../../packages/lifecoach-control-plane/src/chat_surface');
 const { loadEnvFiles } = require('../../packages/lifecoach-control-plane/src/env_loader');
-const { generateImageAsset, synthesizeSpeechAsset } = require('../../packages/lifecoach-control-plane/src/multimodal_surface');
+const { generateImageAsset, synthesizeSpeechAsset, transcribeAudioAsset } = require('../../packages/lifecoach-control-plane/src/multimodal_surface');
+const { generatePlanQuestionnaire } = require('../../packages/lifecoach-control-plane/src/plan_questionnaire');
 
 const publicRoot = path.join(__dirname, 'public');
 
@@ -203,6 +204,16 @@ function createConsoleHandler(options = {}) {
         return;
       }
 
+      if (req.method === 'POST' && pathname === '/api/chat/plan/start') {
+        const session = requireSession(req, env);
+        const body = await readJsonBody(req);
+        const questionnaire = await generatePlanQuestionnaire(body.seedText || '', env);
+        sendJson(res, 200, {
+          questionnaire,
+        });
+        return;
+      }
+
       if (req.method === 'POST' && pathname === '/api/images/generations') {
         const session = requireSession(req, env);
         const body = await readJsonBody(req);
@@ -239,6 +250,18 @@ function createConsoleHandler(options = {}) {
           'Content-Type': result.contentType || 'audio/wav',
         });
         res.end(result.audio);
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === '/api/audio/transcriptions') {
+        const session = requireSession(req, env);
+        const body = await readJsonBody(req);
+        const result = await transcribeAudioAsset({
+          audioDataUrl: body.audioDataUrl,
+          language: body.language,
+          transcriptHint: body.transcriptHint,
+        }, env);
+        sendJson(res, result.ok ? 200 : 400, result);
         return;
       }
 

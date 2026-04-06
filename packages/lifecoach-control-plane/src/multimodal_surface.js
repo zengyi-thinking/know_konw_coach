@@ -1,4 +1,8 @@
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { executeSpeechSynthesis } = require('../../lifecoach-core/src/gateway/tts_executor');
+const { executeAudioTranscription } = require('../../lifecoach-core/src/gateway/audio_executor');
 const { executeImageGeneration } = require('../../lifecoach-core/src/gateway/image_executor');
 const { buildUpstreamEnv, isProxyEnabled } = require('./upstream_lifecoach_chat');
 
@@ -82,6 +86,58 @@ async function synthesizeSpeechAsset(input, env = process.env, options = {}) {
   };
 }
 
+function decodeDataUrlToBuffer(dataUrl = '') {
+  const match = String(dataUrl).match(/^data:([^;]+);base64,(.+)$/);
+  if (!match) {
+    return null;
+  }
+  return {
+    mimeType: match[1],
+    buffer: Buffer.from(match[2], 'base64'),
+  };
+}
+
+async function transcribeAudioAsset(input, env = process.env) {
+  if (!isProxyEnabled(env)) {
+    return {
+      ok: true,
+      source: 'local-placeholder',
+      text: input.transcriptHint || '这是一个本地占位转写结果。',
+      error: null,
+    };
+  }
+
+  const decoded = decodeDataUrlToBuffer(input.audioDataUrl || '');
+  if (!decoded) {
+    return {
+      ok: false,
+      source: 'invalid-audio',
+      text: null,
+      error: 'invalid_audio_data',
+    };
+  }
+
+  const tempExt = decoded.mimeType.includes('webm') ? 'webm' : decoded.mimeType.includes('mpeg') ? 'mp3' : 'wav';
+  const tempFile = path.join(os.tmpdir(), `lifecoach-upload-${Date.now()}.${tempExt}`);
+  fs.writeFileSync(tempFile, decoded.buffer);
+
+  try {
+    const response = await executeAudioTranscription({
+      filePath: tempFile,
+      language: input.language || 'zh',
+    }, buildUpstreamEnv(env), { timeoutMs: 60000 });
+
+    return {
+      ok: Boolean(response.ok),
+      source: response.ok ? 'upstream-asr-model' : 'upstream-error',
+      text: typeof response.data === 'string' ? response.data : response.data?.text || response.data?.transcript || null,
+      error: response.error || response.details || null,
+    };
+  } finally {
+    try { fs.unlinkSync(tempFile); } catch {}
+  }
+}
+
 function createPlaceholderWav(durationMs = 420, sampleRate = 8000) {
   const samples = Math.floor((durationMs / 1000) * sampleRate);
   const dataSize = samples * 2;
@@ -110,4 +166,5 @@ function createPlaceholderWav(durationMs = 420, sampleRate = 8000) {
 module.exports = {
   generateImageAsset,
   synthesizeSpeechAsset,
+  transcribeAudioAsset,
 };

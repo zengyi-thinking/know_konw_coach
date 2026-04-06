@@ -53,25 +53,42 @@
 
         <main class="page">
           <section class="section-heading">
-            <p class="kicker">Keys</p>
-            <h1>管理你的增强 key。</h1>
-            <p class="lead">创建、查看、吊销。</p>
+            <p class="kicker">Console Access</p>
+            <h1>统一管理钥匙、接入与模型。</h1>
+            <p class="lead">一个页面完成 key 管理、OpenClaw 接入配置、可用模型查看。</p>
           </section>
 
-          <section class="card">
+          <section class="card" id="keys-section">
+            <div class="card-header">
+              <h2>钥匙库</h2>
+            </div>
             <form id="create-key-form" class="stack-form inline-create">
               <label>名称<input name="name" type="text" value="OpenClaw Lifecoach Key"></label>
               <button class="button primary" type="submit">生成</button>
             </form>
             <pre id="key-output">创建后只展示一次。</pre>
-          </section>
-
-          <section class="card">
             <div class="card-header">
-              <h2>现有 key</h2>
+              <h3>现有 key</h3>
               <button class="button secondary" id="refresh-keys" type="button">刷新</button>
             </div>
             <div id="keys-list" class="list-grid"></div>
+          </section>
+
+          <section class="card" id="integration-section">
+            <div class="card-header">
+              <h2>接入 OpenClaw</h2>
+              <button class="button primary" id="load-snippet" type="button">加载</button>
+            </div>
+            <pre id="snippet-output">点击按钮后加载。</pre>
+            <div id="integration-hint" class="detail-list compact-detail"></div>
+          </section>
+
+          <section class="card" id="models-section">
+            <div class="card-header">
+              <h2>当前可用模型</h2>
+              <button class="button primary" id="load-models" type="button">加载</button>
+            </div>
+            <div id="models-grid" class="model-grid"></div>
           </section>
         </main>
       </section>

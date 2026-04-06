@@ -140,6 +140,22 @@ async function run() {
     const speechBlobBuffer = Buffer.from(await speechResponse.arrayBuffer());
     assert(speechBlobBuffer.length > 0, 'console speech audio empty');
 
+    const fakeAudioDataUrl = `data:audio/wav;base64,${Buffer.from('fake-audio').toString('base64')}`;
+    const transcription = await requestJson(`${baseConsole}/api/audio/transcriptions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionToken}`,
+      },
+      body: JSON.stringify({
+        audioDataUrl: fakeAudioDataUrl,
+        language: 'zh',
+        transcriptHint: '这是一条测试语音。',
+      }),
+    });
+    assert(transcription.response.status === 200, 'console transcription endpoint failed');
+    assert(typeof transcription.data.text === 'string' && transcription.data.text.length > 0, 'console transcription missing text');
+
     const chat = await requestJson(`${baseGateway}/v1/chat/completions`, {
       method: 'POST',
       headers: {
@@ -254,6 +270,7 @@ async function run() {
         'console chat ok',
         'console image generation ok',
         'console speech ok',
+        'console transcription ok',
         'enhanced chat ok',
         'image enhanced chat ok',
         'audio transcription ok',
