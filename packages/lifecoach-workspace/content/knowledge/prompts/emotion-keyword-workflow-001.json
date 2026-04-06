@@ -8,5 +8,5 @@
   "recommendedSkills": ["coach-intake", "emotional-debrief", "weekly-review"],
   "recommendedAgents": ["life-coach"],
   "keywords": ["先分析情绪", "怎么识别问题", "关键词判断", "减少人机感", "先判断再回答"],
-  "summary": "提供先识别情绪与问题类型、再通过上下文驱动的双选与渐进式轮次组织自然输出的分析流程。"
+  "summary": "提供以前轮情绪定位为基础、按九轮顺序推进对话，并通过上下文驱动的双选与渐进式轮次组织输出的后台分析流程。"
 }

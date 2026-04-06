@@ -1,0 +1,12 @@
+{
+  "id": "prompt-emotion-taxonomy-and-signals-001",
+  "title": "情绪分层识别与用户表达信号",
+  "type": "prompt",
+  "topics": ["情绪识别", "中文口语信号", "情绪分层", "回复切入判断"],
+  "scenes": ["用户说不清自己是什么情绪", "需要先判断情绪层级", "需要根据情绪决定先承接还是先梳理"],
+  "riskLevel": "medium",
+  "recommendedSkills": ["coach-intake", "emotional-debrief", "weekly-review"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["我也说不清是什么感受", "就是很难受", "很憋屈", "很委屈", "心里没底", "麻了", "窒息感", "特别无力", "很羞耻", "很自责", "觉得自己很糟", "很寒心", "被抛弃的感觉", "在赌气", "意难平"],
+  "summary": "提供从基础情绪到细颗粒情绪的渐进式识别与中文高频表达信号，支持前几轮用情绪选项完成定位，并在后续轮次将情绪判断隐式作为生成内容基调。"
+}

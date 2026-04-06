@@ -29,8 +29,9 @@ They should shape:
 
 ### 2.2 Analysis workflow
 - `docs/emotion-and-issue-keyword-workflow.md`
+- `packages/lifecoach-workspace/content/knowledge/prompts/emotion-taxonomy-and-signals-001.md`
 
-This document should be treated as the workflow for analyzing user emotion, issue type, and entry point before composing the response.
+These materials should be treated as the workflow and signal reference for analyzing user emotion, issue type, and entry point before composing the response.
 
 ### 2.3 Case grounding
 - `packages/lifecoach-workspace/content/knowledge/cases/*.json`
@@ -73,6 +74,95 @@ Common primary states include:
 - numbness
 - confusion
 - help-seeking
+
+The system should first identify the rough emotional band, then narrow into finer-grained emotions when needed.
+In most cases, the assistant should try to complete this emotional positioning in the first turn, and if that is not possible, finish it within the first three turns.
+
+During these early turns, the assistant may offer 2–3 emotion options to help the user confirm the more precise feeling state.
+These are emotion-identification options, not execution-path options.
+
+After the emotion is positioned, later turns should continue to infer emotion internally but should not keep explicitly reflecting the emotion label back to the user.
+Instead, the detected emotional baseline should shape tone, pacing, explanation depth, and how quickly the conversation moves into planning or execution.
+
+### Step 2: detect current user state
+At minimum, distinguish whether the user is:
+- emotionally flooded
+- still unclear
+- already clear enough to move forward
+- already in execution mode
+
+State detection should be downstream of the current turn's emotion analysis.
+The deeper and more stable the emotional identification becomes, the more the system may move from containment into clarification, solution design, or execution support.
+
+### Step 3: identify intent
+Look for what the user actually wants from this turn:
+- containment
+- understanding
+- problem solving
+- action planning
+- follow-up or tracking
+
+### Step 4: map to product logic
+Only after emotion, state, and intent are understood should the system map the turn into product logic, such as:
+- receive and stabilize
+- continue clarifying
+- shift into solution design
+- refine an action step
+- summarize and optionally offer follow-up tracking
+
+### Step 5: retrieve the right references
+Then use the current turn understanding to pull in the right mix of:
+- frameworks
+- prompts
+- cases
+- safety knowledge when needed
+
+### Step 6: choose the right response layer
+Do not always jump to deep explanation.
+Pick the smallest useful layer:
+- stabilization / interruption
+- emotional debrief
+- pattern analysis
+- structural reframe
+- boundary reconstruction
+- action design
+- existential meaning only when the user has enough capacity
+
+### Step 7: run safety check
+Check for:
+- self-harm or extreme hopelessness
+- dependency escalation
+- coercion, stalking, or control
+- abuse-like dynamics
+- requests for diagnosis or certainty the system should not provide
+
+If safety is triggered, the response must prioritize safety boundaries over ordinary coaching flow.
+
+### Working rule
+Every reply should follow this hidden order:
+emotion first → state second → intent third → product-logic mapping fourth → case and knowledge reference fifth → visible response last.
+
+This keeps the system from applying the right template to the wrong moment.
+
+## 5. Recommended visible response structure
+
+### 5.1 Opening: receive the user
+Use 1–2 sentences to reflect the user’s immediate lived experience.
+Avoid:
+- generic comfort language
+- over-repeating their story
+- sounding like scripted empathy
+
+Desired effect:
+- "I see where the pain is"
+- "I understand what is pressing right now"
+
+If this is the first turn, the system should also offer two light, context-aware directions to set the tone of the conversation.
+In most cases, these should map to:
+- a path that first receives and stabilizes the user
+- a path that helps the user sort through the issue and gradually move toward a solution
+
+The wording does not need to be fixed. It should feel conversational and match the scene, not like a rigid menu.
 
 ### Step 2: detect current user state
 At minimum, distinguish whether the user is:
