@@ -5,6 +5,11 @@ const state = {
   keys: [],
   integration: null,
   models: [],
+  chatMessages: [],
+  chatAttachment: null,
+  chatLastAssistantText: '',
+  chatLastFollowups: [],
+  chatBusy: false,
 };
 
 function pageName() {
@@ -12,7 +17,7 @@ function pageName() {
 }
 
 function protectedPage() {
-  return ['dashboard', 'keys', 'integration', 'models'].includes(pageName());
+  return ['dashboard', 'keys', 'integration', 'models', 'chat'].includes(pageName());
 }
 
 function saveToken(token) {
@@ -41,6 +46,15 @@ function setPre(id, value) {
   if (node) {
     node.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
   }
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function renderDetailRows(targetId, rows) {
@@ -112,6 +126,10 @@ function bindLogoutButtons() {
   document.querySelectorAll('#logout-button').forEach((button) => {
     button.addEventListener('click', logout);
   });
+}
+
+function setChatStatus(text) {
+  setText('chat-status-note', text);
 }
 
 function renderDashboard() {
@@ -270,6 +288,339 @@ function bindPageButtons() {
   document.getElementById('load-models')?.addEventListener('click', loadModels);
 }
 
+function persistChatMessages() {
+  localStorage.setItem('lifecoach_console_chat_messages', JSON.stringify(state.chatMessages));
+}
+
+function restoreChatMessages() {
+  try {
+    const raw = localStorage.getItem('lifecoach_console_chat_messages');
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      state.chatMessages = parsed;
+    }
+  } catch {}
+}
+
+function toApiMessages() {
+  return state.chatMessages.map((item) => {
+    if (item.role === 'assistant') {
+      return {
+        role: 'assistant',
+        content: item.text,
+      };
+    }
+
+    if (item.imageDataUrl) {
+      return {
+        role: 'user',
+        content: [
+          { type: 'text', text: item.text || '请结合这张图片和我的感受一起理解。' },
+          { type: 'image_url', image_url: { url: item.imageDataUrl } },
+        ],
+      };
+    }
+
+    return {
+      role: 'user',
+      content: item.text,
+    };
+  });
+}
+
+function renderChatAttachments() {
+  const node = document.getElementById('chat-attachments');
+  if (!node) return;
+
+  if (!state.chatAttachment) {
+    node.innerHTML = '';
+    return;
+  }
+
+  node.innerHTML = `
+    <article class="attachment-pill reveal">
+      <img src="${state.chatAttachment.dataUrl}" alt="attachment preview">
+      <div>
+        <strong>${escapeHtml(state.chatAttachment.name)}</strong>
+        <span>图片将随本条消息一起发给 Lifecoach</span>
+      </div>
+      <button class="ghost-button" id="remove-chat-attachment" type="button">移除</button>
+    </article>
+  `;
+
+  document.getElementById('remove-chat-attachment')?.addEventListener('click', () => {
+    state.chatAttachment = null;
+    renderChatAttachments();
+  });
+}
+
+function renderChatInspector(meta) {
+  const node = document.getElementById('chat-inspector');
+  if (!node) return;
+
+  const route = meta?.lifecoach?.route?.primarySkill || '等待对话';
+  const workflow = meta?.lifecoach?.workflow?.stageId || meta?.lifecoach?.workflow?.id || '等待激活';
+  const flavor = meta?.lifecoach?.flavorScores
+    ? `${meta.lifecoach.flavorScores.overall} / ${meta.lifecoach.flavorScores.band}`
+    : '等待计算';
+
+  node.innerHTML = [
+    { label: '主 skill', value: route },
+    { label: '工作流', value: workflow },
+    { label: '对味分', value: flavor },
+  ].map((row) => `
+    <div class="detail-row">
+      <span>${row.label}</span>
+      <strong>${escapeHtml(row.value)}</strong>
+    </div>
+  `).join('');
+}
+
+function renderChatFollowups() {
+  const node = document.getElementById('chat-followups');
+  if (!node) return;
+
+  if (!state.chatLastFollowups.length) {
+    node.innerHTML = '';
+    return;
+  }
+
+  node.innerHTML = `
+    <div class="followup-label">继续追问</div>
+    <div class="followup-grid">
+      ${state.chatLastFollowups.map((item, index) => `
+        <button class="followup-chip" type="button" data-followup-index="${index}">${escapeHtml(item)}</button>
+      `).join('')}
+    </div>
+  `;
+
+  node.querySelectorAll('.followup-chip').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const index = Number(button.dataset.followupIndex);
+      const choice = state.chatLastFollowups[index] || '';
+      const cleanChoice = choice.replace(/^[A-D]\.\s*/, '');
+      const input = document.getElementById('chat-input');
+      if (input) {
+        input.value = cleanChoice;
+      }
+      try {
+        await sendChatMessage();
+      } catch {}
+    });
+  });
+}
+
+function renderChatMessages() {
+  const thread = document.getElementById('chat-thread');
+  if (!thread) return;
+
+  const intro = `
+    <div class="message-row assistant reveal">
+      <div class="message-badge">教练</div>
+      <article class="message-bubble">
+        <p>我在这儿。你可以直接说最近的困惑，也可以带一张图片过来，我们先一起看清楚现在最值得处理的那一层。</p>
+      </article>
+    </div>
+  `;
+
+  const rows = state.chatMessages.map((item, index) => {
+    const attachment = item.imageDataUrl ? `<img class="message-image" src="${item.imageDataUrl}" alt="user attachment">` : '';
+    const actions = item.role === 'assistant'
+      ? `<div class="message-actions"><button class="ghost-button speak-message" data-index="${index}" type="button">朗读</button></div>`
+      : '';
+    return `
+      <div class="message-row ${item.role === 'assistant' ? 'assistant' : 'user'} reveal">
+        <div class="message-badge">${item.role === 'assistant' ? '教练' : '你'}</div>
+        <article class="message-bubble">
+          ${attachment}
+          <p>${escapeHtml(item.text)}</p>
+          ${actions}
+        </article>
+      </div>
+    `;
+  }).join('');
+
+  thread.innerHTML = intro + rows + (state.chatBusy ? `
+    <div class="message-row assistant reveal">
+      <div class="message-badge">教练</div>
+      <article class="message-bubble typing-bubble">
+        <span></span><span></span><span></span>
+      </article>
+    </div>
+  ` : '');
+
+  thread.querySelectorAll('.speak-message').forEach((button) => {
+    button.addEventListener('click', () => {
+      const item = state.chatMessages[Number(button.dataset.index)];
+      if (item) {
+        speakText(item.text);
+      }
+    });
+  });
+
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function speakText(text) {
+  if (!('speechSynthesis' in window)) {
+    setChatStatus('当前浏览器不支持朗读回复。');
+    return;
+  }
+  if (!text) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'zh-CN';
+  window.speechSynthesis.speak(utter);
+}
+
+function initSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    return null;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'zh-CN';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  return recognition;
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const rawText = (input?.value || '').trim();
+  if (!rawText && !state.chatAttachment) {
+    setChatStatus('先写一句话，或者附上一张图片。');
+    return;
+  }
+
+  const userMessage = {
+    role: 'user',
+    text: rawText || '请先帮我看这张图片，然后陪我聊聊现在的感受。',
+    imageDataUrl: state.chatAttachment ? state.chatAttachment.dataUrl : null,
+  };
+  state.chatMessages.push(userMessage);
+  persistChatMessages();
+  state.chatLastFollowups = [];
+  state.chatBusy = true;
+  renderChatMessages();
+  renderChatFollowups();
+  setChatStatus('Lifecoach 正在用你的调料包内核收束当前问题…');
+
+  try {
+    const result = await api('/api/chat/completions', {
+      method: 'POST',
+      body: {
+        messages: toApiMessages(),
+      },
+    });
+
+    const assistantText = result.choices?.[0]?.message?.content || '我先接住你，再继续。';
+    state.chatMessages.push({
+      role: 'assistant',
+      text: assistantText,
+    });
+    state.chatLastAssistantText = assistantText;
+    state.chatLastFollowups = Array.isArray(result.lifecoach.followups) ? result.lifecoach.followups : [];
+    persistChatMessages();
+    renderChatInspector(result);
+    setText('chat-sidebar-user', `${state.me.user.displayName}，这轮我更倾向于从 ${result.lifecoach.route.primarySkill} 这层陪你往前走。`);
+    setText('chat-capability-pill', result.lifecoach.processing.modality === 'image' ? '图片对话已参与' : '文字对话进行中');
+    setText('chat-cerebellum-pill', result.lifecoach.processing.modelSource === 'upstream-relay' ? `真实模型：${result.model}` : `小脑：${result.lifecoach.cerebellum.focus}`);
+    setChatStatus(`已完成：${result.lifecoach.route.primarySkill} · 对味分 ${result.lifecoach.flavorScores.overall} · ${result.lifecoach.processing.modelSource === 'upstream-relay' ? '真实模型已调用' : '本地内核回退'}`);
+  } catch (error) {
+    setChatStatus(error.message || '聊天请求失败');
+    throw error;
+  } finally {
+    state.chatBusy = false;
+    state.chatAttachment = null;
+    if (input) input.value = '';
+    renderChatAttachments();
+    renderChatMessages();
+    renderChatFollowups();
+  }
+}
+
+function bindChatPage() {
+  restoreChatMessages();
+  renderChatMessages();
+  renderChatAttachments();
+  renderChatFollowups();
+
+  document.getElementById('new-chat-button')?.addEventListener('click', () => {
+    state.chatMessages = [];
+    state.chatLastAssistantText = '';
+    state.chatLastFollowups = [];
+    persistChatMessages();
+    renderChatInspector(null);
+    renderChatMessages();
+    renderChatFollowups();
+    setChatStatus('已开始新对话。');
+  });
+
+  document.getElementById('chat-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await sendChatMessage();
+    } catch {}
+  });
+
+  document.querySelectorAll('[data-chat-prompt]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const input = document.getElementById('chat-input');
+      if (input) {
+        input.value = button.dataset.chatPrompt || '';
+        input.focus();
+      }
+    });
+  });
+
+  document.getElementById('chat-image-input')?.addEventListener('change', async (event) => {
+    const file = event.currentTarget.files?.[0];
+    if (!file) return;
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    state.chatAttachment = {
+      name: file.name,
+      dataUrl,
+    };
+    renderChatAttachments();
+    setChatStatus('图片已加入，这条消息会以多模态方式发送。');
+  });
+
+  const recognition = initSpeechRecognition();
+  document.getElementById('chat-voice-button')?.addEventListener('click', () => {
+    if (!recognition) {
+      setChatStatus('当前浏览器不支持语音输入，请直接输入文字。');
+      return;
+    }
+    recognition.start();
+    setChatStatus('正在听你说话…');
+  });
+  if (recognition) {
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript || '';
+      const input = document.getElementById('chat-input');
+      if (input) {
+        input.value = input.value ? `${input.value} ${transcript}` : transcript;
+      }
+      setChatStatus('语音已转成文字，可以继续发给 Lifecoach。');
+    };
+    recognition.onerror = () => {
+      setChatStatus('语音识别失败，请重试或改用文字输入。');
+    };
+  }
+
+  document.getElementById('chat-read-button')?.addEventListener('click', () => {
+    speakText(state.chatLastAssistantText);
+  });
+}
+
 async function initPage() {
   bindLogoutButtons();
   bindAuthForms();
@@ -292,6 +643,11 @@ async function initPage() {
     if (pageName() === 'models') {
       await loadModels();
     }
+    if (pageName() === 'chat') {
+      bindChatPage();
+      setText('chat-sidebar-user', `${state.me.user.displayName}，你现在可以直接和你的 Lifecoach 内核聊天。`);
+      renderChatInspector(null);
+    }
   }
 }
 
@@ -301,7 +657,7 @@ initPage().catch((error) => {
     return;
   }
 
-  const fallbackTargets = ['auth-notice', 'register-notice', 'key-output', 'snippet-output', 'models-grid'];
+  const fallbackTargets = ['auth-notice', 'register-notice', 'key-output', 'snippet-output', 'models-grid', 'chat-status-note'];
   for (const target of fallbackTargets) {
     const node = document.getElementById(target);
     if (node) {

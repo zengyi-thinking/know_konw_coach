@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 const http = require('http');
+const path = require('path');
 const { createConsoleHandler } = require('../console/server');
 const { createGatewayHandler } = require('../gateway/server');
+const { loadEnvFiles } = require('../../packages/lifecoach-control-plane/src/env_loader');
 
 function createPlatformServer(options = {}) {
   const env = options.env || process.env;
-  const port = options.gatewayPort || Number(env.PORT || env.LIFECOACH_PLATFORM_PORT || 8080);
+  const port = options.gatewayPort ?? Number(env.PORT || env.LIFECOACH_PLATFORM_PORT || 8080);
   const consoleHandler = createConsoleHandler({
     ...options,
     env: {
@@ -51,6 +53,10 @@ function startPlatformServer(options = {}) {
 }
 
 if (require.main === module) {
+  loadEnvFiles([
+    path.join(__dirname, '.env'),
+    path.join(__dirname, '..', 'gateway', '.env'),
+  ]);
   startPlatformServer().then(({ port }) => {
     console.log(`lifecoach-platform listening on http://0.0.0.0:${port}`);
   });

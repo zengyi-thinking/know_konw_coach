@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>接入页 · 对味 Lifecoach</title>
+    <title>接入 · 对味</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="integration">
@@ -13,7 +13,7 @@
           <span class="brand-mark">料</span>
           <span>
             <strong>对味 Lifecoach</strong>
-            <small>增强配方控制台</small>
+            <small>控制台</small>
           </span>
         </a>
         <nav class="topnav">
@@ -21,15 +21,16 @@
           <a href="/keys">钥匙库</a>
           <a href="/integration" class="active">接入页</a>
           <a href="/models">模型页</a>
+          <a href="/chat">聊天</a>
           <button class="nav-button" id="logout-button" type="button">退出</button>
         </nav>
       </header>
 
       <main class="page">
         <section class="section-heading">
-          <p class="kicker">OpenClaw Integration</p>
-          <h1>把增强调料直接拌进小龙虾。</h1>
-          <p class="lead">这里单独只做一件事：把正确的 gateway 配置片段交给 OpenClaw，不把模型详情和账号管理混进来。</p>
+          <p class="kicker">Integration</p>
+          <h1>接进 OpenClaw。</h1>
+          <p class="lead">复制片段，注入环境变量即可。</p>
         </section>
 
         <section class="grid two">
@@ -54,7 +55,7 @@
 
         <section class="card">
           <div class="card-header">
-            <h2>OpenClaw 配置片段</h2>
+            <h2>配置片段</h2>
             <button class="button primary" id="load-snippet" type="button">加载片段</button>
           </div>
           <pre id="snippet-output">点击按钮后加载。</pre>

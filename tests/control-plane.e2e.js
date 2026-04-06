@@ -91,6 +91,23 @@ async function run() {
     });
     assert(String(integration.data.snippet).includes('LIFECOACH_GATEWAY_BASE_URL'), 'integration snippet missing gateway base url');
 
+    const consoleChat = await requestJson(`${baseConsole}/api/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionToken}`,
+      },
+      body: JSON.stringify({
+        messages: [
+          { role: 'user', content: '我最近一直很迷茫，不知道自己到底想要什么。' },
+        ],
+      }),
+    });
+    assert(consoleChat.response.status === 200, 'console chat failed');
+    assert(consoleChat.data.lifecoach.workflow?.id === 'long-horizon-confusion', 'console chat workflow missing');
+    assert(consoleChat.data.lifecoach.flavorScores?.overall >= 0, 'console chat flavor score missing');
+    assert(Array.isArray(consoleChat.data.lifecoach.followups) && consoleChat.data.lifecoach.followups.length >= 4, 'console chat followups missing');
+
     const chat = await requestJson(`${baseGateway}/v1/chat/completions`, {
       method: 'POST',
       headers: {
@@ -202,6 +219,7 @@ async function run() {
         'user sign in ok',
         'api key create ok',
         'integration snippet ok',
+        'console chat ok',
         'enhanced chat ok',
         'image enhanced chat ok',
         'audio transcription ok',

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const http = require('http');
+const path = require('path');
 const { readJsonBody, sendJson } = require('../../packages/lifecoach-control-plane/src/http');
 const { authenticateApiKey, touchApiKey } = require('../../packages/lifecoach-control-plane/src/api_keys');
 const { runLifecoachConversation } = require('../../packages/lifecoach-control-plane/src/lifecoach_engine');
@@ -8,6 +9,7 @@ const { logUsage } = require('../../packages/lifecoach-control-plane/src/usage')
 const { executeChat } = require('../../packages/lifecoach-core/src/gateway/chat_executor');
 const { executeAudioTranscription } = require('../../packages/lifecoach-core/src/gateway/audio_executor');
 const { executeSpeechSynthesis } = require('../../packages/lifecoach-core/src/gateway/tts_executor');
+const { loadEnvFiles } = require('../../packages/lifecoach-control-plane/src/env_loader');
 
 function getBearerToken(req) {
   const header = req.headers.authorization || '';
@@ -349,7 +351,7 @@ function createGatewayHandler(options = {}) {
 }
 
 function startGatewayServer(options = {}) {
-  const port = options.port || Number(process.env.LIFECOACH_GATEWAY_PORT || 3201);
+  const port = options.port ?? Number(process.env.LIFECOACH_GATEWAY_PORT || 3201);
   const server = createGatewayServer(options);
   return new Promise((resolve) => {
     server.listen(port, () => resolve({ server, port: server.address().port }));
@@ -357,6 +359,9 @@ function startGatewayServer(options = {}) {
 }
 
 if (require.main === module) {
+  loadEnvFiles([
+    path.join(__dirname, '.env'),
+  ]);
   startGatewayServer().then(({ port }) => {
     console.log(`lifecoach-gateway listening on http://127.0.0.1:${port}`);
   });

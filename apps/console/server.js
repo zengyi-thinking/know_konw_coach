@@ -25,6 +25,8 @@ const {
   buildOpenClawSnippet,
 } = require('../../packages/lifecoach-control-plane/src/models');
 const { getUsageSummary } = require('../../packages/lifecoach-control-plane/src/usage');
+const { finalizeChatCompletion } = require('../../packages/lifecoach-control-plane/src/chat_surface');
+const { loadEnvFiles } = require('../../packages/lifecoach-control-plane/src/env_loader');
 
 const publicRoot = path.join(__dirname, 'public');
 
@@ -68,6 +70,7 @@ function resolvePagePath(pathname) {
     '/keys': '/keys.html',
     '/integration': '/integration.html',
     '/models': '/models.html',
+    '/chat': '/chat.html',
   };
 
   if (routeMap[pathname]) {
@@ -188,6 +191,17 @@ function createConsoleHandler(options = {}) {
         return;
       }
 
+      if (req.method === 'POST' && pathname === '/api/chat/completions') {
+        const session = requireSession(req, env);
+        const body = await readJsonBody(req);
+        const result = await finalizeChatCompletion(body, {
+          user: session.user,
+          entitlements: session.entitlements,
+        }, env);
+        sendJson(res, 200, result);
+        return;
+      }
+
       sendJson(res, 404, { error: 'not_found' });
     } catch (error) {
       const statusCode = error && error.message === 'unauthorized' ? 401 : 400;
@@ -199,7 +213,7 @@ function createConsoleHandler(options = {}) {
 }
 
 function startConsoleServer(options = {}) {
-  const port = options.port || Number(process.env.LIFECOACH_CONSOLE_PORT || 3200);
+  const port = options.port ?? Number(process.env.LIFECOACH_CONSOLE_PORT || 3200);
   const server = createConsoleServer(options);
   return new Promise((resolve) => {
     server.listen(port, () => resolve({ server, port: server.address().port }));
@@ -207,6 +221,10 @@ function startConsoleServer(options = {}) {
 }
 
 if (require.main === module) {
+  loadEnvFiles([
+    path.join(__dirname, '.env'),
+    path.join(__dirname, '..', 'gateway', '.env'),
+  ]);
   startConsoleServer().then(({ port }) => {
     console.log(`lifecoach-console listening on http://127.0.0.1:${port}`);
   });

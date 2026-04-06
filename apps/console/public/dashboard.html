@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>配方台 · 对味 Lifecoach</title>
+    <title>配方台 · 对味</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-page="dashboard">
@@ -13,7 +13,7 @@
           <span class="brand-mark">料</span>
           <span>
             <strong>对味 Lifecoach</strong>
-            <small>增强配方控制台</small>
+            <small>控制台</small>
           </span>
         </a>
         <nav class="topnav">
@@ -21,6 +21,7 @@
           <a href="/keys">钥匙库</a>
           <a href="/integration">接入页</a>
           <a href="/models">模型页</a>
+          <a href="/chat">聊天</a>
           <button class="nav-button" id="logout-button" type="button">退出</button>
         </nav>
       </header>
@@ -28,9 +29,9 @@
       <main class="page">
         <section class="dashboard-hero">
           <div class="hero-copy">
-            <p class="kicker">Flavor Console</p>
+            <p class="kicker">Console</p>
             <h1 id="dashboard-greeting">正在检查你的风味状态…</h1>
-            <p class="lead">这里不堆细节，只看总火候、总用量和最关键的几个动作入口。</p>
+            <p class="lead">看状态，看用量，直接进入聊天。</p>
           </div>
           <div class="status-stack">
             <article class="status-pill">
@@ -81,17 +82,21 @@
         </section>
 
         <section class="quick-links">
+          <a class="quick-link-card" href="/chat">
+            <span>聊天窗</span>
+            <strong>直接对话</strong>
+          </a>
           <a class="quick-link-card" href="/keys">
             <span>钥匙库</span>
-            <strong>创建或吊销增强 key</strong>
+            <strong>管理 key</strong>
           </a>
           <a class="quick-link-card" href="/integration">
             <span>接入页</span>
-            <strong>复制给 OpenClaw 的配置片段</strong>
+            <strong>复制接入片段</strong>
           </a>
           <a class="quick-link-card" href="/models">
             <span>模型页</span>
-            <strong>确认当前账户能调用哪些能力</strong>
+            <strong>查看可用能力</strong>
           </a>
         </section>
       </main>

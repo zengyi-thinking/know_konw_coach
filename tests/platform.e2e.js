@@ -72,6 +72,9 @@ async function run() {
     assert(chat.response.status === 200, 'platform chat failed');
     assert(chat.data.lifecoach.cerebellum.enabled === true, 'platform cerebellum missing');
 
+    const chatPage = await request(`${baseUrl}/chat`);
+    assert(chatPage.response.status === 200, 'platform chat page failed');
+
     const integration = await request(`${baseUrl}/api/integration/openclaw`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -86,6 +89,7 @@ async function run() {
         'platform sign up ok',
         'platform api key ok',
         'platform enhanced chat ok',
+        'platform chat page ok',
         'platform integration snippet ok',
       ],
     }, null, 2));
