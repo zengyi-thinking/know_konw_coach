@@ -19,6 +19,7 @@ The goal is to make the full chain understandable and maintainable, so future pr
 - `docs/life-coach-response-theory-basis.md`
 - `docs/expert-knowledge-base-and-domain-finetuning-corpus.md`
 - `docs/emotion-and-issue-keyword-workflow.md`
+- `packages/lifecoach-workspace/content/knowledge/prompts/emotion-taxonomy-and-signals-001.md`
 
 These files define:
 - analysis order
@@ -214,11 +215,18 @@ Before writing the visible answer, the system should internally combine:
 The hidden analysis order should follow `docs/life-coach-output-design.md`:
 
 1. identify primary emotion
-2. identify scene / issue domain
-3. identify trigger and repeated pattern
-4. decide whether the user needs containment, explanation, boundary, or action
-5. decide the smallest useful analysis layer
-6. safety-check the planned response
+2. if needed, narrow into finer-grained emotion options during the first 1–3 turns
+3. use the current turn's emotion analysis to judge user state
+4. identify scene / issue domain
+5. identify trigger and repeated pattern
+6. decide whether the user needs containment, explanation, boundary, or action
+7. decide the smallest useful analysis layer
+8. safety-check the planned response
+
+Important behavior rules:
+- emotion options are only for the front turns and are used to complete emotion positioning, not to present execution paths
+- after emotion positioning is complete, later turns should keep using emotion analysis internally without explicitly feeding the emotion label back to the user each time
+- the confirmed emotional baseline should continue shaping tone, pacing, and how the response enters the tuned nine-turn dialogue logic
 
 This stage should remain mostly invisible in the final output.
 

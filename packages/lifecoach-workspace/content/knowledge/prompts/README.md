@@ -9,5 +9,6 @@
 当前已整理的项目适配知识块：
 - `onion-analysis-prompt-001`：洋葱式问题分析提示模板
 - `emotion-keyword-workflow-001`：用户情绪与问题关键词分析流程
+- `emotion-taxonomy-and-signals-001`：情绪分层识别与用户表达信号
 
 建议：prompt 知识块用于约束分析顺序、语气和组织方式，不要直接输出成僵硬模板。 
