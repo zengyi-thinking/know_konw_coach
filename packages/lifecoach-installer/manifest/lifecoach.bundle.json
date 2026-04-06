@@ -36,6 +36,8 @@
     "state/lifecoach/memory-cache",
     "state/lifecoach/proposals",
     "state/lifecoach/system-reviews",
+    "state/lifecoach/tool-lists",
+    "state/lifecoach/followups",
     "workspace/.lifecoach-user",
     "workspace/.lifecoach-user/memories",
     "workspace/.lifecoach-user/knowledge",
@@ -99,7 +101,9 @@
       "state/lifecoach/reviews",
       "state/lifecoach/memory-cache",
       "state/lifecoach/proposals",
-      "state/lifecoach/system-reviews"
+      "state/lifecoach/system-reviews",
+      "state/lifecoach/tool-lists",
+      "state/lifecoach/followups"
     ]
   }
 }

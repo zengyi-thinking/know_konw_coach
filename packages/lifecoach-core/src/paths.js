@@ -151,6 +151,8 @@ function resolveStateDirectories(env = process.env) {
     memoryCacheDir: path.join(root, 'memory-cache'),
     proposalsDir: path.join(root, 'proposals'),
     systemReviewsDir: path.join(root, 'system-reviews'),
+    toolListsDir: path.join(root, 'tool-lists'),
+    followupsDir: path.join(root, 'followups'),
   };
 }
 

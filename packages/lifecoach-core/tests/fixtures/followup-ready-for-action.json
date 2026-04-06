@@ -1,0 +1,17 @@
+{
+  "sessionId": "fixture-followup-ready",
+  "timestamp": "2026-04-05T14:00:00.000Z",
+  "input": {
+    "modality": "text",
+    "text": "好，可以了，我去试试这一步。",
+    "timelineId": "timeline-followup-1",
+    "readyForAction": true
+  },
+  "output": {
+    "reply": "好，我们先把动作缩成一个最小可做的版本。",
+    "nextAction": "今晚花5分钟写下明天第一步"
+  },
+  "userProfile": {
+    "longTermGoal": "恢复稳定执行节奏"
+  }
+}

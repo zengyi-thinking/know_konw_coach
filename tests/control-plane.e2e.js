@@ -110,6 +110,23 @@ async function run() {
     assert(Array.isArray(consoleChat.data.lifecoach.choiceCard?.options) && consoleChat.data.lifecoach.choiceCard.options.length >= 4, 'console chat choiceCard options missing');
     assert(consoleChat.data.lifecoach.choiceFlowState?.mode === 'clarify', 'console chat clarify flow not started');
 
+    const consoleFreeChat = await requestJson(`${baseConsole}/api/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionToken}`,
+      },
+      body: JSON.stringify({
+        uiMode: 'chat',
+        messages: [
+          { role: 'user', content: '我最近一直很迷茫，不知道自己到底想要什么。' },
+        ],
+      }),
+    });
+    assert(consoleFreeChat.response.status === 200, 'console free chat failed');
+    assert(consoleFreeChat.data.lifecoach.choiceCard === null, 'console free chat should not return choiceCard');
+    assert(consoleFreeChat.data.lifecoach.choiceFlowState === null, 'console free chat should not start choiceFlow');
+
     const choice1 = consoleChat.data.lifecoach.choiceCard.options[0];
     const step2 = await requestJson(`${baseConsole}/api/chat/completions`, {
       method: 'POST',

@@ -22,20 +22,28 @@
           <div class="sidebar-label">开始</div>
           <a class="sidebar-link active" href="/">首页</a>
           <a class="sidebar-link" href="/chat">聊天</a>
-          <a class="sidebar-link" href="/keys#integration-section">接入</a>
+          <a class="sidebar-link" href="/keys">钥匙库</a>
         </div>
 
-        <div class="sidebar-block">
-          <div class="sidebar-label">账号</div>
-          <a class="sidebar-link" href="/auth">登录</a>
-          <a class="sidebar-link" href="/register">注册</a>
+        <div class="sidebar-block todo-sidebar-block">
+          <div class="sidebar-label">用户画像</div>
+          <div class="profile-sidebar-card">
+            <div class="profile-sidebar-head">
+              <div class="profile-sidebar-avatar">你</div>
+              <div class="profile-sidebar-copy">
+                <strong id="chat-sidebar-user">先从一段对话开始建立你的画像。</strong>
+                <p id="chat-sidebar-note">登录后，教练会根据你的聊天、主线和近期推进动作持续更新这张画像。</p>
+              </div>
+            </div>
+            <div class="todo-sidebar-list" id="chat-todo-list">
+              <div class="todo-empty-state">进入聊天并生成 To-Do 后，这里会同步显示你的待办概览。</div>
+            </div>
+          </div>
         </div>
 
         <div class="sidebar-cta">
-          <div class="cta-card">
-            <p>基础版直接可用。增强版加上语音、图片和更细的理解力。</p>
-          </div>
-          <a class="button primary" href="/chat">Start Chat</a>
+          <a class="sidebar-button" href="/auth">登录</a>
+          <a class="sidebar-button" href="/register">注册</a>
         </div>
       </aside>
 

@@ -23,22 +23,25 @@
           <a class="sidebar-link" href="/dashboard">配方台</a>
           <a class="sidebar-link active" href="/chat">聊天</a>
           <a class="sidebar-link" href="/keys">钥匙库</a>
-          <a class="sidebar-link" href="/keys#integration-section">接入</a>
-          <a class="sidebar-link" href="/keys#models-section">模型</a>
         </div>
 
-        <div class="sidebar-block">
-          <div class="sidebar-label">快速开始</div>
-          <button class="sidebar-button" type="button" data-chat-prompt="我最近一直很迷茫，不知道自己到底想要什么。">长期迷茫</button>
-          <button class="sidebar-button" type="button" data-chat-prompt="我总是想证明给父母看，但越证明越累。">父母认可</button>
-          <button class="sidebar-button" type="button" data-chat-prompt="这张图里的信息让我很焦虑，你帮我看重点。">图片线索</button>
-          <button class="sidebar-button" type="button" data-chat-prompt="我想做一次语音式 check-in，先帮我整理心情。">语音 check-in</button>
+        <div class="sidebar-block todo-sidebar-block">
+          <div class="sidebar-label">用户画像</div>
+          <div class="profile-sidebar-card">
+            <div class="profile-sidebar-head">
+              <div class="profile-sidebar-avatar">你</div>
+              <div class="profile-sidebar-copy">
+                <strong id="chat-sidebar-user">进入你的对味 Lifecoach。</strong>
+                <p id="chat-sidebar-note">教练会根据你的对话、主线和最近状态，持续更新这张用户画像。</p>
+              </div>
+            </div>
+            <div class="todo-sidebar-list" id="chat-todo-list">
+              <div class="todo-empty-state">多聊几句后，点击右上角生成 To-Do。</div>
+            </div>
+          </div>
         </div>
 
         <div class="sidebar-cta">
-          <div class="cta-card">
-            <p id="chat-sidebar-user">进入你的对味 Lifecoach。</p>
-          </div>
           <button class="sidebar-button" id="logout-button" type="button">退出</button>
         </div>
       </aside>
@@ -57,7 +60,17 @@
                 <option value="zine-handmade">Zine Handmade</option>
               </select>
             </div>
-            <button class="ghost-button" id="start-plan-button" type="button">Plan</button>
+            <button class="ghost-button" id="generate-todo-button" type="button">生成 To-Do</button>
+            <div class="chat-mode-switch" aria-label="聊天模式切换" role="tablist">
+              <button class="chat-mode-toggle active" data-chat-mode="chat" id="chat-mode-chat" type="button">
+                <span>Chat</span>
+                <small>直接聊</small>
+              </button>
+              <button class="chat-mode-toggle" data-chat-mode="plan" id="chat-mode-plan" type="button">
+                <span>Plan</span>
+                <small>拆成多步</small>
+              </button>
+            </div>
             <button class="ghost-button" id="new-chat-button" type="button">New chat</button>
           </div>
         </header>
@@ -82,8 +95,10 @@
             </div>
 
             <div class="chat-attachments" id="chat-attachments"></div>
-            <div class="chat-plan-card" id="chat-plan-card"></div>
-            <div class="chat-followups" id="chat-followups"></div>
+            <div class="chat-decision-stream" id="chat-decision-stream">
+              <div class="chat-plan-card" id="chat-plan-card"></div>
+              <div class="chat-followups" id="chat-followups"></div>
+            </div>
 
             <form class="chat-composer chat-composer-minimal" id="chat-form">
               <div class="chat-input-shell">

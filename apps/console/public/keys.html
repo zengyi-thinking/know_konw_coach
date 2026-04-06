@@ -23,14 +23,25 @@
           <a class="sidebar-link" href="/dashboard">配方台</a>
           <a class="sidebar-link" href="/chat">聊天</a>
           <a class="sidebar-link active" href="/keys">钥匙库</a>
-          <a class="sidebar-link" href="/keys#integration-section">接入</a>
-          <a class="sidebar-link" href="/keys#models-section">模型</a>
+        </div>
+
+        <div class="sidebar-block todo-sidebar-block">
+          <div class="sidebar-label">用户画像</div>
+          <div class="profile-sidebar-card">
+            <div class="profile-sidebar-head">
+              <div class="profile-sidebar-avatar">你</div>
+              <div class="profile-sidebar-copy">
+                <strong id="chat-sidebar-user">正在读取你的当前画像…</strong>
+                <p id="chat-sidebar-note">这里会保留教练对你当前主线、状态和最近推进动作的理解。</p>
+              </div>
+            </div>
+            <div class="todo-sidebar-list" id="chat-todo-list">
+              <div class="todo-empty-state">进入聊天并生成 To-Do 后，这里会同步显示。</div>
+            </div>
+          </div>
         </div>
 
         <div class="sidebar-cta">
-          <div class="cta-card">
-            <p>完整 key 只展示一次，之后只保留前缀和状态。</p>
-          </div>
           <button class="sidebar-button" id="logout-button" type="button">退出</button>
         </div>
       </aside>

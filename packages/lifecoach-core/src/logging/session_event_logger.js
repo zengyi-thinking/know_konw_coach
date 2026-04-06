@@ -33,6 +33,22 @@ function normalizeOutcomeSignal(input = {}) {
   return null;
 }
 
+function normalizeReadinessSignal(input = {}) {
+  if (input.readyForAction === true) return 'ready_for_action';
+  if (input.readyForAction === false) return 'not_ready';
+  if (input.readinessSignal) return input.readinessSignal;
+
+  const text = `${input.text || ''}`.toLowerCase();
+  if (!text) return null;
+  if (text.includes('可以了') || text.includes('明白了') || text.includes('我去试试') || text.includes('先这样') || text.includes('知道下一步')) {
+    return 'ready_for_action';
+  }
+  if (text.includes('还不行') || text.includes('还是不懂') || text.includes('不知道怎么做') || text.includes('没准备好')) {
+    return 'not_ready';
+  }
+  return null;
+}
+
 function inferTurnType(session = {}) {
   const input = session.input || {};
   const output = session.output || {};
@@ -52,6 +68,7 @@ function logSessionEvent(session) {
   const predictionSnapshot = input.prediction || null;
   const feedbackSignal = normalizeFeedbackSignal(input);
   const outcomeSignal = normalizeOutcomeSignal(input);
+  const readinessSignal = normalizeReadinessSignal(input);
   const turnType = inferTurnType(session);
 
   return {
@@ -66,6 +83,7 @@ function logSessionEvent(session) {
     timelineId: session.timeline?.activeTimeline?.id || input.timelineId || null,
     feedbackSignal,
     outcomeSignal,
+    readinessSignal,
     predictionSnapshot,
     policySnapshot: session.adaptivePolicy || null,
   };
@@ -73,4 +91,5 @@ function logSessionEvent(session) {
 
 module.exports = {
   logSessionEvent,
+  normalizeReadinessSignal,
 };

@@ -86,7 +86,9 @@
     "reviews": "state/lifecoach/reviews",
     "memoryCache": "state/lifecoach/memory-cache",
     "proposals": "state/lifecoach/proposals",
-    "systemReviews": "state/lifecoach/system-reviews"
+    "systemReviews": "state/lifecoach/system-reviews",
+    "toolLists": "state/lifecoach/tool-lists",
+    "followups": "state/lifecoach/followups"
   },
   "userCustomRoot": ".lifecoach-user",
   "userCustomAreas": {

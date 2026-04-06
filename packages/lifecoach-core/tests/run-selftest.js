@@ -11,6 +11,7 @@ const { buildGatewayRequest } = requireRuntimeModule('../src/gateway/multimodal_
 const { detectCapabilities } = requireRuntimeModule('../src/gateway/capability_detector', '../gateway/capability_detector');
 const { executeChat } = requireRuntimeModule('../src/gateway/chat_executor', '../gateway/chat_executor');
 const { executeAudioTranscription } = requireRuntimeModule('../src/gateway/audio_executor', '../gateway/audio_executor');
+const { checkFollowups } = requireRuntimeModule('../src/followup/followup_checker', '../followup/followup_checker');
 const {
   resolveWorkspacePackageRoot,
   resolveWorkspaceRoot,
@@ -19,6 +20,7 @@ const {
   resolveSelftestFixtureRoot,
   resolveStateRoot,
   resolveOpenClawRoot,
+  resolveStateDirectories,
 } = requireRuntimeModule('../src/paths', '../paths');
 const { readLayerGovernance, matchLayerByTarget } = requireRuntimeModule('../src/governance/layer_governance', '../governance/layer_governance');
 
@@ -53,9 +55,35 @@ function assert(condition, message) {
   }
 }
 
+function persistedFilesBySuffix(files, suffix) {
+  return files.filter((file) => file.endsWith(suffix));
+}
+
+function writeFixtureState(name, payload) {
+  const filePath = path.join(expectedStateRoot, name);
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  return filePath;
+}
+
+function resetTimelineFollowupState(timelineId) {
+  const safeTimelineId = String(timelineId || '').replace(/[^a-zA-Z0-9_-]+/g, '-');
+  const toolListPath = path.join(expectedStateRoot, 'tool-lists', `${safeTimelineId}.tool-list.json`);
+  const followupPath = path.join(expectedStateRoot, 'followups', `${safeTimelineId}.followup.json`);
+  if (fs.existsSync(toolListPath)) fs.unlinkSync(toolListPath);
+  if (fs.existsSync(followupPath)) fs.unlinkSync(followupPath);
+}
+
+function writeTimelineFollowupState(fixture) {
+  const safeTimelineId = String(fixture.toolList.timelineId || '').replace(/[^a-zA-Z0-9_-]+/g, '-');
+  writeFixtureState(path.join('tool-lists', `${safeTimelineId}.tool-list.json`), { toolList: fixture.toolList });
+  writeFixtureState(path.join('followups', `${safeTimelineId}.followup.json`), { followup: fixture.followup });
+}
+
 async function run() {
   const governance = readLayerGovernance(process.env, workspaceRoot);
   const userWorkspaceRoot = resolveWorkspaceUserRoot(process.env, workspaceRoot);
+  const runtimeState = resolveStateDirectories(process.env);
   ensureDir(workspaceRoot, 'workspaceRoot 不存在，OpenClaw 安装结构不完整');
   ensureDir(userWorkspaceRoot, 'workspace/.lifecoach-user 不存在');
   ensureDir(fixturesDir, 'selftest fixtures 不存在');
@@ -72,6 +100,10 @@ async function run() {
   ensureDir(path.join(expectedStateRoot, 'memory-cache'), 'state/lifecoach/memory-cache 缺失');
   ensureDir(path.join(expectedStateRoot, 'proposals'), 'state/lifecoach/proposals 缺失');
   ensureDir(path.join(expectedStateRoot, 'system-reviews'), 'state/lifecoach/system-reviews 缺失');
+  ensureDir(path.join(expectedStateRoot, 'tool-lists'), 'state/lifecoach/tool-lists 缺失');
+  ensureDir(path.join(expectedStateRoot, 'followups'), 'state/lifecoach/followups 缺失');
+  ensureDir(runtimeState.toolListsDir, 'runtime tool-lists 路径解析失败');
+  ensureDir(runtimeState.followupsDir, 'runtime followups 路径解析失败');
   ensureDir(path.join(userWorkspaceRoot, 'memories'), 'workspace/.lifecoach-user/memories 缺失');
   ensureDir(path.join(userWorkspaceRoot, 'knowledge'), 'workspace/.lifecoach-user/knowledge 缺失');
   ensureDir(path.join(userWorkspaceRoot, 'skills'), 'workspace/.lifecoach-user/skills 缺失');
@@ -79,7 +111,12 @@ async function run() {
   ensureDir(path.join(userWorkspaceRoot, 'notes'), 'workspace/.lifecoach-user/notes 缺失');
 
   const tests = [];
+  const customManifest = JSON.parse(fs.readFileSync(workspaceManifestPath, 'utf8'));
+  assert(customManifest.dynamicStateLinks.toolLists === 'state/lifecoach/tool-lists', 'workspace manifest 缺少 toolLists 动态状态映射');
+  assert(customManifest.dynamicStateLinks.followups === 'state/lifecoach/followups', 'workspace manifest 缺少 followups 动态状态映射');
   tests.push('enhanced install structure ok');
+  tests.push('followup state directories ok');
+  tests.push('workspace manifest dynamic followup links ok');
 
   const customSkillDir = path.join(userWorkspaceRoot, 'skills', 'custom-clarify');
   fs.mkdirSync(customSkillDir, { recursive: true });
@@ -141,8 +178,16 @@ async function run() {
   assert(goal.flavorScores.dimensions.actionability.score >= 80, 'actionability score 计算异常');
   assert(goal.timelineOutcome && goal.timelineOutcome.status === 'active', 'timeline outcome default 状态异常');
   assert(goal.proposal === null, '普通会话不应默认生成治理 proposal');
-  assert(goal.persistence && goal.persistence.files.length === 4, 'dynamic state artifacts 持久化失败');
-  const persistedEvent = JSON.parse(fs.readFileSync(goal.persistence.files[0], 'utf8'));
+  assert(goal.persistence && goal.persistence.files.length >= 4, 'dynamic state artifacts 持久化失败');
+  assert(persistedFilesBySuffix(goal.persistence.files, '.event.json').length === 1, 'event artifact 持久化失败');
+  assert(persistedFilesBySuffix(goal.persistence.files, '.timeline.json').length === 1, 'timeline artifact 持久化失败');
+  assert(persistedFilesBySuffix(goal.persistence.files, '.review.json').length === 1, 'review artifact 持久化失败');
+  assert(persistedFilesBySuffix(goal.persistence.files, '.memory.json').length === 1, 'memory artifact 持久化失败');
+  const persistedEvent = JSON.parse(fs.readFileSync(persistedFilesBySuffix(goal.persistence.files, '.event.json')[0], 'utf8'));
+  const goalToolListFiles = persistedFilesBySuffix(goal.persistence.files, '.tool-list.json');
+  const goalFollowupFiles = persistedFilesBySuffix(goal.persistence.files, '.followup.json');
+  assert(goalToolListFiles.length === 0, '默认目标澄清场景不应过早生成 tool list');
+  assert(goalFollowupFiles.length === 0, '默认目标澄清场景不应过早生成 followup record');
   assert(persistedEvent.workspaceRefs.selectedSkillPath === 'skills/goal-clarify/route.json', 'static/dynamic 链接失败');
   tests.push('goal-clarify route ok');
   tests.push('default timeline policy ok');
@@ -217,6 +262,51 @@ async function run() {
   assert(closureSession.timeline.phase === 'closed', 'timeline closed phase 失败');
   assert(closureSession.timelineOutcome.status === 'closed', 'timeline closure outcome 应为 closed');
   tests.push('timeline closure ok');
+
+  resetTimelineFollowupState('timeline-followup-1');
+  const readyForAction = runSession(loadJson('followup-ready-for-action.json'), {
+    workspaceRoot,
+    gatewayOptions: { mockResponse: { message: 'ok' } },
+    persistArtifacts: true,
+  });
+  assert(readyForAction.event.readinessSignal === 'ready_for_action', 'readiness signal 未捕获');
+  assert(readyForAction.toolList && readyForAction.toolList.items.length === 1, 'ready-for-action 未生成 tool list');
+  const readyToolListFiles = persistedFilesBySuffix(readyForAction.persistence.files, '.tool-list.json');
+  const readyFollowupFiles = persistedFilesBySuffix(readyForAction.persistence.files, '.followup.json');
+  assert(readyToolListFiles.length === 1, 'tool list 未持久化');
+  assert(readyFollowupFiles.length === 1, 'followup record 未持久化');
+  const readyToolList = JSON.parse(fs.readFileSync(readyToolListFiles[0], 'utf8'));
+  assert(readyToolList.toolList.readinessSignal === 'ready_for_action', 'tool list readinessSignal 异常');
+  tests.push('tool list generation ok');
+  tests.push('tool list persistence ok');
+
+  const stalledFixture = loadJson('followup-stalled.json');
+  resetTimelineFollowupState(stalledFixture.toolList.timelineId);
+  writeTimelineFollowupState(stalledFixture);
+  const stalledCheck = checkFollowups({
+    env: process.env,
+    timelineId: stalledFixture.toolList.timelineId,
+    now: stalledFixture.now,
+    result: stalledFixture.result,
+  });
+  assert(stalledCheck.shouldPrompt === true, 'stalled followup 应触发主动询问');
+  assert(stalledCheck.status === 'revision_prompt', 'stalled followup 状态应为 revision_prompt');
+  assert(stalledCheck.prompt.includes('门槛再降一点'), 'revision followup 话术不符合预期');
+  const stalledFollowupRecord = JSON.parse(fs.readFileSync(path.join(expectedStateRoot, 'followups', 'timeline-followup-stalled.followup.json'), 'utf8'));
+  assert((stalledFollowupRecord.followup || stalledFollowupRecord).promptCount === 1, 'followup promptCount 未更新');
+  tests.push('stalled followup trigger ok');
+
+  const silentFixture = loadJson('followup-progress-silent.json');
+  resetTimelineFollowupState(silentFixture.toolList.timelineId);
+  writeTimelineFollowupState(silentFixture);
+  const silentCheck = checkFollowups({
+    env: process.env,
+    timelineId: silentFixture.toolList.timelineId,
+    now: silentFixture.now,
+    result: { timelineOutcome: { status: 'active', followupMode: 'continue' } },
+  });
+  assert(silentCheck.shouldPrompt === false, 'progress 场景不应主动打扰');
+  tests.push('progress followup silence ok');
 
   const blockedProposal = generatePatchProposal({
     title: 'unsafe patch',

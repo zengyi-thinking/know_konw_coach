@@ -27,6 +27,7 @@ const { readFlavorMetrics, computeFlavorScores } = require('./learning/flavor_sc
 const { evaluateTimelineOutcome } = require('./learning/timeline_outcome_evaluator');
 const { buildFlavorOptimizationPlan } = require('./learning/flavor_optimizer');
 const { buildWorkflowState } = require('./workflows/workflow_router');
+const { buildToolList } = require('./followup/tool_list_builder');
 
 function buildRuntimePaths(env, workspaceOverride) {
   const workspaceRoot = resolveWorkspaceRoot(env, workspaceOverride);
@@ -153,6 +154,12 @@ function runSession(session, options = {}) {
     route,
     timelineOutcome,
   });
+  const toolList = buildToolList(session, {
+    route,
+    timeline,
+    adaptivePolicy,
+    timelineOutcome,
+  });
   routeQuality.signals.push(...flavorOptimization.focus.map((item) => ({
     type: `optimize_${item.dimension}`,
     severity: 'low',
@@ -201,6 +208,7 @@ function runSession(session, options = {}) {
     flavorScores,
     flavorOptimization,
     timelineOutcome,
+    toolList,
     gateway,
     capabilities,
     upstream,

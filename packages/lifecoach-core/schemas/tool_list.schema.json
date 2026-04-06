@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "id",
+    "timelineId",
+    "skillId",
+    "goalSummary",
+    "readinessSignal",
+    "createdAt",
+    "reviewAfter",
+    "cooldownHours",
+    "followupStyle",
+    "items"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "timelineId": { "type": "string" },
+    "skillId": { "type": "string" },
+    "goalSummary": { "type": "string" },
+    "readinessSignal": {
+      "type": "string",
+      "enum": ["ready_for_action", "not_ready", "unclear"]
+    },
+    "createdAt": { "type": "string" },
+    "reviewAfter": { "type": "string" },
+    "cooldownHours": { "type": "number" },
+    "followupStyle": {
+      "type": "string",
+      "enum": ["gentle_checkin", "progress_checkin", "revision_prompt", "closure_prompt"]
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "why", "expectedEvidence", "difficulty", "dueHint", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "why": { "type": "string" },
+          "expectedEvidence": { "type": "string" },
+          "difficulty": { "type": "string" },
+          "dueHint": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "done", "skipped"]
+          }
+        }
+      }
+    }
+  }
+}

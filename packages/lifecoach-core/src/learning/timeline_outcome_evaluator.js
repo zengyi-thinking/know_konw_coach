@@ -31,12 +31,15 @@ function evaluateTimelineOutcome(context, config) {
     evidence.push('timeline_can_close');
   }
 
+  const actionReady = event.readinessSignal === 'ready_for_action' || Boolean(output.nextAction);
+
   return {
     status: chosen.status,
     practiceSignal: chosen.practiceSignal,
     followupMode: timeline.canClose && chosen.followupMode === 'continue' ? 'close' : chosen.followupMode,
     continuityLinked: Boolean(event.timelineId || timeline.activeTimeline?.id),
-    actionReady: Boolean(output.nextAction),
+    actionReady,
+    readinessSignal: event.readinessSignal || null,
     evidence,
   };
 }

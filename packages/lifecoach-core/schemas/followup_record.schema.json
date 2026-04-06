@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "timelineId",
+    "status",
+    "lastCheckedAt",
+    "lastPromptAt",
+    "promptCount",
+    "cooldownUntil",
+    "silenceIfProgressWithinDays",
+    "maxPromptsPerTimeline"
+  ],
+  "properties": {
+    "timelineId": { "type": "string" },
+    "status": { "type": "string" },
+    "lastCheckedAt": { "type": ["string", "null"] },
+    "lastPromptAt": { "type": ["string", "null"] },
+    "promptCount": { "type": "number" },
+    "cooldownUntil": { "type": ["string", "null"] },
+    "silenceIfProgressWithinDays": { "type": "number" },
+    "maxPromptsPerTimeline": { "type": "number" }
+  }
+}

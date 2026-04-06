@@ -12,6 +12,8 @@ const state = {
   chatChoiceFlowState: null,
   chatBusy: false,
   chatStarted: false,
+  chatTodoList: null,
+  chatMode: 'chat',
   planQuestionnaire: null,
   planStepIndex: 0,
   planAnswers: {},
@@ -239,6 +241,74 @@ function setChatStatus(text) {
   setText('chat-status-note', text);
 }
 
+function syncChatInputPlaceholder() {
+  const input = document.getElementById('chat-input');
+  if (!input) return;
+
+  if (state.chatMode === 'plan') {
+    input.placeholder = state.planQuestionnaire
+      ? '先点卡片，或在这里补充你自己的回答…'
+      : '输入一个问题，Plan 会帮你拆成更清楚的几步…';
+    return;
+  }
+
+  input.placeholder = '和 Lifecoach 直接说话…';
+}
+
+function renderChatModeSwitch() {
+  document.querySelectorAll('[data-chat-mode]').forEach((button) => {
+    const active = button.dataset.chatMode === state.chatMode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+
+  document.body.dataset.chatMode = state.chatMode;
+  document.body.classList.toggle('chat-plan-mode', state.chatMode === 'plan');
+  syncChatInputPlaceholder();
+}
+
+function getCurrentPlanQuestion() {
+  if (!state.planQuestionnaire || !Array.isArray(state.planQuestionnaire.questions)) {
+    return null;
+  }
+  return state.planQuestionnaire.questions[state.planStepIndex] || null;
+}
+
+function applyChatMode(mode) {
+  state.chatMode = mode === 'plan' ? 'plan' : 'chat';
+  renderChatModeSwitch();
+  renderPlanCard();
+  renderChatFollowups();
+}
+
+async function activatePlanMode() {
+  applyChatMode('plan');
+  setChatStarted(true);
+
+  if (state.planQuestionnaire?.questions?.length) {
+    renderPlanCard();
+    setChatStatus(state.planQuestionnaire.summary || '进入 Plan');
+    document.getElementById('chat-input')?.focus();
+    return;
+  }
+
+  setChatStatus('正在准备 Plan…');
+  const seedText = document.getElementById('chat-input')?.value.trim()
+    || state.chatMessages.slice().reverse().find((item) => item.role === 'user')?.text
+    || '';
+  const result = await api('/api/chat/plan/start', {
+    method: 'POST',
+    body: { seedText },
+  });
+  state.planQuestionnaire = result.questionnaire;
+  state.planStepIndex = 0;
+  state.planAnswers = {};
+  renderChatModeSwitch();
+  renderPlanCard();
+  setChatStatus(result.questionnaire?.summary || '进入 Plan');
+  document.getElementById('chat-input')?.focus();
+}
+
 function setChatStarted(started) {
   state.chatStarted = Boolean(started);
   const body = document.body;
@@ -407,14 +477,23 @@ function bindPageButtons() {
   document.getElementById('load-models')?.addEventListener('click', loadModels);
 }
 
+function getScopedStorageKey(baseKey) {
+  const userId = state.me?.user?.id || 'anonymous';
+  return `${baseKey}:${userId}`;
+}
+
+function persistChatTodoList() {
+  localStorage.setItem(getScopedStorageKey('lifecoach_console_todo_list'), JSON.stringify(state.chatTodoList));
+}
+
 function persistChatMessages() {
-  localStorage.setItem('lifecoach_console_chat_messages', JSON.stringify(state.chatMessages));
-  localStorage.setItem('lifecoach_console_choice_flow', JSON.stringify(state.chatChoiceFlowState));
+  localStorage.setItem(getScopedStorageKey('lifecoach_console_chat_messages'), JSON.stringify(state.chatMessages));
+  localStorage.setItem(getScopedStorageKey('lifecoach_console_choice_flow'), JSON.stringify(state.chatChoiceFlowState));
 }
 
 function restoreChatMessages() {
   try {
-    const raw = localStorage.getItem('lifecoach_console_chat_messages');
+    const raw = localStorage.getItem(getScopedStorageKey('lifecoach_console_chat_messages'));
     if (!raw) return;
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
@@ -422,11 +501,26 @@ function restoreChatMessages() {
     }
   } catch {}
   try {
-    const flowRaw = localStorage.getItem('lifecoach_console_choice_flow');
+    const flowRaw = localStorage.getItem(getScopedStorageKey('lifecoach_console_choice_flow'));
     if (flowRaw) {
       state.chatChoiceFlowState = JSON.parse(flowRaw);
     }
   } catch {}
+  try {
+    const todoRaw = localStorage.getItem(getScopedStorageKey('lifecoach_console_todo_list'));
+    if (todoRaw) {
+      state.chatTodoList = JSON.parse(todoRaw);
+    }
+  } catch {}
+}
+
+function buildTodoContextSummary() {
+  const lastUserMessage = state.chatMessages.slice().reverse().find((item) => item.role === 'user')?.text || '';
+  const routeOrWorkflow = document.getElementById('chat-sidebar-user')?.textContent || '';
+  return [lastUserMessage, state.chatLastAssistantText, routeOrWorkflow]
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(' | ');
 }
 
 function toApiMessages() {
@@ -482,6 +576,95 @@ function renderChatAttachments() {
   });
 }
 
+function canGenerateTodoList() {
+  const userCount = state.chatMessages.filter((item) => item.role === 'user').length;
+  return userCount >= 2 && state.chatMessages.length >= 4;
+}
+
+function statusLabel(status) {
+  if (status === 'done') return '已完成';
+  if (status === 'in_progress') return '进行中';
+  return '待开始';
+}
+
+function renderChatTodoList() {
+  const node = document.getElementById('chat-todo-list');
+  const button = document.getElementById('generate-todo-button');
+  const eligible = canGenerateTodoList();
+  if (button) {
+    button.disabled = state.chatBusy || !eligible;
+    button.title = eligible ? '根据当前对话生成教练待办' : '先多聊几句，再生成 To-Do';
+  }
+  if (!node) return;
+
+  if (!state.chatTodoList || !Array.isArray(state.chatTodoList.items) || !state.chatTodoList.items.length) {
+    node.innerHTML = '<div class="todo-empty-state">多聊几句后，点击右上角生成 To-Do。</div>';
+    return;
+  }
+
+  node.innerHTML = `
+    <article class="todo-sidebar-card reveal">
+      <div class="todo-sidebar-head">
+        <strong>${escapeHtml(state.chatTodoList.title || '教练 To-Do')}</strong>
+        <div class="todo-sidebar-summary">${escapeHtml(state.chatTodoList.summary || '我先把当前对话收束成几个可推进动作。')}</div>
+      </div>
+      <div class="todo-sidebar-items">
+        ${(state.chatTodoList.items || []).map((item) => `
+          <section class="todo-item todo-status-${escapeHtml(item.status || 'planned')}">
+            <div class="todo-item-head">
+              <strong>${escapeHtml(item.title || '')}</strong>
+              <span class="todo-deadline">${escapeHtml(item.deadline || '待定')}</span>
+            </div>
+            <p class="todo-item-copy">${escapeHtml(item.description || '')}</p>
+            <div class="todo-progress-row">
+              <div class="todo-progress-meta">
+                <span class="todo-status-label">${escapeHtml(statusLabel(item.status || 'planned'))}</span>
+                <span>${Math.max(0, Math.min(100, Number(item.progress) || 0))}%</span>
+              </div>
+              <div class="todo-progress-bar"><span class="todo-progress-fill" style="width:${Math.max(0, Math.min(100, Number(item.progress) || 0))}%"></span></div>
+            </div>
+          </section>
+        `).join('')}
+      </div>
+    </article>
+  `;
+}
+
+async function generateChatTodoList() {
+  if (!canGenerateTodoList()) {
+    setChatStatus('先多聊几句，我再帮你收束成 To-Do。');
+    return;
+  }
+
+  const button = document.getElementById('generate-todo-button');
+  if (button) {
+    button.disabled = true;
+    button.textContent = '生成中…';
+  }
+
+  try {
+    const result = await api('/api/chat/todo/generate', {
+      method: 'POST',
+      body: {
+        messages: toApiMessages(),
+        sidebarSummary: buildTodoContextSummary(),
+        lastAssistantText: state.chatLastAssistantText || '',
+      },
+    });
+    state.chatTodoList = result.todoList;
+    persistChatTodoList();
+    renderChatTodoList();
+    setChatStatus('已生成教练 To-Do');
+  } catch (error) {
+    setChatStatus(error.message || 'To-Do 生成失败');
+  } finally {
+    if (button) {
+      button.textContent = '生成 To-Do';
+    }
+    renderChatTodoList();
+  }
+}
+
 function resetPlanState() {
   state.planQuestionnaire = null;
   state.planStepIndex = 0;
@@ -493,27 +676,67 @@ function renderPlanCard() {
   const node = document.getElementById('chat-plan-card');
   if (!node) return;
 
-  if (!state.planQuestionnaire || !Array.isArray(state.planQuestionnaire.questions) || !state.planQuestionnaire.questions.length) {
+  if (state.chatMode !== 'plan' || !state.planQuestionnaire || !Array.isArray(state.planQuestionnaire.questions) || !state.planQuestionnaire.questions.length) {
     node.innerHTML = '';
     return;
   }
 
   const total = state.planQuestionnaire.questions.length;
-  const question = state.planQuestionnaire.questions[state.planStepIndex];
+  const question = getCurrentPlanQuestion();
   if (!question) {
     node.innerHTML = '';
     return;
   }
 
   const selectedAnswer = typeof state.planAnswers[question.id] === 'string' ? state.planAnswers[question.id] : '';
+  const completedSteps = state.planQuestionnaire.questions
+    .map((item, index) => ({
+      index,
+      question: item.question,
+      answer: state.planAnswers[item.id] || '',
+    }))
+    .filter((item) => item.index < state.planStepIndex && item.answer);
+
   node.innerHTML = `
     <article class="plan-card reveal">
+      <div class="plan-card-meta">
+        <span class="plan-kicker">Plan mode</span>
+        <div class="plan-progress">Step ${state.planStepIndex + 1} of ${total}</div>
+      </div>
       <div class="plan-card-head">
         <div>
+          <p class="plan-caption">${escapeHtml(state.planQuestionnaire.title || '多步计划')}</p>
           <strong>${escapeHtml(question.question)}</strong>
+          <p class="plan-helper">${escapeHtml(state.planQuestionnaire.summary || '先用几张卡片把问题拆清楚，再往下走。')}</p>
         </div>
-        <div class="plan-progress">${state.planStepIndex + 1} / ${total}</div>
       </div>
+      <div class="plan-step-rail">
+        ${state.planQuestionnaire.questions.map((item, index) => {
+          const status = index < state.planStepIndex ? 'done' : (index === state.planStepIndex ? 'current' : 'upcoming');
+          const answer = state.planAnswers[item.id] || '';
+          const badge = index < state.planStepIndex ? '✓' : String(index + 1);
+          const hint = answer || (index === state.planStepIndex ? '当前问题' : '待完成');
+          return `
+            <button class="plan-step ${status}" type="button" data-plan-step-index="${index}" ${index > state.planStepIndex ? 'disabled' : ''}>
+              <span class="plan-step-badge">${escapeHtml(badge)}</span>
+              <span class="plan-step-copy">
+                <strong>${escapeHtml(item.question || `步骤 ${index + 1}`)}</strong>
+                <small>${escapeHtml(hint)}</small>
+              </span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+      ${completedSteps.length ? `
+        <div class="plan-answer-stack">
+          ${completedSteps.map((item) => `
+            <div class="plan-answer-chip">
+              <strong>Step ${item.index + 1}</strong>
+              <p>${escapeHtml(item.answer)}</p>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
       <div class="plan-options">
         ${(question.options || []).map((item, index) => `
           <button class="plan-option ${selectedAnswer === item.title ? 'active' : ''}" type="button" data-plan-option-index="${index}">
@@ -525,12 +748,23 @@ function renderPlanCard() {
           </button>
         `).join('')}
       </div>
+      <div class="plan-input-hint">也可以直接在输入框里改成你自己的说法，然后点发送或继续。</div>
       <div class="plan-actions">
+        ${state.planStepIndex > 0 ? '<button class="ghost-button" id="plan-back-button" type="button">上一题</button>' : ''}
         <button class="ghost-button" id="plan-skip-button" type="button">${state.planStepIndex + 1 >= total ? 'Skip' : '跳过'}</button>
-        <button class="button primary" id="plan-next-button" type="button">${state.planStepIndex + 1 >= total ? '完成' : '→'}</button>
+        <button class="button primary" id="plan-next-button" type="button">${state.planStepIndex + 1 >= total ? '完成 Plan' : '继续下一题'}</button>
       </div>
     </article>
   `;
+
+  node.querySelectorAll('[data-plan-step-index]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const index = Number(button.dataset.planStepIndex);
+      if (Number.isNaN(index) || index > state.planStepIndex) return;
+      state.planStepIndex = index;
+      renderPlanCard();
+    });
+  });
 
   node.querySelectorAll('[data-plan-option-index]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -544,6 +778,12 @@ function renderPlanCard() {
       }
       renderPlanCard();
     });
+  });
+
+  document.getElementById('plan-back-button')?.addEventListener('click', () => {
+    if (state.planStepIndex <= 0) return;
+    state.planStepIndex -= 1;
+    renderPlanCard();
   });
 
   document.getElementById('plan-skip-button')?.addEventListener('click', async () => {
@@ -568,15 +808,17 @@ async function advancePlanQuestion() {
   const input = document.getElementById('chat-input');
   if (input) input.value = '';
 
-  if (!state.planQuestionnaire) return;
-  if (state.planStepIndex + 1 < state.planQuestionnaire.questions.length) {
+  const questionnaire = state.planQuestionnaire;
+  if (!questionnaire) return;
+  if (state.planStepIndex + 1 < questionnaire.questions.length) {
     state.planStepIndex += 1;
     renderPlanCard();
     return;
   }
 
   const summaryLines = [];
-  for (const question of state.planQuestionnaire.questions) {
+  summaryLines.push(`我先回答完这份 ${questionnaire.title || 'Plan'}：`);
+  for (const question of questionnaire.questions) {
     summaryLines.push(`Q: ${question.question}`);
     summaryLines.push(`A: ${state.planAnswers[question.id] || '跳过'}`);
   }
@@ -586,7 +828,9 @@ async function advancePlanQuestion() {
   });
   persistChatMessages();
   resetPlanState();
+  applyChatMode('chat');
   renderPlanCard();
+  setChatStatus('Plan 已完成，正在生成回复…');
   await sendChatMessageFromState();
 }
 
@@ -599,30 +843,43 @@ function renderChatInspector(meta) {
   if (summary) {
     setText('chat-sidebar-user', summary);
   }
+  const note = meta.lifecoach.workflow?.stageDescription
+    || meta.lifecoach.timelineOutcome?.summary
+    || meta.lifecoach.cerebellum?.recommendation
+    || '教练会根据你的对话、主线和最近状态，持续更新这张用户画像。';
+  setText('chat-sidebar-note', note);
 }
 
 function renderChatFollowups() {
   const node = document.getElementById('chat-followups');
   if (!node) return;
 
-  if (!state.chatLastChoiceCard || !Array.isArray(state.chatLastChoiceCard.options) || state.chatLastChoiceCard.options.length === 0) {
+  if (state.chatMode !== 'plan' || state.planQuestionnaire || !state.chatLastChoiceCard || !Array.isArray(state.chatLastChoiceCard.options) || state.chatLastChoiceCard.options.length === 0) {
     node.innerHTML = '';
     return;
   }
 
   node.innerHTML = `
-    <div class="followup-label">${escapeHtml(state.chatLastChoiceCard.question || '继续')}</div>
-    <div class="followup-grid">
-      ${state.chatLastChoiceCard.options.map((item, index) => `
-        <button class="followup-chip card-option" type="button" data-followup-index="${index}">
-          <span class="card-option-key">${escapeHtml(item.key || '')}</span>
-          <span class="card-option-text">
-            <strong>${escapeHtml(item.title || item)}</strong>
-            ${item.subtitle ? `<small>${escapeHtml(item.subtitle)}</small>` : ''}
-          </span>
-        </button>
-      `).join('')}
-    </div>
+    <article class="choice-stream-card reveal">
+      <div class="choice-stream-head">
+        <div>
+          <span class="choice-stream-kicker">Next move</span>
+          <strong>${escapeHtml(state.chatLastChoiceCard.question || '继续')}</strong>
+          <p>选一个更贴近你的方向，我就顺着这一层继续展开。</p>
+        </div>
+      </div>
+      <div class="choice-stream-grid">
+        ${state.chatLastChoiceCard.options.map((item, index) => `
+          <button class="followup-chip followup-card card-option" type="button" data-followup-index="${index}">
+            <span class="card-option-key">${escapeHtml(item.key || '')}</span>
+            <span class="card-option-text">
+              <strong>${escapeHtml(item.title || item)}</strong>
+              ${item.subtitle ? `<small>${escapeHtml(item.subtitle)}</small>` : ''}
+            </span>
+          </button>
+        `).join('')}
+      </div>
+    </article>
   `;
 
   node.querySelectorAll('.followup-chip').forEach((button) => {
@@ -693,6 +950,7 @@ function renderChatMessages() {
   });
 
   thread.scrollTop = thread.scrollHeight;
+  renderChatTodoList();
 }
 
 function speakText(text) {
@@ -723,6 +981,26 @@ function initSpeechRecognition() {
 async function sendChatMessage() {
   const input = document.getElementById('chat-input');
   const rawText = (input?.value || '').trim();
+
+  if (state.chatMode === 'plan' && state.planQuestionnaire) {
+    if (state.chatAttachment) {
+      setChatStatus('Plan 先用文字就够了，图片可以切回 Chat 再发。');
+      return;
+    }
+    const question = getCurrentPlanQuestion();
+    if (!question) return;
+    if (rawText) {
+      state.planAnswers[question.id] = rawText;
+    }
+    if (!state.planAnswers[question.id]) {
+      setChatStatus('先选一个选项，或输入你的回答');
+      return;
+    }
+    setChatStarted(true);
+    await advancePlanQuestion();
+    return;
+  }
+
   if (!rawText && !state.chatAttachment) {
     setChatStatus('先写一句话，或者附上一张图片。');
     return;
@@ -752,7 +1030,8 @@ async function sendChatMessageFromState() {
       method: 'POST',
       body: {
         messages: toApiMessages(),
-        choiceFlowState: state.chatChoiceFlowState,
+        choiceFlowState: state.chatMode === 'plan' ? state.chatChoiceFlowState : null,
+        uiMode: state.chatMode,
       },
     });
 
@@ -783,10 +1062,12 @@ async function sendChatMessageFromState() {
 function bindChatPage() {
   restoreChatMessages();
   setChatStarted(true);
+  applyChatMode('chat');
   renderChatMessages();
   renderChatAttachments();
   renderPlanCard();
   renderChatFollowups();
+  renderChatTodoList();
 
   document.getElementById('chat-orb-button')?.addEventListener('click', () => {
     setChatStarted(true);
@@ -798,32 +1079,48 @@ function bindChatPage() {
     state.chatLastAssistantText = '';
     state.chatLastChoiceCard = null;
     state.chatChoiceFlowState = null;
+    state.chatTodoList = null;
     resetPlanState();
     persistChatMessages();
+    persistChatTodoList();
     setChatStarted(true);
+    applyChatMode('chat');
     renderChatInspector(null);
     renderChatMessages();
     renderPlanCard();
     renderChatFollowups();
+    renderChatTodoList();
     setText('chat-sidebar-user', state.me?.user?.displayName || '对味聊天');
+    setText('chat-sidebar-note', '教练会根据你的对话、主线和最近状态，持续更新这张用户画像。');
     setChatStatus('新对话');
     document.getElementById('chat-input')?.focus();
   });
 
-  document.getElementById('start-plan-button')?.addEventListener('click', async () => {
-    const seedText = document.getElementById('chat-input')?.value.trim()
-      || state.chatMessages.slice().reverse().find((item) => item.role === 'user')?.text
-      || '';
-    const result = await api('/api/chat/plan/start', {
-      method: 'POST',
-      body: { seedText },
+  document.getElementById('generate-todo-button')?.addEventListener('click', async () => {
+    await generateChatTodoList();
+  });
+
+  document.querySelectorAll('[data-chat-mode]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const mode = button.dataset.chatMode;
+      if (mode === 'plan') {
+        try {
+          await activatePlanMode();
+        } catch (error) {
+          applyChatMode('chat');
+          setChatStatus(error.message || 'Plan 启动失败');
+        }
+        return;
+      }
+
+      applyChatMode('chat');
+      state.chatLastChoiceCard = null;
+      state.chatChoiceFlowState = null;
+      persistChatMessages();
+      renderChatFollowups();
+      setChatStatus('聊天模式');
+      document.getElementById('chat-input')?.focus();
     });
-    state.planQuestionnaire = result.questionnaire;
-    state.planStepIndex = 0;
-    state.planAnswers = {};
-    renderPlanCard();
-    setChatStarted(true);
-    setChatStatus(result.questionnaire?.summary || '进入 Plan');
   });
 
   document.getElementById('chat-form')?.addEventListener('submit', async (event) => {
@@ -989,8 +1286,14 @@ async function initPage() {
     if (pageName() === 'chat') {
       bindChatPage();
       setText('chat-sidebar-user', state.me.user.displayName || '对味聊天');
+      setText('chat-sidebar-note', '教练会根据你的对话、主线和最近状态，持续更新这张用户画像。');
       renderChatInspector(null);
       document.getElementById('chat-input')?.focus();
+    } else {
+      restoreChatMessages();
+      renderChatTodoList();
+      setText('chat-sidebar-user', state.me.user.displayName || '你的当前画像');
+      setText('chat-sidebar-note', state.chatLastAssistantText || '进入聊天并生成 To-Do 后，这里会同步显示你的当前主线与推进动作。');
     }
   }
 }

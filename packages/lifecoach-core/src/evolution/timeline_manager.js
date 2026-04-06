@@ -7,6 +7,7 @@ function buildEntry(event, session = {}) {
     selectedSkill: event.selectedSkill || null,
     feedbackSignal: event.feedbackSignal || null,
     outcomeSignal: event.outcomeSignal || null,
+    readinessSignal: event.readinessSignal || null,
     nextAction: session.output?.nextAction || null,
     attemptStatus: session.input?.attemptStatus || null,
     checkpoint: session.input?.checkpoint || null,

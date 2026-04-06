@@ -29,6 +29,7 @@ const { finalizeChatCompletion } = require('../../packages/lifecoach-control-pla
 const { loadEnvFiles } = require('../../packages/lifecoach-control-plane/src/env_loader');
 const { generateImageAsset, synthesizeSpeechAsset, transcribeAudioAsset } = require('../../packages/lifecoach-control-plane/src/multimodal_surface');
 const { generatePlanQuestionnaire } = require('../../packages/lifecoach-control-plane/src/plan_questionnaire');
+const { generateCoachTodoList, hasEnoughTodoContext } = require('../../packages/lifecoach-control-plane/src/todo_generator');
 
 const publicRoot = path.join(__dirname, 'public');
 
@@ -211,6 +212,25 @@ function createConsoleHandler(options = {}) {
         sendJson(res, 200, {
           questionnaire,
         });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === '/api/chat/todo/generate') {
+        const session = requireSession(req, env);
+        const body = await readJsonBody(req);
+        const messages = Array.isArray(body.messages) ? body.messages : [];
+        if (!hasEnoughTodoContext(messages)) {
+          sendJson(res, 400, { error: 'todo_context_insufficient' });
+          return;
+        }
+        const todoList = await generateCoachTodoList(messages, {
+          user: session.user,
+          entitlements: session.entitlements,
+        }, {
+          sidebarSummary: body.sidebarSummary || '',
+          lastAssistantText: body.lastAssistantText || '',
+        }, env);
+        sendJson(res, 200, { todoList });
         return;
       }
 

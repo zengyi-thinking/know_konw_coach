@@ -294,16 +294,22 @@ async function continueClarifyFlow(body, authContext, env, options = {}) {
 
 async function finalizeChatCompletion(body, authContext, env, options = {}) {
   const intent = await inferSemanticIntent(body, env);
+  const uiMode = body.uiMode === 'plan' ? 'plan' : (body.uiMode === 'chat' ? 'chat' : 'auto');
+  const forceFreeChat = uiMode === 'chat';
+  const effectiveIntentType = forceFreeChat && intent.type === 'clarify_with_choice_card'
+    ? 'chat'
+    : intent.type;
 
   if (
     body.choiceFlowState?.mode === 'clarify'
     && body.choiceFlowState?.questionnaire
+    && !forceFreeChat
     && !['image_generation', 'image_understanding'].includes(intent.type)
   ) {
     return continueClarifyFlow(body, authContext, env, options);
   }
 
-  if (intent.type === 'image_generation') {
+  if (effectiveIntentType === 'image_generation') {
     if (!authContext.entitlements?.featureImage) {
       throw new Error('feature_not_enabled:featureImage');
     }
@@ -339,14 +345,24 @@ async function finalizeChatCompletion(body, authContext, env, options = {}) {
   response.lifecoach.processing.upstreamUsed = upstream.used && upstream.ok;
   response.lifecoach.processing.upstreamError = upstream.used && !upstream.ok ? upstream.error : null;
   response.lifecoach.processing.modelSource = upstream.used && upstream.ok ? 'upstream-relay' : 'local-core-fallback';
-  const choiceCard = await generateChoiceCard(flow, body, env);
-  if (intent.type === 'clarify_with_choice_card') {
+  response.lifecoach.processing.intentSource = intent.reason || 'rule';
+  response.lifecoach.processing.uiMode = uiMode;
+  if (effectiveIntentType === 'clarify_with_choice_card') {
     const questionnaire = await generateClarifyQuestionnaire(intent.userText || '', env);
     return buildQuestionnaireStepResponse(flow, body, questionnaire, 0, {});
   }
+
+  if (forceFreeChat) {
+    response.lifecoach.choiceCard = null;
+    response.lifecoach.choiceFlowState = null;
+    response.lifecoach.processing.capabilityIntent = effectiveIntentType;
+    return response;
+  }
+
+  const choiceCard = await generateChoiceCard(flow, body, env);
   response.lifecoach.choiceCard = choiceCard;
   response.lifecoach.choiceFlowState = null;
-  response.lifecoach.processing.intentSource = intent.reason || 'rule';
+  response.lifecoach.processing.capabilityIntent = effectiveIntentType;
   return response;
 }
 

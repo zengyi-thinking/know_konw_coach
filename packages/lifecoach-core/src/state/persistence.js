@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { buildInitialFollowupRecord } = require('../followup/followup_policy');
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
@@ -53,6 +54,8 @@ function persistSessionArtifacts(session, result, runtimePaths, workspaceManifes
   ensureDir(state.memoryCacheDir);
   ensureDir(state.proposalsDir);
   ensureDir(state.systemReviewsDir);
+  ensureDir(state.toolListsDir);
+  ensureDir(state.followupsDir);
 
   files.push(writeJson(path.join(state.eventsDir, `${baseName}.event.json`), {
     sessionId: session.sessionId,
@@ -105,12 +108,31 @@ function persistSessionArtifacts(session, result, runtimePaths, workspaceManifes
     }));
   }
 
+  if (result.toolList) {
+    files.push(writeJson(path.join(state.toolListsDir, `${safeSlug(result.toolList.timelineId || baseName)}.tool-list.json`), {
+      sessionId: session.sessionId,
+      timestamp: session.timestamp,
+      toolList: result.toolList,
+      timelineOutcome: result.timelineOutcome || null,
+      workspaceRefs,
+    }));
+
+    files.push(writeJson(path.join(state.followupsDir, `${safeSlug(result.toolList.timelineId || baseName)}.followup.json`), {
+      sessionId: session.sessionId,
+      timestamp: session.timestamp,
+      followup: buildInitialFollowupRecord(result.toolList, result, session.timestamp),
+      workspaceRefs,
+    }));
+  }
+
   files.push(writeJson(path.join(state.memoryCacheDir, `${baseName}.memory.json`), {
     sessionId: session.sessionId,
     timestamp: session.timestamp,
     memory: result.memory,
     workspaceRefs,
   }));
+
+  files.sort();
 
   return {
     persisted: true,

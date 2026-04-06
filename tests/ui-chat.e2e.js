@@ -45,13 +45,19 @@ async function run() {
 
     const assistantCount = await page.locator('.message-row.assistant .message-bubble p').count();
     assert(assistantCount >= 2, 'assistant response not rendered on front-end');
-    const choiceCardCount = await page.locator('.card-option').count();
-    assert(choiceCardCount >= 4, 'choice card options not rendered on front-end');
-    await page.locator('.card-option').first().click();
+    const choiceCardCount = await page.locator('.choice-stream-card').count();
+    assert(choiceCardCount === 0, 'chat mode should not render choice cards');
+
+    await page.click('#chat-mode-plan');
+    await page.waitForSelector('.plan-card');
+    await page.locator('[data-plan-option-index]').first().click();
+    await page.click('#plan-next-button');
     await page.waitForFunction(() => {
       const progress = document.querySelector('.plan-progress');
-      return progress ? /2\s*\/\s*3/.test(progress.textContent || '') : true;
+      return progress ? /Step\s*2\s*of\s*3/.test(progress.textContent || '') : false;
     });
+    await page.click('#chat-mode-chat');
+    await page.waitForFunction(() => !document.querySelector('.plan-card'));
 
     await page.fill('#chat-input', '请生成一张柔和粉橘色调、像玻璃球一样的情绪氛围图。');
     await page.click('#chat-form button[type="submit"]');

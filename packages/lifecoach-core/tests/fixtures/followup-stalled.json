@@ -1,0 +1,35 @@
+{
+  "toolList": {
+    "timelineId": "timeline-followup-stalled",
+    "cooldownHours": 18,
+    "reviewAfter": "2026-04-05T08:00:00.000Z",
+    "items": [
+      {
+        "id": "item-1",
+        "title": "把今天最小的一步缩成5分钟动作",
+        "status": "pending"
+      }
+    ]
+  },
+  "followup": {
+    "timelineId": "timeline-followup-stalled",
+    "status": "active",
+    "lastCheckedAt": null,
+    "lastPromptAt": null,
+    "promptCount": 0,
+    "cooldownUntil": null,
+    "silenceIfProgressWithinDays": 3,
+    "maxPromptsPerTimeline": 3
+  },
+  "result": {
+    "timelineOutcome": {
+      "status": "stalled",
+      "followupMode": "revise"
+    },
+    "adaptivePolicy": {
+      "rationalWeight": 0.42,
+      "emotionalWeight": 0.66
+    }
+  },
+  "now": "2026-04-05T20:00:00.000Z"
+}
