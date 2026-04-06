@@ -1,0 +1,12 @@
+{
+  "id": "framework-response-pyramid-001",
+  "title": "从熔断到意义重建的回应金字塔",
+  "type": "framework",
+  "topics": ["情绪稳定", "认知重构", "边界重建", "意义建构"],
+  "scenes": ["情绪很满", "冲突后失控", "需要一步步稳定下来"],
+  "riskLevel": "medium",
+  "recommendedSkills": ["emotional-debrief", "coach-intake", "habit-reset"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["先让我冷静下来", "情绪太满了", "刚吵完", "脑子一团乱", "怎么一步步缓过来"],
+  "summary": "帮助模型按先稳定、再复盘、再边界、再意义的顺序组织回应。"
+}

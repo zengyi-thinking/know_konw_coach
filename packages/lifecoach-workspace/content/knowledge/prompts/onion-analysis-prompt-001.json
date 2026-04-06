@@ -1,0 +1,12 @@
+{
+  "id": "prompt-onion-analysis-prompt-001",
+  "title": "洋葱式问题分析提示模板",
+  "type": "prompt",
+  "topics": ["问题分析", "层级拆解", "对话引导"],
+  "scenes": ["需要分层分析问题", "用户想知道深层原因", "想避免表面安慰"],
+  "riskLevel": "medium",
+  "recommendedSkills": ["coach-intake", "emotional-debrief"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["帮我拆解一下", "深层原因", "为什么会这样", "表面下面是什么"],
+  "summary": "提供先承接、再分层看清问题、最后收束一步的洋葱式分析提示模板。"
+}

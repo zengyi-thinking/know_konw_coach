@@ -14,5 +14,7 @@
 - `diagnostic-onion-001`：剥洋葱式诊断框架
 - `rebuild-pyramid-001`：重建金字塔行动框架
 - `diagnosis-to-action-transition-001`：从看清问题到设计行动的转向框架
+- `response-pyramid-001`：从熔断到意义重建的回应金字塔
+- `sociology-reframe-001`：社会学视角的结构归因框架
 
 建议：framework 文件尽量保持短小、可复用、可直接注入，而不是整篇长文。 

@@ -1,0 +1,12 @@
+{
+  "id": "prompt-emotion-keyword-workflow-001",
+  "title": "用户情绪与问题关键词分析流程",
+  "type": "prompt",
+  "topics": ["情绪识别", "问题分类", "分析流程", "输出风格"],
+  "scenes": ["需要先判断用户处于什么情绪", "需要决定从哪里切入", "想减少人机感"],
+  "riskLevel": "medium",
+  "recommendedSkills": ["coach-intake", "emotional-debrief", "weekly-review"],
+  "recommendedAgents": ["life-coach"],
+  "keywords": ["先分析情绪", "怎么识别问题", "关键词判断", "减少人机感", "先判断再回答"],
+  "summary": "提供先识别情绪与问题类型、再通过上下文驱动的双选与渐进式轮次组织自然输出的分析流程。"
+}
